@@ -1,0 +1,23 @@
+# Shell history
+.history/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE files
+.vscode/
+.idea/
+
+# Temporary files
+*.tmp
+*.temp
+*.log
+
+# API keys (if stored in separate file)
+.env
+config.js
+
+# Backup files
+*.backup
+*.bak

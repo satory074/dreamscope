@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DreamScope - 夢を記録し、意味づけ、人生のヒントにする</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div id="app">
+        <!-- ヘッダー -->
+        <header class="header">
+            <h1 class="logo">🌙 DreamScope</h1>
+            <nav class="nav">
+                <button class="nav-btn active" data-view="input">記録</button>
+                <button class="nav-btn" data-view="history">履歴</button>
+                <button class="nav-btn" data-view="analysis">分析</button>
+                <button class="nav-btn" data-view="settings">設定</button>
+            </nav>
+        </header>
+
+        <!-- メインコンテンツ -->
+        <main class="main-content">
+            <!-- 夢の入力画面 -->
+            <section id="input-view" class="view active">
+                <div class="input-container">
+                    <h2 class="section-title">今日の夢を記録</h2>
+                    
+                    <!-- 入力方式選択 -->
+                    <div class="input-type-selector">
+                        <button class="type-btn active" data-type="keywords">単語で記録</button>
+                        <button class="type-btn" data-type="freetext">文章で記録</button>
+                    </div>
+
+                    <!-- 単語入力フォーム -->
+                    <div id="keywords-input" class="input-form active">
+                        <p class="input-hint">夢の印象的な要素を単語で入力してください（例：海 崖 落ちた 怖い）</p>
+                        <input type="text" id="keywords-field" class="keywords-input-field" placeholder="スペースで区切って入力">
+                        <div id="keyword-tags" class="keyword-tags"></div>
+                    </div>
+
+                    <!-- 自由記述入力フォーム -->
+                    <div id="freetext-input" class="input-form">
+                        <p class="input-hint">夢の内容を自由に記述してください</p>
+                        <textarea id="freetext-field" class="freetext-input-field" rows="6" placeholder="夢の内容を詳しく書いてください..."></textarea>
+                    </div>
+
+                    <!-- 記録ボタン -->
+                    <button id="record-btn" class="record-btn">
+                        <span class="btn-icon">✨</span>
+                        夢を記録して解析
+                    </button>
+                </div>
+
+                <!-- AI解析結果表示エリア -->
+                <div id="analysis-result" class="analysis-result hidden">
+                    <h3 class="result-title">🧠 AIによる夢の解析</h3>
+                    
+                    <!-- 自然文変換結果 -->
+                    <div class="converted-text">
+                        <h4>夢の内容</h4>
+                        <p id="converted-dream-text"></p>
+                    </div>
+
+                    <!-- 解釈結果 -->
+                    <div class="interpretation">
+                        <h4>象徴と心理的意味</h4>
+                        <div id="symbol-meanings" class="symbol-meanings"></div>
+                        
+                        <h4>深層心理からのメッセージ</h4>
+                        <p id="psychological-message"></p>
+                        
+                        <h4>今日の気づき</h4>
+                        <p id="daily-insight" class="daily-insight"></p>
+                    </div>
+
+                    <!-- アクションボタン -->
+                    <div class="result-actions">
+                        <button id="save-dream-btn" class="action-btn primary">保存する</button>
+                        <button id="share-dream-btn" class="action-btn secondary">シェア画像を作成</button>
+                        <button id="new-dream-btn" class="action-btn tertiary">新しい夢を記録</button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 履歴画面 -->
+            <section id="history-view" class="view">
+                <div class="history-container">
+                    <h2 class="section-title">夢の履歴</h2>
+                    
+                    <!-- カレンダービュー -->
+                    <div class="calendar-container">
+                        <div class="calendar-header">
+                            <button id="prev-month" class="calendar-nav">＜</button>
+                            <h3 id="current-month" class="current-month"></h3>
+                            <button id="next-month" class="calendar-nav">＞</button>
+                        </div>
+                        <div id="calendar" class="calendar-grid"></div>
+                    </div>
+
+                    <!-- 夢のリスト -->
+                    <div id="dream-list" class="dream-list"></div>
+                </div>
+            </section>
+
+            <!-- 分析画面 -->
+            <section id="analysis-view" class="view">
+                <div class="analysis-container">
+                    <h2 class="section-title">夢の傾向分析</h2>
+                    
+                    <!-- タグクラウド -->
+                    <div class="tag-cloud-container">
+                        <h3>よく見る夢のキーワード</h3>
+                        <div id="tag-cloud" class="tag-cloud"></div>
+                    </div>
+
+                    <!-- 統計情報 -->
+                    <div class="statistics">
+                        <div class="stat-card">
+                            <span class="stat-number" id="total-dreams">0</span>
+                            <span class="stat-label">記録した夢</span>
+                        </div>
+                        <div class="stat-card">
+                            <span class="stat-number" id="current-streak">0</span>
+                            <span class="stat-label">連続記録日数</span>
+                        </div>
+                        <div class="stat-card">
+                            <span class="stat-number" id="common-theme">-</span>
+                            <span class="stat-label">最も多いテーマ</span>
+                        </div>
+                    </div>
+
+                    <!-- エクスポート -->
+                    <div class="export-section">
+                        <h3>データのエクスポート</h3>
+                        <button id="export-csv" class="export-btn">CSVでダウンロード</button>
+                        <button id="export-json" class="export-btn">JSONでダウンロード</button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 設定画面 -->
+            <section id="settings-view" class="view">
+                <div class="settings-container">
+                    <h2 class="section-title">設定</h2>
+                    
+                    <!-- API設定 -->
+                    <div class="settings-group">
+                        <h3>AI設定</h3>
+                        <label for="api-key">OpenAI APIキー</label>
+                        <input type="password" id="api-key" class="settings-input" placeholder="sk-...">
+                        <p class="settings-hint">GPT-4による夢の解析にはAPIキーが必要です</p>
+                    </div>
+
+                    <!-- 通知設定 -->
+                    <div class="settings-group">
+                        <h3>通知設定</h3>
+                        <label class="switch">
+                            <input type="checkbox" id="reminder-enabled">
+                            <span class="slider"></span>
+                            <span class="switch-label">毎朝の記録リマインダー</span>
+                        </label>
+                    </div>
+
+                    <!-- データ管理 -->
+                    <div class="settings-group">
+                        <h3>データ管理</h3>
+                        <button id="backup-data" class="settings-btn">データをバックアップ</button>
+                        <button id="restore-data" class="settings-btn">データを復元</button>
+                        <button id="clear-data" class="settings-btn danger">すべてのデータを削除</button>
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <!-- シェア画像生成モーダル -->
+        <div id="share-modal" class="modal hidden">
+            <div class="modal-content">
+                <span class="close-modal">&times;</span>
+                <h3>夢をシェア</h3>
+                <canvas id="share-canvas" width="1080" height="1080"></canvas>
+                <div class="modal-actions">
+                    <button id="download-image" class="action-btn primary">画像をダウンロード</button>
+                    <button id="copy-image" class="action-btn secondary">クリップボードにコピー</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- ローディング表示 -->
+        <div id="loading" class="loading hidden">
+            <div class="loading-spinner"></div>
+            <p class="loading-text">AIが夢を解析中...</p>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
