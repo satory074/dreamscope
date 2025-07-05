@@ -36,21 +36,24 @@
                     <!-- 単語入力フォーム -->
                     <div id="keywords-input" class="input-form active">
                         <p class="input-hint">夢の印象的な要素を単語で入力してください（例：海 崖 落ちた 怖い）</p>
-                        <input type="text" id="keywords-field" class="keywords-input-field" placeholder="スペースで区切って入力">
+                        <input type="text" id="keywords-field" class="keywords-input-field" placeholder="スペースで区切って入力" aria-required="true" aria-label="夢のキーワード">
                         <div id="keyword-tags" class="keyword-tags"></div>
                     </div>
 
                     <!-- 自由記述入力フォーム -->
                     <div id="freetext-input" class="input-form">
                         <p class="input-hint">夢の内容を自由に記述してください</p>
-                        <textarea id="freetext-field" class="freetext-input-field" rows="6" placeholder="夢の内容を詳しく書いてください..."></textarea>
+                        <textarea id="freetext-field" class="freetext-input-field" rows="6" placeholder="夢の内容を詳しく書いてください..." aria-required="true" aria-label="夢の内容"></textarea>
                     </div>
 
                     <!-- 記録ボタン -->
                     <button id="record-btn" class="record-btn">
                         <span class="btn-icon">✨</span>
-                        夢を記録して解析
+                        <span class="btn-text">夢を記録して解析</span>
                     </button>
+                    
+                    <!-- エラーメッセージ表示エリア -->
+                    <div id="error-message" class="error-message" role="alert" aria-live="polite"></div>
                 </div>
 
                 <!-- AI解析結果表示エリア -->
@@ -175,11 +178,11 @@
         </main>
 
         <!-- シェア画像生成モーダル -->
-        <div id="share-modal" class="modal hidden">
+        <div id="share-modal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="share-modal-title">
             <div class="modal-content">
-                <span class="close-modal">&times;</span>
-                <h3>夢をシェア</h3>
-                <canvas id="share-canvas" width="1080" height="1080"></canvas>
+                <button class="close-modal" aria-label="閉じる">&times;</button>
+                <h3 id="share-modal-title">夢をシェア</h3>
+                <canvas id="share-canvas" width="1080" height="1080" aria-label="生成されたシェア画像"></canvas>
                 <div class="modal-actions">
                     <button id="download-image" class="action-btn primary">画像をダウンロード</button>
                     <button id="copy-image" class="action-btn secondary">クリップボードにコピー</button>
@@ -194,6 +197,20 @@
         </div>
     </div>
 
+    <!-- ローディングオーバーレイ -->
+    <div id="loading-overlay" class="loading-overlay hidden">
+        <div class="loading-spinner">
+            <div class="spinner"></div>
+            <p>夢を解析中...</p>
+        </div>
+    </div>
+    
+    <!-- スクリーンリーダー用のライブリージョン -->
+    <div class="sr-only" aria-live="polite" aria-atomic="true" id="aria-live-region"></div>
+    
+    <!-- Toast通知コンテナ -->
+    <div id="toast-container" class="toast-container"></div>
+    
     <script src="app.js"></script>
 </body>
 </html>

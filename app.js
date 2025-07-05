@@ -18,32 +18,94 @@ document.addEventListener('DOMContentLoaded', () => {
     updateStatistics();
 });
 
-// Data Management
+// Data Management with error handling
 function loadDataFromStorage() {
-    const savedDreams = localStorage.getItem('dreamscope_dreams');
-    const savedSettings = localStorage.getItem('dreamscope_settings');
-    const savedApiKey = localStorage.getItem('dreamscope_apikey');
-    
-    if (savedDreams) {
-        app.dreams = JSON.parse(savedDreams);
-    }
-    
-    if (savedSettings) {
-        app.settings = JSON.parse(savedSettings);
-        document.getElementById('reminder-enabled').checked = app.settings.reminderEnabled;
-    }
-    
-    if (savedApiKey) {
-        app.apiKey = savedApiKey;
-        document.getElementById('api-key').value = app.apiKey;
+    try {
+        const savedDreams = localStorage.getItem('dreamscope_dreams');
+        const savedSettings = localStorage.getItem('dreamscope_settings');
+        const savedApiKey = localStorage.getItem('dreamscope_apikey');
+        
+        if (savedDreams) {
+            const dreams = JSON.parse(savedDreams);
+            // Validate data structure
+            if (Array.isArray(dreams)) {
+                app.dreams = dreams;
+            } else {
+                throw new Error('Invalid dreams data format');
+            }
+        }
+        
+        if (savedSettings) {
+            app.settings = JSON.parse(savedSettings);
+            if (document.getElementById('reminder-enabled')) {
+                document.getElementById('reminder-enabled').checked = app.settings.reminderEnabled;
+            }
+        }
+        
+        if (savedApiKey) {
+            app.apiKey = savedApiKey;
+            if (document.getElementById('api-key')) {
+                document.getElementById('api-key').value = app.apiKey;
+            }
+        }
+    } catch (error) {
+        console.error('データの読み込みエラー:', error);
+        showToast('データの読み込みに失敗しました。データをリセットします。', 'error');
+        
+        // Reset corrupted data
+        app.dreams = [];
+        app.settings = { reminderEnabled: false };
+        app.apiKey = '';
+        
+        // Try to save clean state
+        saveDataToStorage();
     }
 }
 
 function saveDataToStorage() {
-    localStorage.setItem('dreamscope_dreams', JSON.stringify(app.dreams));
-    localStorage.setItem('dreamscope_settings', JSON.stringify(app.settings));
-    if (app.apiKey) {
-        localStorage.setItem('dreamscope_apikey', app.apiKey);
+    try {
+        // Check storage quota
+        if ('storage' in navigator && 'estimate' in navigator.storage) {
+            navigator.storage.estimate().then(({usage, quota}) => {
+                const percentUsed = (usage / quota) * 100;
+                if (percentUsed > 90) {
+                    showToast('ストレージ容量が少なくなっています', 'warning');
+                }
+            });
+        }
+        
+        localStorage.setItem('dreamscope_dreams', JSON.stringify(app.dreams));
+        localStorage.setItem('dreamscope_settings', JSON.stringify(app.settings));
+        if (app.apiKey) {
+            localStorage.setItem('dreamscope_apikey', app.apiKey);
+        }
+        
+        // Create backup
+        createBackup();
+    } catch (error) {
+        console.error('データの保存エラー:', error);
+        if (error.name === 'QuotaExceededError') {
+            showToast('ストレージ容量が不足しています。古いデータを削除してください。', 'error');
+        } else {
+            showToast('データの保存に失敗しました', 'error');
+        }
+    }
+}
+
+// Backup functionality
+function createBackup() {
+    const backup = {
+        version: '1.0',
+        timestamp: new Date().toISOString(),
+        dreams: app.dreams,
+        settings: app.settings
+    };
+    
+    try {
+        localStorage.setItem('dreamscope_backup', JSON.stringify(backup));
+    } catch (error) {
+        // Silently fail for backup
+        console.warn('バックアップの作成に失敗:', error);
     }
 }
 
@@ -187,6 +249,9 @@ async function recordDream() {
     const isKeywordsMode = document.querySelector('[data-type="keywords"]').classList.contains('active');
     let dreamContent = '';
     
+    // Clear previous errors
+    clearError();
+    
     if (isKeywordsMode) {
         // Get keywords from field and tags
         const fieldValue = document.getElementById('keywords-field').value.trim();
@@ -195,7 +260,7 @@ async function recordDream() {
         }
         
         if (keywords.length === 0) {
-            alert('キーワードを入力してください');
+            showError('キーワードを入力してください', 'keywords-field');
             return;
         }
         
@@ -203,7 +268,7 @@ async function recordDream() {
     } else {
         dreamContent = document.getElementById('freetext-field').value.trim();
         if (!dreamContent) {
-            alert('夢の内容を入力してください');
+            showError('夢の内容を入力してください', 'freetext-field');
             return;
         }
     }
@@ -218,8 +283,36 @@ async function recordDream() {
         hideLoading();
     } catch (error) {
         hideLoading();
-        alert('夢の解析中にエラーが発生しました: ' + error.message);
+        showError('夢の解析中にエラーが発生しました。もう一度お試しください。');
     }
+}
+
+// Error handling functions
+function showError(message, fieldId = null) {
+    const errorElement = document.getElementById('error-message');
+    const ariaLive = document.getElementById('aria-live-region');
+    
+    errorElement.textContent = message;
+    ariaLive.textContent = message;
+    
+    if (fieldId) {
+        const field = document.getElementById(fieldId);
+        field.classList.add('input-error');
+        field.focus();
+    }
+}
+
+function clearError() {
+    const errorElement = document.getElementById('error-message');
+    const ariaLive = document.getElementById('aria-live-region');
+    
+    errorElement.textContent = '';
+    ariaLive.textContent = '';
+    
+    // Remove error styling from all inputs
+    document.querySelectorAll('.input-error').forEach(element => {
+        element.classList.remove('input-error');
+    });
 }
 
 // AI Analysis
@@ -358,7 +451,7 @@ function saveDream() {
     app.dreams.push(dream);
     saveDataToStorage();
     
-    alert('夢が保存されました！');
+    showToast('夢が保存されました！', 'success');
     resetInput();
 }
 
@@ -579,15 +672,83 @@ function downloadFile(content, filename, type) {
 }
 
 // Share Modal
+let previouslyFocused = null;
+
 function showShareModal() {
     if (!app.currentAnalysis) return;
     
+    // Store previously focused element
+    previouslyFocused = document.activeElement;
+    
     generateShareImage();
-    document.getElementById('share-modal').classList.remove('hidden');
+    const modal = document.getElementById('share-modal');
+    modal.classList.remove('hidden');
+    
+    // Set initial focus to close button
+    const closeBtn = modal.querySelector('.close-modal');
+    closeBtn.focus();
+    
+    // Add focus trap
+    setupFocusTrap(modal);
 }
 
 function hideShareModal() {
-    document.getElementById('share-modal').classList.add('hidden');
+    const modal = document.getElementById('share-modal');
+    modal.classList.add('hidden');
+    
+    // Remove focus trap
+    removeFocusTrap(modal);
+    
+    // Restore focus to previously focused element
+    if (previouslyFocused) {
+        previouslyFocused.focus();
+        previouslyFocused = null;
+    }
+}
+
+// Focus trap implementation
+function setupFocusTrap(element) {
+    const focusableElements = element.querySelectorAll(
+        'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+    );
+    const firstFocusable = focusableElements[0];
+    const lastFocusable = focusableElements[focusableElements.length - 1];
+    
+    function handleTabKey(e) {
+        if (e.key !== 'Tab') return;
+        
+        if (e.shiftKey) {
+            if (document.activeElement === firstFocusable) {
+                e.preventDefault();
+                lastFocusable.focus();
+            }
+        } else {
+            if (document.activeElement === lastFocusable) {
+                e.preventDefault();
+                firstFocusable.focus();
+            }
+        }
+    }
+    
+    function handleEscKey(e) {
+        if (e.key === 'Escape') {
+            hideShareModal();
+        }
+    }
+    
+    element.addEventListener('keydown', handleTabKey);
+    element.addEventListener('keydown', handleEscKey);
+    
+    // Store handlers for removal
+    element._focusTrapHandlers = { handleTabKey, handleEscKey };
+}
+
+function removeFocusTrap(element) {
+    if (element._focusTrapHandlers) {
+        element.removeEventListener('keydown', element._focusTrapHandlers.handleTabKey);
+        element.removeEventListener('keydown', element._focusTrapHandlers.handleEscKey);
+        delete element._focusTrapHandlers;
+    }
 }
 
 function generateShareImage() {
@@ -735,11 +896,49 @@ function clearData() {
 
 // Loading
 function showLoading() {
-    document.getElementById('loading').classList.remove('hidden');
+    const overlay = document.getElementById('loading-overlay');
+    const recordBtn = document.getElementById('record-btn');
+    
+    if (overlay) {
+        overlay.classList.remove('hidden');
+    }
+    
+    // Disable button during loading
+    recordBtn.disabled = true;
+    recordBtn.setAttribute('aria-busy', 'true');
 }
 
 function hideLoading() {
-    document.getElementById('loading').classList.add('hidden');
+    const overlay = document.getElementById('loading-overlay');
+    const recordBtn = document.getElementById('record-btn');
+    
+    if (overlay) {
+        overlay.classList.add('hidden');
+    }
+    
+    // Re-enable button
+    recordBtn.disabled = false;
+    recordBtn.setAttribute('aria-busy', 'false');
+}
+
+// Toast notifications
+function showToast(message, type = 'info') {
+    const container = document.getElementById('toast-container');
+    const toast = document.createElement('div');
+    toast.className = `toast ${type}`;
+    toast.textContent = message;
+    toast.setAttribute('role', 'status');
+    toast.setAttribute('aria-live', 'polite');
+    
+    container.appendChild(toast);
+    
+    // Remove toast after 3 seconds
+    setTimeout(() => {
+        toast.style.animation = 'fadeOut 0.3s ease-out';
+        setTimeout(() => {
+            container.removeChild(toast);
+        }, 300);
+    }, 3000);
 }
 
 // Make functions globally accessible
