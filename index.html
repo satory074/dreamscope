@@ -2,8 +2,30 @@
 <html lang="ja">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>DreamScope - 夢を記録し、意味づけ、人生のヒントにする</title>
+    
+    <!-- PWA Meta Tags -->
+    <meta name="theme-color" content="#B39DDB">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="DreamScope">
+    
+    <!-- iOS Splash Screens -->
+    <link rel="apple-touch-icon" href="/icons/icon-192x192.png">
+    <link rel="apple-touch-startup-image" href="/splash/splash-2048x2732.png" media="(device-width: 1024px) and (device-height: 1366px) and (-webkit-device-pixel-ratio: 2)">
+    <link rel="apple-touch-startup-image" href="/splash/splash-1668x2388.png" media="(device-width: 834px) and (device-height: 1194px) and (-webkit-device-pixel-ratio: 2)">
+    <link rel="apple-touch-startup-image" href="/splash/splash-1536x2048.png" media="(device-width: 768px) and (device-height: 1024px) and (-webkit-device-pixel-ratio: 2)">
+    <link rel="apple-touch-startup-image" href="/splash/splash-1125x2436.png" media="(device-width: 375px) and (device-height: 812px) and (-webkit-device-pixel-ratio: 3)">
+    <link rel="apple-touch-startup-image" href="/splash/splash-1242x2688.png" media="(device-width: 414px) and (device-height: 896px) and (-webkit-device-pixel-ratio: 3)">
+    <link rel="apple-touch-startup-image" href="/splash/splash-828x1792.png" media="(device-width: 414px) and (device-height: 896px) and (-webkit-device-pixel-ratio: 2)">
+    <link rel="apple-touch-startup-image" href="/splash/splash-1170x2532.png" media="(device-width: 390px) and (device-height: 844px) and (-webkit-device-pixel-ratio: 3)">
+    <link rel="apple-touch-startup-image" href="/splash/splash-1284x2778.png" media="(device-width: 428px) and (device-height: 926px) and (-webkit-device-pixel-ratio: 3)">
+    <link rel="apple-touch-startup-image" href="/splash/splash-750x1334.png" media="(device-width: 375px) and (device-height: 667px) and (-webkit-device-pixel-ratio: 2)">
+    
+    <!-- Manifest -->
+    <link rel="manifest" href="/manifest.json">
+    
     <link rel="stylesheet" href="styles.css">
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;700&display=swap" rel="stylesheet">
 </head>
@@ -13,10 +35,10 @@
         <header class="header">
             <h1 class="logo">🌙 DreamScope</h1>
             <nav class="nav">
-                <button class="nav-btn active" data-view="input">記録</button>
-                <button class="nav-btn" data-view="history">履歴</button>
-                <button class="nav-btn" data-view="analysis">分析</button>
-                <button class="nav-btn" data-view="settings">設定</button>
+                <button class="nav-btn active" data-view="input" data-icon="✏️">記録</button>
+                <button class="nav-btn" data-view="history" data-icon="📅">履歴</button>
+                <button class="nav-btn" data-view="analysis" data-icon="📊">分析</button>
+                <button class="nav-btn" data-view="settings" data-icon="⚙️">設定</button>
             </nav>
         </header>
 
@@ -219,6 +241,22 @@
     <!-- Toast通知コンテナ -->
     <div id="toast-container" class="toast-container"></div>
     
-    <script src="app.js"></script>
+    <!-- オフラインインジケーター -->
+    <div id="offline-indicator" class="offline-indicator">
+        インターネット接続がありません - オフラインモードで動作中
+    </div>
+    
+    <!-- Pull to refresh -->
+    <div id="pull-to-refresh" class="pull-to-refresh">
+        <div class="spinner"></div>
+    </div>
+    
+    <!-- Scripts with async loading -->
+    <script src="js/app-core.js"></script>
+    <script src="js/offline-handler.js" defer></script>
+    <script src="js/swipe-handler.js" defer></script>
+    <script src="js/biometric-auth.js" defer></script>
+    <script src="js/performance-monitor.js" defer></script>
+    <script src="app.js" defer></script>
 </body>
 </html>

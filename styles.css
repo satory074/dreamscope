@@ -851,6 +851,187 @@ body {
     display: none !important;
 }
 
+/* PWA Install Banner */
+.install-banner, .update-banner {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: var(--surface-elevated);
+    padding: 1rem;
+    box-shadow: 0 -2px 10px var(--shadow);
+    z-index: 1000;
+    animation: slideUp 0.3s ease-out;
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+}
+
+.install-content {
+    max-width: 600px;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.install-actions {
+    display: flex;
+    gap: 1rem;
+    justify-content: flex-end;
+}
+
+.install-btn {
+    background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+    color: white;
+    border: none;
+    padding: 0.8rem 2rem;
+    border-radius: 25px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.dismiss-btn {
+    background: transparent;
+    color: var(--text-secondary);
+    border: 1px solid var(--border-color);
+    padding: 0.8rem 2rem;
+    border-radius: 25px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+/* Swipe Indicator */
+.swipe-indicator {
+    position: fixed;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    z-index: 900;
+}
+
+.swipe-indicator.left-glow {
+    background: linear-gradient(to right, rgba(179, 157, 219, 0.3) 0%, transparent 20%);
+}
+
+.swipe-indicator.right-glow {
+    background: linear-gradient(to left, rgba(179, 157, 219, 0.3) 0%, transparent 20%);
+}
+
+.swipe-indicator.active {
+    opacity: 1;
+}
+
+/* Slide animations */
+@keyframes slideLeft {
+    from {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+@keyframes slideRight {
+    from {
+        transform: translateX(-100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+@keyframes bounceLeft {
+    0%, 100% {
+        transform: translateX(0);
+    }
+    50% {
+        transform: translateX(20px);
+    }
+}
+
+@keyframes bounceRight {
+    0%, 100% {
+        transform: translateX(0);
+    }
+    50% {
+        transform: translateX(-20px);
+    }
+}
+
+/* Safe area handling for iPhone X+ */
+@supports (padding: max(0px)) {
+    .header {
+        padding-top: max(1rem, env(safe-area-inset-top));
+    }
+    
+    .main-content {
+        padding-bottom: max(2rem, env(safe-area-inset-bottom));
+    }
+    
+    .nav {
+        padding-bottom: max(0.5rem, env(safe-area-inset-bottom));
+    }
+}
+
+/* Native-like transitions */
+.view {
+    transition: transform 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+/* Improved touch targets */
+button, a, .clickable {
+    position: relative;
+}
+
+button::before, a::before, .clickable::before {
+    content: '';
+    position: absolute;
+    top: -8px;
+    right: -8px;
+    bottom: -8px;
+    left: -8px;
+    z-index: -1;
+}
+
+/* Pull to refresh indicator */
+.pull-to-refresh {
+    position: fixed;
+    top: -60px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 40px;
+    height: 40px;
+    background: var(--surface-elevated);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 2px 10px var(--shadow);
+    transition: top 0.3s ease;
+    z-index: 1000;
+}
+
+.pull-to-refresh.active {
+    top: 20px;
+}
+
+.pull-to-refresh .spinner {
+    width: 24px;
+    height: 24px;
+    border: 2px solid var(--border-color);
+    border-top-color: var(--accent-color);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
 /* Responsive Design */
 @media (max-width: 768px) {
     .main-content {
@@ -1379,5 +1560,92 @@ button {
     
     .onboarding-title {
         font-size: 1.5rem;
+    }
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+    :root {
+        --primary-color: #D1C4E9;
+        --secondary-color: #9FA8DA;
+        --accent-color: #FFD6E3;
+        --border-color: rgba(255, 255, 255, 0.3);
+    }
+    
+    button, .nav-btn, .type-btn {
+        border-width: 2px;
+    }
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+    * {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+    
+    .loading-particles,
+    .dream-particle,
+    .ripple {
+        display: none;
+    }
+}
+
+/* Offline indicator */
+.offline-indicator {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    background: var(--warning-color);
+    color: var(--background-color);
+    padding: 0.5rem;
+    text-align: center;
+    font-size: 0.875rem;
+    z-index: 2000;
+    transform: translateY(-100%);
+    transition: transform 0.3s ease;
+}
+
+.offline-indicator.show {
+    transform: translateY(0);
+}
+
+/* Bottom navigation for mobile */
+@media (max-width: 768px) {
+    .header {
+        position: fixed;
+        bottom: 0;
+        top: auto;
+        border-radius: 20px 20px 0 0;
+        box-shadow: 0 -2px 10px var(--shadow);
+    }
+    
+    .logo {
+        display: none;
+    }
+    
+    .nav {
+        justify-content: space-around;
+        margin-bottom: 0;
+        padding-bottom: max(1rem, env(safe-area-inset-bottom));
+    }
+    
+    .nav-btn {
+        flex-direction: column;
+        padding: 0.5rem;
+        font-size: 0.75rem;
+        min-width: 60px;
+    }
+    
+    .nav-btn::before {
+        content: attr(data-icon);
+        font-size: 1.25rem;
+        margin-bottom: 0.25rem;
+    }
+    
+    .main-content {
+        padding-bottom: calc(80px + max(1rem, env(safe-area-inset-bottom)));
     }
 }
