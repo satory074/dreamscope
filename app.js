@@ -16,6 +16,9 @@ document.addEventListener('DOMContentLoaded', () => {
     initializeEventListeners();
     updateView('input');
     updateStatistics();
+    enhanceAccessibility();
+    addMicroInteractions();
+    checkFirstTimeUser();
 });
 
 // Data Management with error handling
@@ -944,3 +947,327 @@ function showToast(message, type = 'info') {
 // Make functions globally accessible
 window.removeKeywordTag = removeKeywordTag;
 window.showDreamDetail = showDreamDetail;
+
+// Enhanced Accessibility
+function enhanceAccessibility() {
+    // Announce page changes to screen readers
+    const announcePageChange = (viewName) => {
+        const viewNames = {
+            'input': '夢の記録画面',
+            'history': '夢の履歴画面',
+            'analysis': '夢の分析画面',
+            'settings': '設定画面'
+        };
+        announceToScreenReader(`${viewNames[viewName]}に切り替わりました`);
+    };
+    
+    // Store reference to updateView function
+    window.updateView = updateView;
+    
+    // Enhance keyboard navigation for keyword tags
+    const keywordsField = document.getElementById('keywords-field');
+    keywordsField.addEventListener('keydown', (e) => {
+        if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
+            const tags = document.querySelectorAll('.keyword-tag');
+            if (tags.length > 0) {
+                e.preventDefault();
+                navigateKeywordTags(e.key === 'ArrowRight' ? 1 : -1);
+            }
+        }
+    });
+    
+    // Add skip to content link
+    const skipLink = document.createElement('a');
+    skipLink.href = '#main-content';
+    skipLink.className = 'sr-only skip-link';
+    skipLink.textContent = 'メインコンテンツへスキップ';
+    skipLink.addEventListener('click', (e) => {
+        e.preventDefault();
+        document.getElementById('input-view').focus();
+    });
+    document.body.insertBefore(skipLink, document.body.firstChild);
+}
+
+// Screen reader announcements
+function announceToScreenReader(message, priority = 'polite') {
+    const liveRegion = document.getElementById('aria-live-region');
+    liveRegion.setAttribute('aria-live', priority);
+    liveRegion.textContent = message;
+    
+    // Clear after announcement
+    setTimeout(() => {
+        liveRegion.textContent = '';
+    }, 1000);
+}
+
+// Micro-interactions
+function addMicroInteractions() {
+    // Add ripple effect to buttons
+    const buttons = document.querySelectorAll('button');
+    buttons.forEach(button => {
+        button.addEventListener('click', createRipple);
+    });
+    
+    // Add haptic feedback for mobile
+    if ('vibrate' in navigator) {
+        const importantButtons = document.querySelectorAll('.record-btn, .save-dream-btn');
+        importantButtons.forEach(button => {
+            button.addEventListener('click', () => {
+                navigator.vibrate(10);
+            });
+        });
+    }
+    
+    // Enhance loading state with particles
+    enhanceLoadingAnimation();
+    
+    // Add smooth scroll behavior
+    document.documentElement.style.scrollBehavior = 'smooth';
+    
+    // Add input feedback
+    addInputFeedback();
+}
+
+// Ripple effect for buttons
+function createRipple(e) {
+    const button = e.currentTarget;
+    const ripple = document.createElement('span');
+    const rect = button.getBoundingClientRect();
+    const size = Math.max(rect.width, rect.height);
+    const x = e.clientX - rect.left - size / 2;
+    const y = e.clientY - rect.top - size / 2;
+    
+    ripple.style.width = ripple.style.height = size + 'px';
+    ripple.style.left = x + 'px';
+    ripple.style.top = y + 'px';
+    ripple.className = 'ripple';
+    
+    button.appendChild(ripple);
+    
+    setTimeout(() => {
+        ripple.remove();
+    }, 600);
+}
+
+// Enhanced loading animation with dream particles
+function enhanceLoadingAnimation() {
+    const loadingElement = document.querySelector('.loading-spinner');
+    if (!loadingElement) return;
+    
+    const particleContainer = document.createElement('div');
+    particleContainer.className = 'loading-particles';
+    
+    // Create 5 particles
+    for (let i = 0; i < 5; i++) {
+        const particle = document.createElement('div');
+        particle.className = 'dream-particle';
+        particleContainer.appendChild(particle);
+    }
+    
+    loadingElement.appendChild(particleContainer);
+}
+
+// Input feedback
+function addInputFeedback() {
+    const inputs = document.querySelectorAll('input[type="text"], textarea');
+    
+    inputs.forEach(input => {
+        input.addEventListener('focus', () => {
+            input.parentElement.classList.add('input-focused');
+        });
+        
+        input.addEventListener('blur', () => {
+            input.parentElement.classList.remove('input-focused');
+        });
+        
+        // Real-time character count for textarea
+        if (input.tagName === 'TEXTAREA') {
+            const counter = document.createElement('div');
+            counter.className = 'character-counter';
+            input.parentElement.appendChild(counter);
+            
+            input.addEventListener('input', () => {
+                const length = input.value.length;
+                counter.textContent = `${length}文字`;
+                counter.classList.toggle('warning', length > 500);
+            });
+        }
+    });
+}
+
+// Keyboard navigation for tags
+let currentTagIndex = -1;
+
+function navigateKeywordTags(direction) {
+    const tags = document.querySelectorAll('.keyword-tag');
+    if (tags.length === 0) return;
+    
+    currentTagIndex += direction;
+    if (currentTagIndex < 0) currentTagIndex = tags.length - 1;
+    if (currentTagIndex >= tags.length) currentTagIndex = 0;
+    
+    tags.forEach((tag, index) => {
+        tag.classList.toggle('focused', index === currentTagIndex);
+        if (index === currentTagIndex) {
+            tag.focus();
+        }
+    });
+}
+
+// Onboarding for first-time users
+function checkFirstTimeUser() {
+    if (!localStorage.getItem('dreamscope_onboarded')) {
+        setTimeout(() => {
+            startOnboarding();
+        }, 500);
+    }
+}
+
+// Onboarding flow
+function startOnboarding() {
+    const onboarding = new OnboardingFlow();
+    onboarding.start();
+}
+
+class OnboardingFlow {
+    constructor() {
+        this.steps = [
+            {
+                title: "DreamScopeへようこそ 🌙",
+                content: "夢を記録し、AIが深層心理を読み解きます",
+                action: null,
+                position: 'center'
+            },
+            {
+                title: "簡単な記録方法",
+                content: "単語だけでもOK。AIが文章に整えます",
+                action: () => this.highlightElement('.keywords-input-field'),
+                position: 'bottom'
+            },
+            {
+                title: "AIによる解析",
+                content: "心理学的な視点から夢の意味を解釈します",
+                action: () => this.showSampleAnalysis(),
+                position: 'center'
+            },
+            {
+                title: "プライバシー保護",
+                content: "あなたの夢は安全に保護されます",
+                action: null,
+                position: 'center'
+            }
+        ];
+        this.currentStep = 0;
+    }
+    
+    start() {
+        this.createOverlay();
+        this.showStep(0);
+    }
+    
+    createOverlay() {
+        this.overlay = document.createElement('div');
+        this.overlay.className = 'onboarding-overlay';
+        this.overlay.innerHTML = `
+            <div class="onboarding-content">
+                <button class="onboarding-skip">スキップ</button>
+                <div class="onboarding-step">
+                    <h2 class="onboarding-title"></h2>
+                    <p class="onboarding-text"></p>
+                    <div class="onboarding-sample hidden"></div>
+                    <div class="onboarding-actions">
+                        <button class="onboarding-prev hidden">戻る</button>
+                        <button class="onboarding-next">次へ</button>
+                    </div>
+                </div>
+            </div>
+        `;
+        
+        document.body.appendChild(this.overlay);
+        
+        // Event listeners
+        this.overlay.querySelector('.onboarding-skip').addEventListener('click', () => this.complete());
+        this.overlay.querySelector('.onboarding-next').addEventListener('click', () => this.nextStep());
+        this.overlay.querySelector('.onboarding-prev').addEventListener('click', () => this.prevStep());
+    }
+    
+    showStep(index) {
+        const step = this.steps[index];
+        const content = this.overlay.querySelector('.onboarding-content');
+        
+        // Update content
+        this.overlay.querySelector('.onboarding-title').textContent = step.title;
+        this.overlay.querySelector('.onboarding-text').textContent = step.content;
+        
+        // Update buttons
+        this.overlay.querySelector('.onboarding-prev').classList.toggle('hidden', index === 0);
+        this.overlay.querySelector('.onboarding-next').textContent = 
+            index === this.steps.length - 1 ? '始める' : '次へ';
+        
+        // Execute action
+        if (step.action) {
+            step.action();
+        }
+        
+        // Update position
+        content.className = `onboarding-content position-${step.position}`;
+        
+        // Animate
+        content.style.animation = 'onboardingFadeIn 0.3s ease-out';
+    }
+    
+    nextStep() {
+        if (this.currentStep < this.steps.length - 1) {
+            this.currentStep++;
+            this.showStep(this.currentStep);
+        } else {
+            this.complete();
+        }
+    }
+    
+    prevStep() {
+        if (this.currentStep > 0) {
+            this.currentStep--;
+            this.showStep(this.currentStep);
+        }
+    }
+    
+    highlightElement(selector) {
+        const element = document.querySelector(selector);
+        if (element) {
+            element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            element.classList.add('highlighted');
+            setTimeout(() => {
+                element.classList.remove('highlighted');
+            }, 2000);
+        }
+    }
+    
+    showSampleAnalysis() {
+        const sample = this.overlay.querySelector('.onboarding-sample');
+        sample.innerHTML = `
+            <div class="sample-analysis">
+                <h3>サンプル解析結果</h3>
+                <p class="sample-dream">「崖から海に落ちる夢」</p>
+                <div class="sample-symbols">
+                    <span class="symbol-tag">崖: 人生の転機</span>
+                    <span class="symbol-tag">海: 無意識の深層</span>
+                    <span class="symbol-tag">落下: コントロールの喪失</span>
+                </div>
+                <p class="sample-insight">新しい挑戦への不安と期待が入り混じっています</p>
+            </div>
+        `;
+        sample.classList.remove('hidden');
+    }
+    
+    complete() {
+        localStorage.setItem('dreamscope_onboarded', 'true');
+        this.overlay.style.animation = 'onboardingFadeOut 0.3s ease-out';
+        setTimeout(() => {
+            this.overlay.remove();
+        }, 300);
+        
+        // Show welcome toast
+        showToast('DreamScopeへようこそ！最初の夢を記録してみましょう', 'success');
+    }
+}
