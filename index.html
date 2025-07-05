@@ -51,21 +51,21 @@
                     
                     <!-- 入力方式選択 -->
                     <div class="input-type-selector">
-                        <button class="type-btn active" data-type="keywords">単語で記録</button>
-                        <button class="type-btn" data-type="freetext">文章で記録</button>
-                    </div>
-
-                    <!-- 単語入力フォーム -->
-                    <div id="keywords-input" class="input-form active">
-                        <p class="input-hint">夢の印象的な要素を単語で入力してください（例：海 崖 落ちた 怖い）</p>
-                        <input type="text" id="keywords-field" class="keywords-input-field" placeholder="スペースで区切って入力" aria-required="true" aria-label="夢のキーワード">
-                        <div id="keyword-tags" class="keyword-tags"></div>
+                        <button class="type-btn active" data-type="freetext">文章で記録</button>
+                        <button class="type-btn" data-type="keywords">単語で記録</button>
                     </div>
 
                     <!-- 自由記述入力フォーム -->
-                    <div id="freetext-input" class="input-form">
+                    <div id="freetext-input" class="input-form active">
                         <p class="input-hint">夢の内容を自由に記述してください</p>
                         <textarea id="freetext-field" class="freetext-input-field" rows="6" placeholder="夢の内容を詳しく書いてください..." aria-required="true" aria-label="夢の内容"></textarea>
+                    </div>
+
+                    <!-- 単語入力フォーム -->
+                    <div id="keywords-input" class="input-form">
+                        <p class="input-hint">夢の印象的な要素を単語で入力してください（例：海 崖 落ちた 怖い）</p>
+                        <input type="text" id="keywords-field" class="keywords-input-field" placeholder="スペースで区切って入力" aria-required="true" aria-label="夢のキーワード">
+                        <div id="keyword-tags" class="keyword-tags"></div>
                     </div>
 
                     <!-- 記録ボタン -->
@@ -82,9 +82,9 @@
                 <div id="analysis-result" class="analysis-result hidden">
                     <h3 class="result-title">🧠 AIによる夢の解析</h3>
                     
-                    <!-- 自然文変換結果 -->
+                    <!-- 夢の内容 -->
                     <div class="converted-text">
-                        <h4>夢の内容</h4>
+                        <h4>記録された夢</h4>
                         <p id="converted-dream-text"></p>
                     </div>
 
@@ -237,6 +237,35 @@
     
     <!-- スクリーンリーダー用のライブリージョン -->
     <div class="sr-only" aria-live="polite" aria-atomic="true" id="aria-live-region"></div>
+    
+    <!-- 夢の詳細モーダル -->
+    <div id="dream-modal" class="modal-overlay hidden" onclick="closeDreamModal(event)">
+        <div class="modal-content" onclick="event.stopPropagation()">
+            <button class="modal-close" onclick="closeDreamModal()">×</button>
+            <h3 class="modal-title">夢の詳細</h3>
+            <div class="modal-date" id="modal-date"></div>
+            
+            <div class="modal-section">
+                <h4>記録された夢</h4>
+                <p id="modal-dream-content"></p>
+            </div>
+            
+            <div class="modal-section">
+                <h4>象徴と心理的意味</h4>
+                <div id="modal-symbols" class="symbol-meanings"></div>
+            </div>
+            
+            <div class="modal-section">
+                <h4>深層心理からのメッセージ</h4>
+                <p id="modal-psychological"></p>
+            </div>
+            
+            <div class="modal-section">
+                <h4>今日の気づき</h4>
+                <p id="modal-insight" class="daily-insight"></p>
+            </div>
+        </div>
+    </div>
     
     <!-- Toast通知コンテナ -->
     <div id="toast-container" class="toast-container"></div>

@@ -325,21 +325,7 @@ async function analyzeDream(content, isKeywords) {
         return generateMockAnalysis(content, isKeywords);
     }
     
-    const prompt = isKeywords ? 
-        `以下のキーワードから夢の内容を自然な文章に変換し、心理学的な解釈を提供してください。
-        
-        キーワード: ${content}
-        
-        以下の形式でJSONで回答してください:
-        {
-            "dreamText": "変換された夢の文章",
-            "symbols": [
-                {"symbol": "シンボル名", "meaning": "意味の説明"}
-            ],
-            "psychologicalMessage": "深層心理からのメッセージ",
-            "dailyInsight": "今日の気づき（1文）"
-        }` :
-        `以下の夢の内容を心理学的に解釈してください。
+    const prompt = `以下の夢の内容を心理学的に解釈してください。
         
         夢の内容: ${content}
         
@@ -390,9 +376,7 @@ async function analyzeDream(content, isKeywords) {
 function generateMockAnalysis(content, isKeywords) {
     const words = content.split(/\s+/);
     
-    const dreamText = isKeywords ? 
-        `私は夢の中で${words.join('、')}という要素が印象的な体験をしました。` :
-        content;
+    const dreamText = content;
     
     const symbols = words.slice(0, 3).map(word => ({
         symbol: word,
@@ -539,8 +523,54 @@ function navigateCalendar(direction) {
 function showDreamsForDate(dateStr) {
     const dreams = app.dreams.filter(dream => dream.date.startsWith(dateStr));
     if (dreams.length > 0) {
-        renderDreamList(dreams);
+        // Show the first dream in a modal (since typically there's one dream per day)
+        showDreamInModal(dreams[0]);
     }
+}
+
+// Modal functions
+function showDreamInModal(dream) {
+    const modal = document.getElementById('dream-modal');
+    
+    // Populate modal content
+    document.getElementById('modal-date').textContent = formatDate(dream.date);
+    document.getElementById('modal-dream-content').textContent = dream.content;
+    
+    // Populate analysis if available
+    if (dream.analysis) {
+        // Symbols
+        const symbolsContainer = document.getElementById('modal-symbols');
+        symbolsContainer.innerHTML = dream.analysis.symbols.map(symbol => `
+            <div class="symbol-item">
+                <strong>${symbol.symbol}</strong>: ${symbol.meaning}
+            </div>
+        `).join('');
+        
+        // Psychological message
+        document.getElementById('modal-psychological').textContent = 
+            dream.analysis.psychologicalMessage || '';
+        
+        // Daily insight
+        document.getElementById('modal-insight').textContent = 
+            dream.analysis.dailyInsight || '';
+    }
+    
+    // Show modal
+    modal.classList.remove('hidden');
+    
+    // Prevent body scroll when modal is open
+    document.body.style.overflow = 'hidden';
+}
+
+function closeDreamModal(event) {
+    // If event exists and it's clicking on the overlay (not the content), close
+    if (event && event.target !== event.currentTarget) return;
+    
+    const modal = document.getElementById('dream-modal');
+    modal.classList.add('hidden');
+    
+    // Restore body scroll
+    document.body.style.overflow = '';
 }
 
 // Dream List Rendering
@@ -570,9 +600,8 @@ function showDreamDetail(dreamId) {
     const dream = app.dreams.find(d => d.id === dreamId);
     if (!dream) return;
     
-    app.currentAnalysis = dream.analysis;
-    displayAnalysisResult(dream.analysis);
-    updateView('input');
+    // Show the dream in a modal instead of switching views
+    showDreamInModal(dream);
 }
 
 // Tag Cloud
