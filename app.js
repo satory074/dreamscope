@@ -296,6 +296,9 @@ async function recordDream() {
         // Process dream with AI
         const result = await analyzeDream(dreamContent, isKeywordsMode);
         
+        // 元の入力内容を保持
+        result.originalInput = dreamContent;
+        
         // 単語の抽出と分析
         const extractedWords = await extractWordsFromDream(dreamContent, result);
         result.extractedWords = extractedWords;
@@ -450,7 +453,7 @@ function saveDream() {
     const dream = {
         id: Date.now(),
         date: new Date().toISOString(),
-        content: app.currentAnalysis.dreamText,
+        content: app.currentAnalysis.originalInput || app.currentAnalysis.dreamText,
         keywords: keywords.slice(),
         analysis: app.currentAnalysis,
         tags: extractTags(app.currentAnalysis)
@@ -573,6 +576,15 @@ function showDreamInModal(dream) {
             </div>
         `).join('');
         
+        // Psychological message
+        if (dream.analysis.psychologicalMessage) {
+            document.getElementById('modal-psychological').textContent = dream.analysis.psychologicalMessage;
+        }
+        
+        // Daily insight
+        if (dream.analysis.dailyInsight) {
+            document.getElementById('modal-insight').textContent = dream.analysis.dailyInsight;
+        }
     }
     
     // Show modal
