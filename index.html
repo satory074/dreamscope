@@ -93,17 +93,12 @@
                         <h4>象徴と心理的意味</h4>
                         <div id="symbol-meanings" class="symbol-meanings"></div>
                         
-                        <h4>深層心理からのメッセージ</h4>
-                        <p id="psychological-message"></p>
-                        
-                        <h4>今日の気づき</h4>
-                        <p id="daily-insight" class="daily-insight"></p>
                     </div>
 
                     <!-- アクションボタン -->
                     <div class="result-actions">
                         <button id="save-dream-btn" class="action-btn primary">保存する</button>
-                        <button id="share-dream-btn" class="action-btn secondary">シェア画像を作成</button>
+                        <button id="share-dream-btn" class="action-btn secondary">夢をシェア</button>
                         <button id="new-dream-btn" class="action-btn tertiary">新しい夢を記録</button>
                     </div>
                 </div>
@@ -204,10 +199,11 @@
             <div class="modal-content">
                 <button class="close-modal" aria-label="閉じる">&times;</button>
                 <h3 id="share-modal-title">夢をシェア</h3>
-                <canvas id="share-canvas" width="1080" height="1080" aria-label="生成されたシェア画像"></canvas>
+                <div id="share-text-container" class="share-text-container">
+                    <textarea id="share-text" class="share-text" readonly></textarea>
+                </div>
                 <div class="modal-actions">
-                    <button id="download-image" class="action-btn primary">画像をダウンロード</button>
-                    <button id="copy-image" class="action-btn secondary">クリップボードにコピー</button>
+                    <button id="copy-text" class="action-btn primary">テキストをコピー</button>
                 </div>
             </div>
         </div>

@@ -188,8 +188,7 @@ function initializeEventListeners() {
     
     // Modal
     document.querySelector('.close-modal').addEventListener('click', hideShareModal);
-    document.getElementById('download-image').addEventListener('click', downloadShareImage);
-    document.getElementById('copy-image').addEventListener('click', copyShareImage);
+    document.getElementById('copy-text').addEventListener('click', copyShareText);
 }
 
 // View Management
@@ -435,8 +434,6 @@ function displayAnalysisResult(result) {
         </div>
     `).join('');
     
-    document.getElementById('psychological-message').textContent = result.psychologicalMessage;
-    document.getElementById('daily-insight').textContent = result.dailyInsight;
     
     // 抽出された単語を表示
     if (result.extractedWords && result.extractedWords.length > 0) {
@@ -576,13 +573,6 @@ function showDreamInModal(dream) {
             </div>
         `).join('');
         
-        // Psychological message
-        document.getElementById('modal-psychological').textContent = 
-            dream.analysis.psychologicalMessage || '';
-        
-        // Daily insight
-        document.getElementById('modal-insight').textContent = 
-            dream.analysis.dailyInsight || '';
     }
     
     // Show modal
@@ -742,7 +732,7 @@ function showShareModal() {
     // Store previously focused element
     previouslyFocused = document.activeElement;
     
-    generateShareImage();
+    generateShareText();
     const modal = document.getElementById('share-modal');
     modal.classList.remove('hidden');
     
@@ -813,93 +803,41 @@ function removeFocusTrap(element) {
     }
 }
 
-function generateShareImage() {
-    const canvas = document.getElementById('share-canvas');
-    const ctx = canvas.getContext('2d');
+function generateShareText() {
+    const shareTextArea = document.getElementById('share-text');
+    const date = formatDate(new Date().toISOString());
+    const dreamContent = document.getElementById('dream-content').value;
+    const symbols = app.currentAnalysis.symbols || [];
     
-    // Set canvas size
-    canvas.width = 1080;
-    canvas.height = 1080;
+    let shareText = `🌙 DreamScope - ${date}\n\n`;
+    shareText += `【夢の内容】\n${dreamContent}\n\n`;
     
-    // Background gradient
-    const gradient = ctx.createLinearGradient(0, 0, 1080, 1080);
-    gradient.addColorStop(0, '#6B5B95');
-    gradient.addColorStop(1, '#88B0D3');
-    ctx.fillStyle = gradient;
-    ctx.fillRect(0, 0, 1080, 1080);
-    
-    // Add semi-transparent overlay
-    ctx.fillStyle = 'rgba(26, 26, 46, 0.7)';
-    ctx.fillRect(0, 0, 1080, 1080);
-    
-    // Title
-    ctx.fillStyle = '#FFB6C1';
-    ctx.font = 'bold 80px Noto Sans JP';
-    ctx.textAlign = 'center';
-    ctx.fillText('🌙 DreamScope', 540, 150);
-    
-    // Date
-    ctx.fillStyle = '#ffffff';
-    ctx.font = '40px Noto Sans JP';
-    ctx.fillText(formatDate(new Date().toISOString()), 540, 250);
-    
-    // Daily Insight
-    ctx.fillStyle = '#ffffff';
-    ctx.font = 'bold 60px Noto Sans JP';
-    
-    // Word wrap for insight
-    const insight = app.currentAnalysis.dailyInsight;
-    const words = insight.split('');
-    let line = '';
-    let y = 540;
-    const lineHeight = 80;
-    const maxWidth = 900;
-    
-    for (let i = 0; i < words.length; i++) {
-        const testLine = line + words[i];
-        const metrics = ctx.measureText(testLine);
-        
-        if (metrics.width > maxWidth && i > 0) {
-            ctx.fillText(line, 540, y);
-            line = words[i];
-            y += lineHeight;
-        } else {
-            line = testLine;
-        }
+    if (symbols.length > 0) {
+        shareText += `【象徴と意味】\n`;
+        symbols.forEach(symbol => {
+            shareText += `・${symbol.symbol}: ${symbol.meaning}\n`;
+        });
     }
-    ctx.fillText(line, 540, y);
     
-    // Footer
-    ctx.fillStyle = '#b8b8d1';
-    ctx.font = '30px Noto Sans JP';
-    ctx.fillText('あなたの夢が教えてくれること', 540, 950);
+    shareText += `\n#DreamScope #夢日記 #夢分析`;
+    
+    shareTextArea.value = shareText;
 }
 
-function downloadShareImage() {
-    const canvas = document.getElementById('share-canvas');
-    canvas.toBlob(blob => {
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = `dreamscope_${Date.now()}.png`;
-        a.click();
-        URL.revokeObjectURL(url);
-    });
+function copyShareText() {
+    const shareTextArea = document.getElementById('share-text');
+    shareTextArea.select();
+    document.execCommand('copy');
+    
+    // Show feedback
+    const button = document.getElementById('copy-text');
+    const originalText = button.textContent;
+    button.textContent = 'コピーしました！';
+    setTimeout(() => {
+        button.textContent = originalText;
+    }, 2000);
 }
 
-async function copyShareImage() {
-    const canvas = document.getElementById('share-canvas');
-    canvas.toBlob(async blob => {
-        try {
-            await navigator.clipboard.write([
-                new ClipboardItem({ 'image/png': blob })
-            ]);
-            alert('画像をクリップボードにコピーしました！');
-        } catch (err) {
-            alert('クリップボードへのコピーに失敗しました');
-        }
-    });
-}
 
 // Settings Functions
 function backupData() {
@@ -1282,12 +1220,6 @@ function displayExtractedWords(words) {
         <div class="word-add-section">
             <h4>単語を追加</h4>
             <input type="text" id="new-word" placeholder="新しい単語を入力">
-            <select id="word-category">
-                <option value="general">一般</option>
-                <option value="emotion">感情</option>
-                <option value="theme">テーマ</option>
-                <option value="symbol">シンボル</option>
-            </select>
             <button onclick="addCustomWord()">単語を追加</button>
         </div>
     `;
@@ -1316,9 +1248,8 @@ function renderExtractedWords(words) {
 // カスタム単語の追加
 function addCustomWord() {
     const wordInput = document.getElementById('new-word');
-    const categorySelect = document.getElementById('word-category');
     const word = wordInput.value.trim();
-    const category = categorySelect.value;
+    const category = 'general'; // デフォルトカテゴリーを使用
 
     if (word && app.currentAnalysis) {
         if (!app.currentAnalysis.extractedWords) {
