@@ -7,7 +7,9 @@ const app = {
     apiKey: '',
     settings: {
         reminderEnabled: false
-    }
+    },
+    words: [],  // 単語データの追加
+    wordAnalysis: {}  // 単語分析用データ
 };
 
 // Initialize app
@@ -16,6 +18,7 @@ document.addEventListener('DOMContentLoaded', () => {
     initializeEventListeners();
     updateView('input');
     updateStatistics();
+    updateWordStatistics();  // 単語統計の初期化
     enhanceAccessibility();
     addMicroInteractions();
     checkFirstTimeUser();
@@ -27,6 +30,7 @@ function loadDataFromStorage() {
         const savedDreams = localStorage.getItem('dreamscope_dreams');
         const savedSettings = localStorage.getItem('dreamscope_settings');
         const savedApiKey = localStorage.getItem('dreamscope_apikey');
+        const savedWords = localStorage.getItem('dreamscope_words');
         
         if (savedDreams) {
             const dreams = JSON.parse(savedDreams);
@@ -49,6 +53,13 @@ function loadDataFromStorage() {
             app.apiKey = savedApiKey;
             if (document.getElementById('api-key')) {
                 document.getElementById('api-key').value = app.apiKey;
+            }
+        }
+        
+        if (savedWords) {
+            const words = JSON.parse(savedWords);
+            if (Array.isArray(words)) {
+                app.words = words;
             }
         }
     } catch (error) {
@@ -79,6 +90,7 @@ function saveDataToStorage() {
         
         localStorage.setItem('dreamscope_dreams', JSON.stringify(app.dreams));
         localStorage.setItem('dreamscope_settings', JSON.stringify(app.settings));
+        localStorage.setItem('dreamscope_words', JSON.stringify(app.words));
         if (app.apiKey) {
             localStorage.setItem('dreamscope_apikey', app.apiKey);
         }
@@ -200,7 +212,9 @@ function updateView(viewName) {
         renderDreamList();
     } else if (viewName === 'analysis') {
         updateStatistics();
+        updateWordStatistics();
         renderTagCloud();
+        renderWordAnalysis();
     }
     
     app.currentView = viewName;
@@ -282,6 +296,11 @@ async function recordDream() {
     try {
         // Process dream with AI
         const result = await analyzeDream(dreamContent, isKeywordsMode);
+        
+        // 単語の抽出と分析
+        const extractedWords = await extractWordsFromDream(dreamContent, result);
+        result.extractedWords = extractedWords;
+        
         displayAnalysisResult(result);
         hideLoading();
     } catch (error) {
@@ -419,6 +438,11 @@ function displayAnalysisResult(result) {
     document.getElementById('psychological-message').textContent = result.psychologicalMessage;
     document.getElementById('daily-insight').textContent = result.dailyInsight;
     
+    // 抽出された単語を表示
+    if (result.extractedWords && result.extractedWords.length > 0) {
+        displayExtractedWords(result.extractedWords);
+    }
+    
     document.getElementById('analysis-result').classList.remove('hidden');
 }
 
@@ -436,6 +460,12 @@ function saveDream() {
     };
     
     app.dreams.push(dream);
+    
+    // 確定した単語を保存
+    if (app.currentAnalysis.extractedWords) {
+        saveExtractedWords(dream.id, app.currentAnalysis.extractedWords);
+    }
+    
     saveDataToStorage();
     
     showToast('夢が保存されました！', 'success');
@@ -1157,6 +1187,332 @@ function startOnboarding() {
     const onboarding = new OnboardingFlow();
     onboarding.start();
 }
+
+// 単語抽出関数
+async function extractWordsFromDream(content, analysis) {
+    const extractedWords = [];
+    
+    // 感情単語の検出
+    const emotionPatterns = {
+        '不安': ['心配', '不安', 'そわそわ', '落ち着かない'],
+        '喜び': ['嬉しい', '楽しい', '幸せ', 'happy'],
+        '恐怖': ['怖い', '恐ろしい', 'こわい', '逃げ'],
+        '悲しみ': ['悲しい', '泣', '涙', 'さみしい'],
+        '怒り': ['怒', 'いらいら', 'むかつく', '腹立'],
+        '驚き': ['驚', 'びっくり', '突然', '急に'],
+        '期待': ['期待', '楽しみ', 'わくわく', '待ち遠しい'],
+        '安心': ['安心', 'ほっと', '落ち着', '穏やか']
+    };
+
+    for (const [emotion, patterns] of Object.entries(emotionPatterns)) {
+        if (patterns.some(pattern => content.includes(pattern))) {
+            extractedWords.push({ 
+                word: emotion, 
+                category: 'emotion', 
+                confidence: 0.8,
+                source: 'pattern' 
+            });
+        }
+    }
+
+    // テーマの抽出
+    const themes = {
+        '家族': ['家族', '母', '父', '兄', '弟', '姉', '妹', '親', '子供'],
+        '仕事': ['仕事', '会社', '職場', '上司', '同僚', '締切', 'プロジェクト'],
+        '学校': ['学校', '授業', '試験', 'テスト', '先生', '勉強', '宿題'],
+        '旅行': ['旅行', '旅', '飛行機', '電車', '外国', '観光', 'ホテル'],
+        '自然': ['山', '海', '川', '森', '空', '雲', '太陽', '月', '星']
+    };
+
+    for (const [theme, keywords] of Object.entries(themes)) {
+        if (keywords.some(keyword => content.includes(keyword))) {
+            extractedWords.push({ 
+                word: theme, 
+                category: 'theme', 
+                confidence: 0.7,
+                source: 'pattern' 
+            });
+        }
+    }
+
+    // シンボルの抽出
+    const symbolPatterns = {
+        '水': ['水', '海', '川', '雨', '涙', 'プール'],
+        '火': ['火', '炎', '燃える', '熱い', '太陽'],
+        '動物': ['犬', '猫', '鳥', '魚', '馬', '蛇', '虫'],
+        '建物': ['家', '建物', 'ビル', '部屋', '扉', '窓'],
+        '乗り物': ['車', '電車', '飛行機', '自転車', 'バス', '船']
+    };
+
+    for (const [symbol, patterns] of Object.entries(symbolPatterns)) {
+        if (patterns.some(pattern => content.includes(pattern))) {
+            extractedWords.push({ 
+                word: symbol, 
+                category: 'symbol', 
+                confidence: 0.6,
+                source: 'pattern' 
+            });
+        }
+    }
+    
+    // AI分析からのシンボルも追加
+    if (analysis.symbols) {
+        analysis.symbols.forEach(symbol => {
+            if (!extractedWords.some(w => w.word === symbol.symbol)) {
+                extractedWords.push({
+                    word: symbol.symbol,
+                    category: 'symbol',
+                    confidence: 0.9,
+                    source: 'ai'
+                });
+            }
+        });
+    }
+
+    return extractedWords;
+}
+
+// 抽出した単語の表示
+function displayExtractedWords(words) {
+    const container = document.createElement('div');
+    container.className = 'extracted-words-container';
+    container.innerHTML = `
+        <h4>抽出された単語</h4>
+        <div id="extracted-words" class="word-container"></div>
+        <div class="word-add-section">
+            <h4>単語を追加</h4>
+            <input type="text" id="new-word" placeholder="新しい単語を入力">
+            <select id="word-category">
+                <option value="general">一般</option>
+                <option value="emotion">感情</option>
+                <option value="theme">テーマ</option>
+                <option value="symbol">シンボル</option>
+            </select>
+            <button onclick="addCustomWord()">単語を追加</button>
+        </div>
+    `;
+    
+    // 既存の分析結果の後に挿入
+    const analysisResult = document.getElementById('analysis-result');
+    const interpretation = analysisResult.querySelector('.interpretation');
+    interpretation.insertAdjacentElement('afterend', container);
+    
+    // 単語を表示
+    renderExtractedWords(words);
+}
+
+// 単語のレンダリング
+function renderExtractedWords(words) {
+    const container = document.getElementById('extracted-words');
+    container.innerHTML = words.map((wordData, index) => `
+        <div class="word-tag ${wordData.category}" data-index="${index}">
+            <span>${wordData.word}</span>
+            <button onclick="editExtractedWord(${index})">編集</button>
+            <button onclick="removeExtractedWord(${index})">×</button>
+        </div>
+    `).join('');
+}
+
+// カスタム単語の追加
+function addCustomWord() {
+    const wordInput = document.getElementById('new-word');
+    const categorySelect = document.getElementById('word-category');
+    const word = wordInput.value.trim();
+    const category = categorySelect.value;
+
+    if (word && app.currentAnalysis) {
+        if (!app.currentAnalysis.extractedWords) {
+            app.currentAnalysis.extractedWords = [];
+        }
+        
+        app.currentAnalysis.extractedWords.push({
+            word: word,
+            category: category,
+            confidence: 1.0,
+            source: 'user'
+        });
+        
+        renderExtractedWords(app.currentAnalysis.extractedWords);
+        wordInput.value = '';
+    }
+}
+
+// 単語の編集
+function editExtractedWord(index) {
+    if (!app.currentAnalysis || !app.currentAnalysis.extractedWords) return;
+    
+    const wordData = app.currentAnalysis.extractedWords[index];
+    const newWord = prompt('新しい単語を入力してください:', wordData.word);
+    
+    if (newWord && newWord.trim()) {
+        wordData.word = newWord.trim();
+        renderExtractedWords(app.currentAnalysis.extractedWords);
+    }
+}
+
+// 単語の削除
+function removeExtractedWord(index) {
+    if (!app.currentAnalysis || !app.currentAnalysis.extractedWords) return;
+    
+    app.currentAnalysis.extractedWords.splice(index, 1);
+    renderExtractedWords(app.currentAnalysis.extractedWords);
+}
+
+// 抽出した単語の保存
+function saveExtractedWords(dreamId, extractedWords) {
+    extractedWords.forEach((wordData, index) => {
+        app.words.push({
+            id: Date.now() + index,
+            word: wordData.word,
+            category: wordData.category,
+            dreamId: dreamId,
+            date: new Date().toISOString(),
+            confidence: wordData.confidence,
+            source: wordData.source
+        });
+    });
+}
+
+// 単語統計の更新
+function updateWordStatistics() {
+    if (!document.getElementById('word-stats')) {
+        // 単語統計セクションを追加
+        const analysisView = document.getElementById('analysis-view');
+        const statsSection = document.createElement('div');
+        statsSection.className = 'word-statistics';
+        statsSection.innerHTML = `
+            <h3>単語分析</h3>
+            <div id="word-stats" class="stats-grid">
+                <div class="stat-card">
+                    <span class="stat-number" id="total-words">0</span>
+                    <span class="stat-label">総単語数</span>
+                </div>
+                <div class="stat-card">
+                    <span class="stat-number" id="unique-words">0</span>
+                    <span class="stat-label">ユニーク単語数</span>
+                </div>
+                <div class="stat-card">
+                    <span class="stat-number" id="avg-words-per-dream">0</span>
+                    <span class="stat-label">平均単語数/夢</span>
+                </div>
+            </div>
+            <div class="word-cloud-container">
+                <h4>ワードクラウド</h4>
+                <div id="word-cloud" class="word-cloud"></div>
+            </div>
+            <div class="word-frequency-container">
+                <h4>頻出単語</h4>
+                <div id="word-frequency-list" class="frequency-list"></div>
+            </div>
+        `;
+        
+        const tagCloudContainer = analysisView.querySelector('.tag-cloud-container');
+        tagCloudContainer.insertAdjacentElement('afterend', statsSection);
+    }
+    
+    // 統計値の計算
+    document.getElementById('total-words').textContent = app.words.length;
+    
+    const uniqueWords = new Set(app.words.map(w => w.word));
+    document.getElementById('unique-words').textContent = uniqueWords.size;
+    
+    const avgWords = app.dreams.length > 0 ? 
+        Math.round(app.words.length / app.dreams.length * 10) / 10 : 0;
+    document.getElementById('avg-words-per-dream').textContent = avgWords;
+    
+    // ワードクラウドと頻出単語を更新
+    updateWordCloud();
+    updateWordFrequency();
+}
+
+// ワードクラウドの更新
+function updateWordCloud() {
+    const wordCloud = document.getElementById('word-cloud');
+    if (!wordCloud) return;
+    
+    const wordFreq = {};
+    
+    // 単語の頻度を計算
+    app.words.forEach(w => {
+        wordFreq[w.word] = (wordFreq[w.word] || 0) + 1;
+    });
+
+    // ワードクラウドを生成
+    wordCloud.innerHTML = '';
+    Object.entries(wordFreq)
+        .sort((a, b) => b[1] - a[1])
+        .slice(0, 30)
+        .forEach(([word, freq]) => {
+            const span = document.createElement('span');
+            span.className = 'cloud-word';
+            span.textContent = word;
+            span.style.fontSize = `${Math.min(12 + freq * 4, 40)}px`;
+            span.style.color = `hsl(${Math.random() * 60 + 240}, 70%, ${50 - freq * 2}%)`;
+            span.onclick = () => showWordDetails(word);
+            wordCloud.appendChild(span);
+        });
+
+    if (app.words.length === 0) {
+        wordCloud.innerHTML = '<p style="color: var(--text-secondary);">まだ単語が登録されていません</p>';
+    }
+}
+
+// 頻出単語リストの更新
+function updateWordFrequency() {
+    const frequencyList = document.getElementById('word-frequency-list');
+    if (!frequencyList) return;
+    
+    const wordFreq = {};
+    app.words.forEach(w => {
+        wordFreq[w.word] = (wordFreq[w.word] || 0) + 1;
+    });
+    
+    const sortedWords = Object.entries(wordFreq)
+        .sort((a, b) => b[1] - a[1])
+        .slice(0, 10);
+    
+    frequencyList.innerHTML = sortedWords.map(([word, count], index) => `
+        <div class="frequency-item">
+            <span class="rank">${index + 1}</span>
+            <span class="word">${word}</span>
+            <span class="count">${count}回</span>
+        </div>
+    `).join('');
+    
+    if (sortedWords.length === 0) {
+        frequencyList.innerHTML = '<p style="color: var(--text-secondary);">データがありません</p>';
+    }
+}
+
+// 単語の詳細表示
+function showWordDetails(word) {
+    const wordData = app.words.filter(w => w.word === word);
+    const dreams = wordData.map(w => {
+        return app.dreams.find(d => d.id === w.dreamId);
+    }).filter(d => d);
+    
+    const detailHtml = `
+        <h3>「${word}」の詳細</h3>
+        <p>出現回数: ${wordData.length}回</p>
+        <h4>出現した夢:</h4>
+        <ul>
+            ${dreams.map(dream => `<li>${formatDate(dream.date)} - ${dream.content.substring(0, 50)}...</li>`).join('')}
+        </ul>
+    `;
+    
+    showToast(detailHtml, 'info');
+}
+
+// 単語分析のレンダリング
+function renderWordAnalysis() {
+    updateWordStatistics();
+}
+
+// グローバル関数として追加
+window.addCustomWord = addCustomWord;
+window.editExtractedWord = editExtractedWord;
+window.removeExtractedWord = removeExtractedWord;
+window.showWordDetails = showWordDetails;
 
 class OnboardingFlow {
     constructor() {

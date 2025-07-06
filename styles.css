@@ -1744,3 +1744,213 @@ button {
         padding: 1.5rem;
     }
 }
+
+/* 単語分析関連のスタイル */
+.extracted-words-container {
+    margin-top: 2rem;
+    padding: 1.5rem;
+    background-color: var(--surface-elevated);
+    border-radius: 15px;
+    box-shadow: var(--shadow-elevated);
+}
+
+.extracted-words-container h4 {
+    color: var(--secondary-color);
+    margin-bottom: 1rem;
+    font-size: 1.1rem;
+}
+
+.word-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-bottom: 1.5rem;
+}
+
+.word-tag {
+    background: var(--surface-overlay);
+    padding: 8px 15px;
+    border-radius: 20px;
+    font-size: 14px;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    transition: all var(--animation-fast) ease;
+    border: 2px solid transparent;
+}
+
+.word-tag:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(179, 157, 219, 0.3);
+}
+
+.word-tag.emotion {
+    background: rgba(255, 182, 193, 0.2);
+    border-color: rgba(255, 182, 193, 0.4);
+}
+
+.word-tag.theme {
+    background: rgba(121, 134, 203, 0.2);
+    border-color: rgba(121, 134, 203, 0.4);
+}
+
+.word-tag.symbol {
+    background: rgba(179, 157, 219, 0.2);
+    border-color: rgba(179, 157, 219, 0.4);
+}
+
+.word-tag button {
+    background: transparent;
+    color: var(--text-secondary);
+    padding: 2px 6px;
+    font-size: 12px;
+    min-width: auto;
+    border: none;
+    cursor: pointer;
+    transition: color var(--animation-fast) ease;
+}
+
+.word-tag button:hover {
+    color: var(--text-primary);
+    transform: none;
+    box-shadow: none;
+}
+
+.word-add-section {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.word-add-section input {
+    flex: 1;
+    min-width: 200px;
+    padding: 0.8rem;
+    background-color: var(--background-color);
+    border: 2px solid var(--border-color);
+    color: var(--text-primary);
+    border-radius: 10px;
+}
+
+.word-add-section select {
+    padding: 0.8rem;
+    background-color: var(--background-color);
+    border: 2px solid var(--border-color);
+    color: var(--text-primary);
+    border-radius: 10px;
+}
+
+.word-add-section button {
+    padding: 0.8rem 1.5rem;
+    background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+    color: white;
+    border: none;
+    border-radius: 25px;
+    cursor: pointer;
+    transition: all var(--animation-normal) ease;
+}
+
+.word-add-section button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(179, 157, 219, 0.4);
+}
+
+/* 単語統計セクション */
+.word-statistics {
+    background-color: var(--surface-color);
+    padding: 2rem;
+    border-radius: 15px;
+    margin-top: 2rem;
+}
+
+.word-statistics h3 {
+    color: var(--accent-color);
+    margin-bottom: 1.5rem;
+    font-size: 1.3rem;
+}
+
+.word-cloud-container {
+    margin-top: 2rem;
+    padding: 2rem;
+    background-color: var(--surface-elevated);
+    border-radius: 15px;
+}
+
+.word-cloud {
+    text-align: center;
+    padding: 2rem;
+    min-height: 200px;
+}
+
+.cloud-word {
+    display: inline-block;
+    margin: 5px;
+    padding: 5px 10px;
+    cursor: pointer;
+    transition: all var(--animation-fast) ease;
+}
+
+.cloud-word:hover {
+    transform: scale(1.2);
+    text-shadow: 0 2px 8px rgba(179, 157, 219, 0.5);
+}
+
+.word-frequency-container {
+    margin-top: 2rem;
+    padding: 2rem;
+    background-color: var(--surface-elevated);
+    border-radius: 15px;
+}
+
+.frequency-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.frequency-item {
+    display: flex;
+    align-items: center;
+    padding: 1rem;
+    background-color: var(--background-color);
+    border-radius: 10px;
+    transition: all var(--animation-fast) ease;
+}
+
+.frequency-item:hover {
+    transform: translateX(5px);
+    background-color: var(--surface-overlay);
+}
+
+.frequency-item .rank {
+    font-size: 1.2rem;
+    font-weight: bold;
+    color: var(--accent-color);
+    margin-right: 1rem;
+    min-width: 30px;
+}
+
+.frequency-item .word {
+    flex: 1;
+    font-size: 1.1rem;
+    color: var(--text-primary);
+}
+
+.frequency-item .count {
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+}
+
+@media (max-width: 768px) {
+    .word-add-section {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    
+    .word-add-section input,
+    .word-add-section select,
+    .word-add-section button {
+        width: 100%;
+    }
+}
