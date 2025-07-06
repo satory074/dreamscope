@@ -261,7 +261,15 @@ function renderKeywordTags() {
 }
 
 // Dream Recording
+let isAnalyzing = false; // 解析中フラグを追加
+
 async function recordDream() {
+    // 既に解析中の場合は処理を中断
+    if (isAnalyzing) {
+        showToast('現在解析中です。しばらくお待ちください。', 'warning');
+        return;
+    }
+    
     const isKeywordsMode = document.querySelector('[data-type="keywords"]').classList.contains('active');
     let dreamContent = '';
     
@@ -289,7 +297,8 @@ async function recordDream() {
         }
     }
     
-    // Show loading
+    // Set analyzing flag and show loading
+    isAnalyzing = true;
     showLoading();
     
     try {
@@ -308,6 +317,9 @@ async function recordDream() {
     } catch (error) {
         hideLoading();
         showError('夢の解析中にエラーが発生しました。もう一度お試しください。');
+    } finally {
+        // 解析完了後にフラグをリセット
+        isAnalyzing = false;
     }
 }
 
@@ -818,7 +830,7 @@ function removeFocusTrap(element) {
 function generateShareText() {
     const shareTextArea = document.getElementById('share-text');
     const date = formatDate(new Date().toISOString());
-    const dreamContent = document.getElementById('dream-content').value;
+    const dreamContent = app.currentAnalysis.originalInput || app.currentAnalysis.dreamText || '';
     const symbols = app.currentAnalysis.symbols || [];
     
     let shareText = `🌙 DreamScope - ${date}\n\n`;
@@ -1224,6 +1236,12 @@ async function extractWordsFromDream(content, analysis) {
 
 // 抽出した単語の表示
 function displayExtractedWords(words) {
+    // 既存のコンテナがあれば削除
+    const existingContainer = document.querySelector('.extracted-words-container');
+    if (existingContainer) {
+        existingContainer.remove();
+    }
+    
     const container = document.createElement('div');
     container.className = 'extracted-words-container';
     container.innerHTML = `
