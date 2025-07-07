@@ -588,14 +588,19 @@ function showDreamInModal(dream) {
             </div>
         `).join('');
         
-        // Psychological message
-        if (dream.analysis.psychologicalMessage) {
-            document.getElementById('modal-psychological').textContent = dream.analysis.psychologicalMessage;
-        }
-        
-        // Daily insight
-        if (dream.analysis.dailyInsight) {
-            document.getElementById('modal-insight').textContent = dream.analysis.dailyInsight;
+        // Extracted words - 抽出された単語を表示
+        if (dream.analysis.extractedWords && dream.analysis.extractedWords.length > 0) {
+            const extractedWordsContainer = document.getElementById('modal-extracted-words');
+            if (extractedWordsContainer) {
+                extractedWordsContainer.innerHTML = dream.analysis.extractedWords.map(word => `
+                    <span class="word-tag ${word.category}">${word.word}</span>
+                `).join('');
+                // 親コンテナも表示
+                const parentContainer = extractedWordsContainer.parentElement;
+                if (parentContainer) {
+                    parentContainer.style.display = 'block';
+                }
+            }
         }
     }
     
