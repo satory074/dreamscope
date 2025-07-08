@@ -495,6 +495,14 @@ function saveDream() {
     // 確定した単語を保存
     if (app.currentAnalysis.extractedWords) {
         saveExtractedWords(dream.id, app.currentAnalysis.extractedWords);
+        
+        // AIから単語の特徴を自動取得
+        if (app.apiKey) {
+            const uniqueWords = [...new Set(app.currentAnalysis.extractedWords.map(w => w.word))];
+            fetchMultipleWordVectors(uniqueWords).catch(error => {
+                console.error('AIベクトル取得エラー:', error);
+            });
+        }
     }
     
     saveDataToStorage();
@@ -1516,15 +1524,7 @@ function showWordVectorModal(word, wordDataArray) {
         existingModal.remove();
     }
     
-    // AIからベクトルを取得（まだ取得していない場合）
-    if (!app.aiGeneratedVectors[word] && !app.customVectors[word] && app.apiKey) {
-        fetchWordVectorFromAI(word).then(() => {
-            // 取得後に再度モーダルを表示
-            showWordVectorModal(word, wordDataArray);
-        });
-        showToast('AIから特徴を取得中...', 'info');
-        return;
-    }
+    // AIベクトルは登録時に取得しているため、ここでの取得は不要
     
     // 現在のベクトルを取得
     const currentVector = getOrCreateWordVector(word);
@@ -1750,19 +1750,24 @@ function closeWordVectorModal() {
 async function fetchWordVectorFromAI(word) {
     if (!app.apiKey) return;
     
-    const prompt = `以下の単語「${word}」について、夢分析の観点から5つの特徴を-1.0から1.0の範囲で評価してください。
+    const prompt = `以下の単語「${word}」について、夢分析の観点から10の特徴を-1.0から1.0の範囲で評価してください。
 
 特徴:
-1. 感情 (ネガティブ:-1.0 ← → ポジティブ:1.0)
-2. 活動性 (受動的:-1.0 ← → 能動的:1.0)
-3. 意識レベル (無意識的:-1.0 ← → 意識的:1.0)
-4. 社会性 (個人的:-1.0 ← → 社会的:1.0)
-5. 象徴性 (具体的:-1.0 ← → 象徴的:1.0)
+1. 気持ち (暗い:-1.0 ← → 明るい:1.0)
+2. 動き (じっと:-1.0 ← → 活発:1.0)
+3. 深さ (表面的:-1.0 ← → 深層的:1.0)
+4. つながり (ひとり:-1.0 ← → みんな:1.0)
+5. 形 (はっきり:-1.0 ← → ぼんやり:1.0)
+6. 時 (過去:-1.0 ← → 未来:1.0)
+7. 不思議さ (普通:-1.0 ← → 不思議:1.0)
+8. 体感 (心:-1.0 ← → 体:1.0)
+9. 変化 (同じ:-1.0 ← → 変わる:1.0)
+10. 広がり (自分だけ:-1.0 ← → みんなの:1.0)
 
 必ず以下のJSON形式で回答してください:
 {
     "word": "${word}",
-    "vector": [感情値, 活動性値, 意識レベル値, 社会性値, 象徴性値],
+    "vector": [気持ち, 動き, 深さ, つながり, 形, 時, 不思議さ, 体感, 変化, 広がり],
     "explanation": "この評価の簡単な説明"
 }`;
 
@@ -1824,27 +1829,32 @@ async function fetchMultipleWordVectors(words) {
     
     if (wordsToFetch.length === 0) return;
     
-    const prompt = `以下の単語リストについて、夢分析の観点から各単語の5つの特徴を-1.0から1.0の範囲で評価してください。
+    const prompt = `以下の単語リストについて、夢分析の観点から各単語の10の特徴を-1.0から1.0の範囲で評価してください。
 
 単語リスト: ${wordsToFetch.join(', ')}
 
 特徴:
-1. 感情 (ネガティブ:-1.0 ← → ポジティブ:1.0)
-2. 活動性 (受動的:-1.0 ← → 能動的:1.0)
-3. 意識レベル (無意識的:-1.0 ← → 意識的:1.0)
-4. 社会性 (個人的:-1.0 ← → 社会的:1.0)
-5. 象徴性 (具体的:-1.0 ← → 象徴的:1.0)
+1. 気持ち (暗い:-1.0 ← → 明るい:1.0)
+2. 動き (じっと:-1.0 ← → 活発:1.0)
+3. 深さ (表面的:-1.0 ← → 深層的:1.0)
+4. つながり (ひとり:-1.0 ← → みんな:1.0)
+5. 形 (はっきり:-1.0 ← → ぼんやり:1.0)
+6. 時 (過去:-1.0 ← → 未来:1.0)
+7. 不思議さ (普通:-1.0 ← → 不思議:1.0)
+8. 体感 (心:-1.0 ← → 体:1.0)
+9. 変化 (同じ:-1.0 ← → 変わる:1.0)
+10. 広がり (自分だけ:-1.0 ← → みんなの:1.0)
 
 必ず以下のJSON形式で回答してください:
 {
     "words": [
         {
             "word": "単語1",
-            "vector": [感情値, 活動性値, 意識レベル値, 社会性値, 象徴性値]
+            "vector": [気持ち, 動き, 深さ, つながり, 形, 時, 不思議さ, 体感, 変化, 広がり]
         },
         {
             "word": "単語2",
-            "vector": [感情値, 活動性値, 意識レベル値, 社会性値, 象徴性値]
+            "vector": [気持ち, 動き, 深さ, つながり, 形, 時, 不思議さ, 体感, 変化, 広がり]
         }
     ]
 }`;
