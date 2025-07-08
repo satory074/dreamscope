@@ -377,6 +377,8 @@ async function analyzeDream(content, isKeywords) {
         return generateMockAnalysis(content, isKeywords);
     }
     
+    const systemPrompt = 'あなたは夢の解釈の専門家です。ユング心理学と認知心理学の観点から夢を分析します。';
+    
     const prompt = `以下の夢の内容を心理学的に解釈してください。
         
         夢の内容: ${content}
@@ -392,23 +394,21 @@ async function analyzeDream(content, isKeywords) {
         }`;
     
     try {
-        const response = await fetch('https://api.openai.com/v1/chat/completions', {
+        const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${app.apiKey}`, {
             method: 'POST',
             headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${app.apiKey}`
+                'Content-Type': 'application/json'
             },
             body: JSON.stringify({
-                model: 'gpt-4',
-                messages: [{
-                    role: 'system',
-                    content: 'あなたは夢の解釈の専門家です。ユング心理学と認知心理学の観点から夢を分析します。'
-                }, {
-                    role: 'user',
-                    content: prompt
+                contents: [{
+                    parts: [{
+                        text: `${systemPrompt}\n\n${prompt}`
+                    }]
                 }],
-                temperature: 0.7,
-                response_format: { type: "json_object" }
+                generationConfig: {
+                    temperature: 0.7,
+                    responseMimeType: "application/json"
+                }
             })
         });
         
@@ -417,7 +417,7 @@ async function analyzeDream(content, isKeywords) {
         }
         
         const data = await response.json();
-        return JSON.parse(data.choices[0].message.content);
+        return JSON.parse(data.candidates[0].content.parts[0].text);
     } catch (error) {
         console.error('API Error:', error);
         return generateMockAnalysis(content, isKeywords);
@@ -1750,6 +1750,8 @@ function closeWordVectorModal() {
 async function fetchWordVectorFromAI(word) {
     if (!app.apiKey) return;
     
+    const systemPrompt = 'あなたは夢分析の専門家です。単語の意味的特徴を数値化して評価します。';
+    
     const prompt = `以下の単語「${word}」について、夢分析の観点から10の特徴を-1.0から1.0の範囲で評価してください。
 
 特徴:
@@ -1772,23 +1774,21 @@ async function fetchWordVectorFromAI(word) {
 }`;
 
     try {
-        const response = await fetch('https://api.openai.com/v1/chat/completions', {
+        const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${app.apiKey}`, {
             method: 'POST',
             headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${app.apiKey}`
+                'Content-Type': 'application/json'
             },
             body: JSON.stringify({
-                model: 'gpt-4',
-                messages: [{
-                    role: 'system',
-                    content: 'あなたは夢分析の専門家です。単語の意味的特徴を数値化して評価します。'
-                }, {
-                    role: 'user',
-                    content: prompt
+                contents: [{
+                    parts: [{
+                        text: `${systemPrompt}\n\n${prompt}`
+                    }]
                 }],
-                temperature: 0.7,
-                response_format: { type: "json_object" }
+                generationConfig: {
+                    temperature: 0.7,
+                    responseMimeType: "application/json"
+                }
             })
         });
         
@@ -1797,7 +1797,7 @@ async function fetchWordVectorFromAI(word) {
         }
         
         const data = await response.json();
-        const result = JSON.parse(data.choices[0].message.content);
+        const result = JSON.parse(data.candidates[0].content.parts[0].text);
         
         // 結果を保存
         if (!app.aiGeneratedVectors) {
@@ -1828,6 +1828,8 @@ async function fetchMultipleWordVectors(words) {
     );
     
     if (wordsToFetch.length === 0) return;
+    
+    const systemPrompt = 'あなたは夢分析の専門家です。単語の意味的特徴を数値化して評価します。';
     
     const prompt = `以下の単語リストについて、夢分析の観点から各単語の10の特徴を-1.0から1.0の範囲で評価してください。
 
@@ -1862,23 +1864,21 @@ async function fetchMultipleWordVectors(words) {
     try {
         showToast(`${wordsToFetch.length}個の単語の特徴をAIから取得中...`, 'info');
         
-        const response = await fetch('https://api.openai.com/v1/chat/completions', {
+        const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${app.apiKey}`, {
             method: 'POST',
             headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${app.apiKey}`
+                'Content-Type': 'application/json'
             },
             body: JSON.stringify({
-                model: 'gpt-4',
-                messages: [{
-                    role: 'system',
-                    content: 'あなたは夢分析の専門家です。単語の意味的特徴を数値化して評価します。'
-                }, {
-                    role: 'user',
-                    content: prompt
+                contents: [{
+                    parts: [{
+                        text: `${systemPrompt}\n\n${prompt}`
+                    }]
                 }],
-                temperature: 0.7,
-                response_format: { type: "json_object" }
+                generationConfig: {
+                    temperature: 0.7,
+                    responseMimeType: "application/json"
+                }
             })
         });
         
@@ -1887,7 +1887,7 @@ async function fetchMultipleWordVectors(words) {
         }
         
         const data = await response.json();
-        const result = JSON.parse(data.choices[0].message.content);
+        const result = JSON.parse(data.candidates[0].content.parts[0].text);
         
         // 結果を保存
         if (!app.aiGeneratedVectors) {

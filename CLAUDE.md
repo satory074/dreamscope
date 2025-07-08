@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-DreamScope is an AI-powered dream journal application currently in the planning phase. The project aims to help users record, analyze, and gain insights from their dreams using GPT-4 and psychological interpretation frameworks.
+DreamScope is an AI-powered dream journal application currently in the planning phase. The project aims to help users record, analyze, and gain insights from their dreams using Gemini Flash 2.0 and psychological interpretation frameworks.
 
 ## Current Project Status
 
@@ -15,13 +15,13 @@ DreamScope is an AI-powered dream journal application currently in the planning 
 
 ### Core Features
 1. **Dream Recording** - Accept single words or full text descriptions
-2. **AI Analysis** - Use GPT-4 to interpret dreams based on Jungian and cognitive psychology
+2. **AI Analysis** - Use Gemini Flash 2.0 to interpret dreams based on Jungian and cognitive psychology
 3. **Visualization** - Calendar views, tag clouds, trend analysis
 4. **Sharing** - Optional anonymous sharing with image card generation
 
 ### Technical Stack (Planned)
 - **Frontend**: Mobile app (iOS/Android) - technology not yet decided
-- **Backend**: AI service using GPT-4
+- **Backend**: AI service using Gemini Flash 2.0
 - **Key Components**:
   - Natural language completion for converting keywords to sentences
   - RAG (Retrieval-Augmented Generation) for context-aware analysis
@@ -49,5 +49,5 @@ When starting actual development:
 1. Initialize git repository
 2. Choose and set up mobile development framework
 3. Create project structure with appropriate package management
-4. Set up development environment for prompt testing with GPT-4
+4. Set up development environment for prompt testing with Gemini Flash 2.0
 5. Begin implementing the single-word to sentence completion feature as the first milestone
