@@ -689,6 +689,16 @@ body {
     color: var(--text-secondary);
 }
 
+.ai-generated-tag {
+    display: inline-block;
+    background: var(--primary-color);
+    color: white;
+    padding: 0.2rem 0.5rem;
+    border-radius: 4px;
+    font-size: 0.85rem;
+    margin-top: 0.5rem;
+}
+
 .vector-editor h4 {
     color: var(--accent-color);
     margin: 1.5rem 0 1rem 0;

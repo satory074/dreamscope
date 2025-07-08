@@ -156,9 +156,10 @@
                     <!-- 単語の意味的距離散布図 -->
                     <div class="word-timeline-container">
                         <h3>夢の意味マップ</h3>
-                        <p class="chart-description">横軸：意識的（日常）← → 無意識的（象徴）｜縦軸：個人的 ← → 普遍的（元型）</p>
+                        <p class="chart-description">各単語の意味的な関係性を表示（クリックで特徴を編集）</p>
                         <div class="timeline-controls">
                             <span id="timeline-range" class="timeline-range"></span>
+                            <button id="fetch-all-vectors" class="action-btn secondary" onclick="fetchAllMissingVectors()">AIで特徴を取得</button>
                         </div>
                         <div id="word-timeline-chart" class="word-timeline-chart"></div>
                         <div class="timeline-legend">

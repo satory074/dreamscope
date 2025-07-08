@@ -10,7 +10,8 @@ const app = {
     },
     words: [],  // 単語データの追加
     wordAnalysis: {},  // 単語分析用データ
-    customVectors: {}  // カスタム単語ベクトル
+    customVectors: {},  // カスタム単語ベクトル
+    aiGeneratedVectors: {}  // AI生成単語ベクトル
 };
 
 // Initialize app
@@ -33,6 +34,7 @@ function loadDataFromStorage() {
         const savedApiKey = localStorage.getItem('dreamscope_apikey');
         const savedWords = localStorage.getItem('dreamscope_words');
         const savedVectors = localStorage.getItem('dreamscope_vectors');
+        const savedAIVectors = localStorage.getItem('dreamscope_ai_vectors');
         
         if (savedDreams) {
             const dreams = JSON.parse(savedDreams);
@@ -67,6 +69,10 @@ function loadDataFromStorage() {
         
         if (savedVectors) {
             app.customVectors = JSON.parse(savedVectors);
+        }
+        
+        if (savedAIVectors) {
+            app.aiGeneratedVectors = JSON.parse(savedAIVectors);
         }
     } catch (error) {
         console.error('データの読み込みエラー:', error);
@@ -223,6 +229,10 @@ function updateView(viewName) {
         renderTagCloud();
         renderWordAnalysis();
         renderWordTimeline();
+        
+        // 分析画面表示時に未取得の単語のベクトルを取得
+        const uniqueWords = [...new Set(app.words.map(w => w.word))];
+        fetchMultipleWordVectors(uniqueWords);
     }
     
     app.currentView = viewName;
@@ -1362,6 +1372,11 @@ function getOrCreateWordVector(word) {
         return app.customVectors[word];
     }
     
+    // AIで生成されたベクトルが存在する場合
+    if (app.aiGeneratedVectors && app.aiGeneratedVectors[word]) {
+        return app.aiGeneratedVectors[word];
+    }
+    
     // 既定のベクトルが存在する場合
     if (window.dreamWordEmbeddings && window.dreamWordEmbeddings[word]) {
         return window.dreamWordEmbeddings[word];
@@ -1501,6 +1516,16 @@ function showWordVectorModal(word, wordDataArray) {
         existingModal.remove();
     }
     
+    // AIからベクトルを取得（まだ取得していない場合）
+    if (!app.aiGeneratedVectors[word] && !app.customVectors[word] && app.apiKey) {
+        fetchWordVectorFromAI(word).then(() => {
+            // 取得後に再度モーダルを表示
+            showWordVectorModal(word, wordDataArray);
+        });
+        showToast('AIから特徴を取得中...', 'info');
+        return;
+    }
+    
     // 現在のベクトルを取得
     const currentVector = getOrCreateWordVector(word);
     
@@ -1515,6 +1540,7 @@ function showWordVectorModal(word, wordDataArray) {
             
             <div class="vector-info">
                 <p>出現回数: ${wordDataArray.length}回</p>
+                ${app.aiGeneratedVectors[word] ? '<p class="ai-generated-tag">🤖 AI生成</p>' : ''}
             </div>
             
             <div class="vector-editor">
@@ -1682,6 +1708,163 @@ function closeWordVectorModal() {
     const modal = document.getElementById('word-vector-modal');
     if (modal) {
         modal.remove();
+    }
+}
+
+// AIから単語ベクトルを取得
+async function fetchWordVectorFromAI(word) {
+    if (!app.apiKey) return;
+    
+    const prompt = `以下の単語「${word}」について、夢分析の観点から5つの特徴を-1.0から1.0の範囲で評価してください。
+
+特徴:
+1. 感情 (ネガティブ:-1.0 ← → ポジティブ:1.0)
+2. 活動性 (受動的:-1.0 ← → 能動的:1.0)
+3. 意識レベル (無意識的:-1.0 ← → 意識的:1.0)
+4. 社会性 (個人的:-1.0 ← → 社会的:1.0)
+5. 象徴性 (具体的:-1.0 ← → 象徴的:1.0)
+
+必ず以下のJSON形式で回答してください:
+{
+    "word": "${word}",
+    "vector": [感情値, 活動性値, 意識レベル値, 社会性値, 象徴性値],
+    "explanation": "この評価の簡単な説明"
+}`;
+
+    try {
+        const response = await fetch('https://api.openai.com/v1/chat/completions', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${app.apiKey}`
+            },
+            body: JSON.stringify({
+                model: 'gpt-4',
+                messages: [{
+                    role: 'system',
+                    content: 'あなたは夢分析の専門家です。単語の意味的特徴を数値化して評価します。'
+                }, {
+                    role: 'user',
+                    content: prompt
+                }],
+                temperature: 0.7,
+                response_format: { type: "json_object" }
+            })
+        });
+        
+        if (!response.ok) {
+            throw new Error('API request failed');
+        }
+        
+        const data = await response.json();
+        const result = JSON.parse(data.choices[0].message.content);
+        
+        // 結果を保存
+        if (!app.aiGeneratedVectors) {
+            app.aiGeneratedVectors = {};
+        }
+        app.aiGeneratedVectors[word] = result.vector;
+        
+        // ストレージに保存
+        localStorage.setItem('dreamscope_ai_vectors', JSON.stringify(app.aiGeneratedVectors));
+        
+        showToast(`「${word}」の特徴をAIから取得しました`, 'success');
+        
+        return result.vector;
+    } catch (error) {
+        console.error('AI Vector Fetch Error:', error);
+        showToast('AIからの取得に失敗しました', 'error');
+        return null;
+    }
+}
+
+// 複数の単語のベクトルを一括取得
+async function fetchMultipleWordVectors(words) {
+    if (!app.apiKey || words.length === 0) return;
+    
+    // まだ取得していない単語をフィルタ
+    const wordsToFetch = words.filter(word => 
+        !app.aiGeneratedVectors[word] && !app.customVectors[word]
+    );
+    
+    if (wordsToFetch.length === 0) return;
+    
+    const prompt = `以下の単語リストについて、夢分析の観点から各単語の5つの特徴を-1.0から1.0の範囲で評価してください。
+
+単語リスト: ${wordsToFetch.join(', ')}
+
+特徴:
+1. 感情 (ネガティブ:-1.0 ← → ポジティブ:1.0)
+2. 活動性 (受動的:-1.0 ← → 能動的:1.0)
+3. 意識レベル (無意識的:-1.0 ← → 意識的:1.0)
+4. 社会性 (個人的:-1.0 ← → 社会的:1.0)
+5. 象徴性 (具体的:-1.0 ← → 象徴的:1.0)
+
+必ず以下のJSON形式で回答してください:
+{
+    "words": [
+        {
+            "word": "単語1",
+            "vector": [感情値, 活動性値, 意識レベル値, 社会性値, 象徴性値]
+        },
+        {
+            "word": "単語2",
+            "vector": [感情値, 活動性値, 意識レベル値, 社会性値, 象徴性値]
+        }
+    ]
+}`;
+
+    try {
+        showToast(`${wordsToFetch.length}個の単語の特徴をAIから取得中...`, 'info');
+        
+        const response = await fetch('https://api.openai.com/v1/chat/completions', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${app.apiKey}`
+            },
+            body: JSON.stringify({
+                model: 'gpt-4',
+                messages: [{
+                    role: 'system',
+                    content: 'あなたは夢分析の専門家です。単語の意味的特徴を数値化して評価します。'
+                }, {
+                    role: 'user',
+                    content: prompt
+                }],
+                temperature: 0.7,
+                response_format: { type: "json_object" }
+            })
+        });
+        
+        if (!response.ok) {
+            throw new Error('API request failed');
+        }
+        
+        const data = await response.json();
+        const result = JSON.parse(data.choices[0].message.content);
+        
+        // 結果を保存
+        if (!app.aiGeneratedVectors) {
+            app.aiGeneratedVectors = {};
+        }
+        
+        result.words.forEach(wordData => {
+            app.aiGeneratedVectors[wordData.word] = wordData.vector;
+        });
+        
+        // ストレージに保存
+        localStorage.setItem('dreamscope_ai_vectors', JSON.stringify(app.aiGeneratedVectors));
+        
+        showToast(`${result.words.length}個の単語の特徴を取得しました`, 'success');
+        
+        // 分析画面を更新
+        if (app.currentView === 'analysis') {
+            renderWordTimeline();
+        }
+    } catch (error) {
+        console.error('AI Batch Vector Fetch Error:', error);
+        showToast('AIからの一括取得に失敗しました', 'error');
     }
 }
 
@@ -2006,6 +2189,12 @@ function getCategoryLabel(category) {
     return labels[category] || category;
 }
 
+// 未取得の単語のベクトルを一括取得
+function fetchAllMissingVectors() {
+    const uniqueWords = [...new Set(app.words.map(w => w.word))];
+    fetchMultipleWordVectors(uniqueWords);
+}
+
 // グローバル関数として追加
 window.addCustomWord = addCustomWord;
 window.editExtractedWord = editExtractedWord;
@@ -2015,6 +2204,7 @@ window.updateVectorDisplay = updateVectorDisplay;
 window.saveWordVector = saveWordVector;
 window.resetWordVector = resetWordVector;
 window.closeWordVectorModal = closeWordVectorModal;
+window.fetchAllMissingVectors = fetchAllMissingVectors;
 
 class OnboardingFlow {
     constructor() {
