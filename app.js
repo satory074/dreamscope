@@ -1382,8 +1382,8 @@ function getOrCreateWordVector(word) {
         return window.dreamWordEmbeddings[word];
     }
     
-    // 新規作成（デフォルト値）
-    return [0, 0, 0, 0, 0];
+    // 新規作成（デフォルト値）- 10次元
+    return [0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
 }
 
 // 単語統計の更新
@@ -1547,38 +1547,73 @@ function showWordVectorModal(word, wordDataArray) {
                 <h4>意味的特徴（-1.0 〜 1.0）</h4>
                 
                 <div class="vector-dimension">
-                    <label>感情 <small>(ネガティブ ← → ポジティブ)</small></label>
+                    <label>気持ち <small>(暗い ← → 明るい)</small></label>
                     <input type="range" id="vector-0" min="-100" max="100" value="${currentVector[0] * 100}" 
                            oninput="updateVectorDisplay(0, this.value)">
                     <span id="vector-value-0" class="vector-value">${currentVector[0].toFixed(2)}</span>
                 </div>
                 
                 <div class="vector-dimension">
-                    <label>活動性 <small>(受動的 ← → 能動的)</small></label>
+                    <label>動き <small>(じっと ← → 活発)</small></label>
                     <input type="range" id="vector-1" min="-100" max="100" value="${currentVector[1] * 100}"
                            oninput="updateVectorDisplay(1, this.value)">
                     <span id="vector-value-1" class="vector-value">${currentVector[1].toFixed(2)}</span>
                 </div>
                 
                 <div class="vector-dimension">
-                    <label>意識レベル <small>(無意識的 ← → 意識的)</small></label>
+                    <label>深さ <small>(表面的 ← → 深層的)</small></label>
                     <input type="range" id="vector-2" min="-100" max="100" value="${currentVector[2] * 100}"
                            oninput="updateVectorDisplay(2, this.value)">
                     <span id="vector-value-2" class="vector-value">${currentVector[2].toFixed(2)}</span>
                 </div>
                 
                 <div class="vector-dimension">
-                    <label>社会性 <small>(個人的 ← → 社会的)</small></label>
+                    <label>つながり <small>(ひとり ← → みんな)</small></label>
                     <input type="range" id="vector-3" min="-100" max="100" value="${currentVector[3] * 100}"
                            oninput="updateVectorDisplay(3, this.value)">
                     <span id="vector-value-3" class="vector-value">${currentVector[3].toFixed(2)}</span>
                 </div>
                 
                 <div class="vector-dimension">
-                    <label>象徴性 <small>(具体的 ← → 象徴的)</small></label>
+                    <label>形 <small>(はっきり ← → ぼんやり)</small></label>
                     <input type="range" id="vector-4" min="-100" max="100" value="${currentVector[4] * 100}"
                            oninput="updateVectorDisplay(4, this.value)">
                     <span id="vector-value-4" class="vector-value">${currentVector[4].toFixed(2)}</span>
+                </div>
+                
+                <div class="vector-dimension">
+                    <label>時 <small>(過去 ← → 未来)</small></label>
+                    <input type="range" id="vector-5" min="-100" max="100" value="${(currentVector[5] || 0) * 100}"
+                           oninput="updateVectorDisplay(5, this.value)">
+                    <span id="vector-value-5" class="vector-value">${(currentVector[5] || 0).toFixed(2)}</span>
+                </div>
+                
+                <div class="vector-dimension">
+                    <label>不思議さ <small>(普通 ← → 不思議)</small></label>
+                    <input type="range" id="vector-6" min="-100" max="100" value="${(currentVector[6] || 0) * 100}"
+                           oninput="updateVectorDisplay(6, this.value)">
+                    <span id="vector-value-6" class="vector-value">${(currentVector[6] || 0).toFixed(2)}</span>
+                </div>
+                
+                <div class="vector-dimension">
+                    <label>体感 <small>(心 ← → 体)</small></label>
+                    <input type="range" id="vector-7" min="-100" max="100" value="${(currentVector[7] || 0) * 100}"
+                           oninput="updateVectorDisplay(7, this.value)">
+                    <span id="vector-value-7" class="vector-value">${(currentVector[7] || 0).toFixed(2)}</span>
+                </div>
+                
+                <div class="vector-dimension">
+                    <label>変化 <small>(同じ ← → 変わる)</small></label>
+                    <input type="range" id="vector-8" min="-100" max="100" value="${(currentVector[8] || 0) * 100}"
+                           oninput="updateVectorDisplay(8, this.value)">
+                    <span id="vector-value-8" class="vector-value">${(currentVector[8] || 0).toFixed(2)}</span>
+                </div>
+                
+                <div class="vector-dimension">
+                    <label>広がり <small>(自分だけ ← → みんなの)</small></label>
+                    <input type="range" id="vector-9" min="-100" max="100" value="${(currentVector[9] || 0) * 100}"
+                           oninput="updateVectorDisplay(9, this.value)">
+                    <span id="vector-value-9" class="vector-value">${(currentVector[9] || 0).toFixed(2)}</span>
                 </div>
                 
                 <div class="similar-words">
@@ -1660,7 +1695,7 @@ function updateSimilarWords(targetWord) {
 // 単語ベクトルの保存
 function saveWordVector(word) {
     const vector = [];
-    for (let i = 0; i < 5; i++) {
+    for (let i = 0; i < 10; i++) {
         vector.push(document.getElementById(`vector-${i}`).value / 100);
     }
     
