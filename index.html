@@ -28,6 +28,8 @@
     
     <link rel="stylesheet" href="styles.css">
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;700&display=swap" rel="stylesheet">
+    <!-- D3.js for data visualization -->
+    <script src="https://d3js.org/d3.v7.min.js"></script>
 </head>
 <body>
     <div id="app">
@@ -148,6 +150,21 @@
                         <div class="stat-card">
                             <span class="stat-number" id="common-theme">-</span>
                             <span class="stat-label">最も多いテーマ</span>
+                        </div>
+                    </div>
+                    
+                    <!-- 単語の意味的距離散布図 -->
+                    <div class="word-timeline-container">
+                        <h3>夢の意味マップ</h3>
+                        <p class="chart-description">横軸：意識的（日常）← → 無意識的（象徴）｜縦軸：個人的 ← → 普遍的（元型）</p>
+                        <div class="timeline-controls">
+                            <span id="timeline-range" class="timeline-range"></span>
+                        </div>
+                        <div id="word-timeline-chart" class="word-timeline-chart"></div>
+                        <div class="timeline-legend">
+                            <span class="legend-item emotion">感情</span>
+                            <span class="legend-item theme">テーマ</span>
+                            <span class="legend-item symbol">シンボル</span>
                         </div>
                     </div>
 
@@ -273,6 +290,7 @@
     
     <!-- Scripts with async loading -->
     <script src="js/app-core.js"></script>
+    <script src="js/word-embeddings.js"></script>
     <script src="js/offline-handler.js" defer></script>
     <script src="js/swipe-handler.js" defer></script>
     <script src="js/biometric-auth.js" defer></script>
