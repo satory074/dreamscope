@@ -4,7 +4,7 @@
 const app = {
     currentView: 'input',
     dreams: [],
-    apiKey: '',
+    serverEndpoint: '/api/analyze-dream',  // サーバーエンドポイント
     settings: {
         reminderEnabled: false
     },
@@ -31,7 +31,7 @@ function loadDataFromStorage() {
     try {
         const savedDreams = localStorage.getItem('dreamscope_dreams');
         const savedSettings = localStorage.getItem('dreamscope_settings');
-        const savedApiKey = localStorage.getItem('dreamscope_apikey');
+        // API key loading removed
         const savedWords = localStorage.getItem('dreamscope_words');
         const savedVectors = localStorage.getItem('dreamscope_vectors');
         const savedAIVectors = localStorage.getItem('dreamscope_ai_vectors');
@@ -53,12 +53,7 @@ function loadDataFromStorage() {
             }
         }
         
-        if (savedApiKey) {
-            app.apiKey = savedApiKey;
-            if (document.getElementById('api-key')) {
-                document.getElementById('api-key').value = app.apiKey;
-            }
-        }
+        // API key loading removed - using server endpoint
         
         if (savedWords) {
             const words = JSON.parse(savedWords);
@@ -81,7 +76,7 @@ function loadDataFromStorage() {
         // Reset corrupted data
         app.dreams = [];
         app.settings = { reminderEnabled: false };
-        app.apiKey = '';
+        // API key removed - using server endpoint
         
         // Try to save clean state
         saveDataToStorage();
@@ -104,9 +99,7 @@ function saveDataToStorage() {
         localStorage.setItem('dreamscope_settings', JSON.stringify(app.settings));
         localStorage.setItem('dreamscope_words', JSON.stringify(app.words));
         localStorage.setItem('dreamscope_vectors', JSON.stringify(app.customVectors));
-        if (app.apiKey) {
-            localStorage.setItem('dreamscope_apikey', app.apiKey);
-        }
+        // API key storage removed - using server endpoint
         
         // Create backup
         createBackup();
@@ -186,10 +179,7 @@ function initializeEventListeners() {
     
     
     // Settings
-    document.getElementById('api-key').addEventListener('change', (e) => {
-        app.apiKey = e.target.value;
-        saveDataToStorage();
-    });
+    // API key input removed - using server endpoint
     
     document.getElementById('reminder-enabled').addEventListener('change', (e) => {
         app.settings.reminderEnabled = e.target.checked;
@@ -230,9 +220,7 @@ function updateView(viewName) {
         renderWordAnalysis();
         renderWordTimeline();
         
-        // 分析画面表示時に未取得の単語のベクトルを取得
-        const uniqueWords = [...new Set(app.words.map(w => w.word))];
-        fetchMultipleWordVectors(uniqueWords);
+        // 分析画面表示時のAPI呼び出しを削除（登録時のみ呼ぶため）
     }
     
     app.currentView = viewName;
@@ -372,11 +360,6 @@ function clearError() {
 
 // AI Analysis
 async function analyzeDream(content, isKeywords) {
-    if (!app.apiKey) {
-        // Fallback for demo without API key
-        return generateMockAnalysis(content, isKeywords);
-    }
-    
     const systemPrompt = 'あなたは夢の解釈の専門家です。ユング心理学と認知心理学の観点から夢を分析します。';
     
     const prompt = `以下の夢の内容を心理学的に解釈してください。
@@ -394,21 +377,16 @@ async function analyzeDream(content, isKeywords) {
         }`;
     
     try {
-        const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${app.apiKey}`, {
+        const response = await fetch(app.serverEndpoint, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
             },
             body: JSON.stringify({
-                contents: [{
-                    parts: [{
-                        text: `${systemPrompt}\n\n${prompt}`
-                    }]
-                }],
-                generationConfig: {
-                    temperature: 0.7,
-                    responseMimeType: "application/json"
-                }
+                dreamContent: content,
+                isKeywords: isKeywords,
+                systemPrompt: systemPrompt,
+                prompt: prompt
             })
         });
         
@@ -417,9 +395,10 @@ async function analyzeDream(content, isKeywords) {
         }
         
         const data = await response.json();
-        return JSON.parse(data.candidates[0].content.parts[0].text);
+        return data;
     } catch (error) {
         console.error('API Error:', error);
+        console.log('サーバーに接続できません。モック分析を使用します。');
         return generateMockAnalysis(content, isKeywords);
     }
 }
@@ -496,13 +475,7 @@ function saveDream() {
     if (app.currentAnalysis.extractedWords) {
         saveExtractedWords(dream.id, app.currentAnalysis.extractedWords);
         
-        // AIから単語の特徴を自動取得
-        if (app.apiKey) {
-            const uniqueWords = [...new Set(app.currentAnalysis.extractedWords.map(w => w.word))];
-            fetchMultipleWordVectors(uniqueWords).catch(error => {
-                console.error('AIベクトル取得エラー:', error);
-            });
-        }
+        // 夢保存後のAPI呼び出しを削除（登録時のみ呼ぶため）
     }
     
     saveDataToStorage();
@@ -943,7 +916,7 @@ function clearData() {
         localStorage.clear();
         app.dreams = [];
         app.settings = { reminderEnabled: false };
-        app.apiKey = '';
+        // API key removed - using server endpoint
         
         alert('すべてのデータを削除しました');
         location.reload();
@@ -1335,12 +1308,123 @@ function editExtractedWord(index) {
     if (!app.currentAnalysis || !app.currentAnalysis.extractedWords) return;
     
     const wordData = app.currentAnalysis.extractedWords[index];
-    const newWord = prompt('新しい単語を入力してください:', wordData.word);
     
-    if (newWord && newWord.trim()) {
-        wordData.word = newWord.trim();
-        renderExtractedWords(app.currentAnalysis.extractedWords);
-    }
+    // パラメータ編集モーダルを表示
+    showWordVectorEditModal(wordData, index);
+}
+
+// 単語ベクトル編集モーダルの表示（夢登録時用）
+function showWordVectorEditModal(wordData, index) {
+    const word = wordData.word;
+    
+    // 既存のベクトルを取得、なければデフォルト値
+    const currentVector = app.customVectors[word] || 
+                         app.aiGeneratedVectors[word] || 
+                         [0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+    
+    // モーダルを作成
+    const modal = document.createElement('div');
+    modal.id = 'word-vector-edit-modal';
+    modal.className = 'modal-overlay';
+    modal.innerHTML = `
+        <div class="modal-content vector-modal" onclick="event.stopPropagation()">
+            <button class="modal-close" onclick="closeWordVectorEditModal()">×</button>
+            <h3 class="modal-title">「${word}」の編集</h3>
+            
+            <div class="word-name-editor">
+                <label>単語名:</label>
+                <input type="text" id="word-name-input" value="${word}" class="word-name-input">
+            </div>
+            
+            <div class="vector-editor">
+                <h4>意味的特徴（-1.0 〜 1.0）</h4>
+                
+                <div class="vector-dimension">
+                    <label>気持ち <small>(暗い ← → 明るい)</small></label>
+                    <input type="range" id="edit-vector-0" min="-100" max="100" value="${currentVector[0] * 100}" 
+                           oninput="updateEditVectorDisplay(0, this.value)">
+                    <span id="edit-vector-value-0" class="vector-value">${currentVector[0].toFixed(2)}</span>
+                </div>
+                
+                <div class="vector-dimension">
+                    <label>動き <small>(じっと ← → 活発)</small></label>
+                    <input type="range" id="edit-vector-1" min="-100" max="100" value="${currentVector[1] * 100}"
+                           oninput="updateEditVectorDisplay(1, this.value)">
+                    <span id="edit-vector-value-1" class="vector-value">${currentVector[1].toFixed(2)}</span>
+                </div>
+                
+                <div class="vector-dimension">
+                    <label>深さ <small>(表面的 ← → 深層的)</small></label>
+                    <input type="range" id="edit-vector-2" min="-100" max="100" value="${currentVector[2] * 100}"
+                           oninput="updateEditVectorDisplay(2, this.value)">
+                    <span id="edit-vector-value-2" class="vector-value">${currentVector[2].toFixed(2)}</span>
+                </div>
+                
+                <div class="vector-dimension">
+                    <label>つながり <small>(ひとり ← → みんな)</small></label>
+                    <input type="range" id="edit-vector-3" min="-100" max="100" value="${currentVector[3] * 100}"
+                           oninput="updateEditVectorDisplay(3, this.value)">
+                    <span id="edit-vector-value-3" class="vector-value">${currentVector[3].toFixed(2)}</span>
+                </div>
+                
+                <div class="vector-dimension">
+                    <label>形 <small>(はっきり ← → ぼんやり)</small></label>
+                    <input type="range" id="edit-vector-4" min="-100" max="100" value="${currentVector[4] * 100}"
+                           oninput="updateEditVectorDisplay(4, this.value)">
+                    <span id="edit-vector-value-4" class="vector-value">${currentVector[4].toFixed(2)}</span>
+                </div>
+                
+                <div class="vector-dimension">
+                    <label>時 <small>(過去 ← → 未来)</small></label>
+                    <input type="range" id="edit-vector-5" min="-100" max="100" value="${currentVector[5] * 100}"
+                           oninput="updateEditVectorDisplay(5, this.value)">
+                    <span id="edit-vector-value-5" class="vector-value">${currentVector[5].toFixed(2)}</span>
+                </div>
+                
+                <div class="vector-dimension">
+                    <label>不思議さ <small>(普通 ← → 不思議)</small></label>
+                    <input type="range" id="edit-vector-6" min="-100" max="100" value="${currentVector[6] * 100}"
+                           oninput="updateEditVectorDisplay(6, this.value)">
+                    <span id="edit-vector-value-6" class="vector-value">${currentVector[6].toFixed(2)}</span>
+                </div>
+                
+                <div class="vector-dimension">
+                    <label>体感 <small>(心 ← → 体)</small></label>
+                    <input type="range" id="edit-vector-7" min="-100" max="100" value="${currentVector[7] * 100}"
+                           oninput="updateEditVectorDisplay(7, this.value)">
+                    <span id="edit-vector-value-7" class="vector-value">${currentVector[7].toFixed(2)}</span>
+                </div>
+                
+                <div class="vector-dimension">
+                    <label>変化 <small>(同じ ← → 変わる)</small></label>
+                    <input type="range" id="edit-vector-8" min="-100" max="100" value="${currentVector[8] * 100}"
+                           oninput="updateEditVectorDisplay(8, this.value)">
+                    <span id="edit-vector-value-8" class="vector-value">${currentVector[8].toFixed(2)}</span>
+                </div>
+                
+                <div class="vector-dimension">
+                    <label>広がり <small>(自分だけ ← → みんなの)</small></label>
+                    <input type="range" id="edit-vector-9" min="-100" max="100" value="${currentVector[9] * 100}"
+                           oninput="updateEditVectorDisplay(9, this.value)">
+                    <span id="edit-vector-value-9" class="vector-value">${currentVector[9].toFixed(2)}</span>
+                </div>
+            </div>
+            
+            <div class="modal-actions">
+                <button class="primary-btn" onclick="saveEditedWord(${index}, '${word}')">保存</button>
+                <button class="secondary-btn" onclick="closeWordVectorEditModal()">キャンセル</button>
+            </div>
+        </div>
+    `;
+    
+    document.body.appendChild(modal);
+    
+    // クリックで閉じる
+    modal.addEventListener('click', (e) => {
+        if (e.target === modal) {
+            closeWordVectorEditModal();
+        }
+    });
 }
 
 // 単語の削除
@@ -1748,7 +1832,6 @@ function closeWordVectorModal() {
 
 // AIから単語ベクトルを取得
 async function fetchWordVectorFromAI(word) {
-    if (!app.apiKey) return;
     
     const systemPrompt = 'あなたは夢分析の専門家です。単語の意味的特徴を数値化して評価します。';
     
@@ -1774,21 +1857,16 @@ async function fetchWordVectorFromAI(word) {
 }`;
 
     try {
-        const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${app.apiKey}`, {
+        const response = await fetch(app.serverEndpoint, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
             },
             body: JSON.stringify({
-                contents: [{
-                    parts: [{
-                        text: `${systemPrompt}\n\n${prompt}`
-                    }]
-                }],
-                generationConfig: {
-                    temperature: 0.7,
-                    responseMimeType: "application/json"
-                }
+                type: 'word_vector',
+                word: word,
+                systemPrompt: systemPrompt,
+                prompt: prompt
             })
         });
         
@@ -1797,7 +1875,7 @@ async function fetchWordVectorFromAI(word) {
         }
         
         const data = await response.json();
-        const result = JSON.parse(data.candidates[0].content.parts[0].text);
+        const result = data;
         
         // 結果を保存
         if (!app.aiGeneratedVectors) {
@@ -1820,7 +1898,7 @@ async function fetchWordVectorFromAI(word) {
 
 // 複数の単語のベクトルを一括取得
 async function fetchMultipleWordVectors(words) {
-    if (!app.apiKey || words.length === 0) return;
+    if (words.length === 0) return;
     
     // まだ取得していない単語をフィルタ
     const wordsToFetch = words.filter(word => 
@@ -1864,21 +1942,16 @@ async function fetchMultipleWordVectors(words) {
     try {
         showToast(`${wordsToFetch.length}個の単語の特徴をAIから取得中...`, 'info');
         
-        const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${app.apiKey}`, {
+        const response = await fetch(app.serverEndpoint, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
             },
             body: JSON.stringify({
-                contents: [{
-                    parts: [{
-                        text: `${systemPrompt}\n\n${prompt}`
-                    }]
-                }],
-                generationConfig: {
-                    temperature: 0.7,
-                    responseMimeType: "application/json"
-                }
+                type: 'word_vector',
+                word: word,
+                systemPrompt: systemPrompt,
+                prompt: prompt
             })
         });
         
@@ -1887,7 +1960,7 @@ async function fetchMultipleWordVectors(words) {
         }
         
         const data = await response.json();
-        const result = JSON.parse(data.candidates[0].content.parts[0].text);
+        const result = data;
         
         // 結果を保存
         if (!app.aiGeneratedVectors) {
@@ -2240,6 +2313,60 @@ function fetchAllMissingVectors() {
     fetchMultipleWordVectors(uniqueWords);
 }
 
+// 編集モーダル用の表示更新
+function updateEditVectorDisplay(index, value) {
+    const floatValue = value / 100;
+    document.getElementById(`edit-vector-value-${index}`).textContent = floatValue.toFixed(2);
+}
+
+// 編集した単語の保存
+function saveEditedWord(index, originalWord) {
+    if (!app.currentAnalysis || !app.currentAnalysis.extractedWords) return;
+    
+    const newWord = document.getElementById('word-name-input').value.trim();
+    if (!newWord) {
+        showToast('単語名を入力してください', 'error');
+        return;
+    }
+    
+    // ベクトルを取得
+    const vector = [];
+    for (let i = 0; i < 10; i++) {
+        vector.push(document.getElementById(`edit-vector-${i}`).value / 100);
+    }
+    
+    // 単語データを更新
+    app.currentAnalysis.extractedWords[index].word = newWord;
+    
+    // カスタムベクトルとして保存
+    if (!app.customVectors) {
+        app.customVectors = {};
+    }
+    app.customVectors[newWord] = vector;
+    
+    // 元の単語と異なる場合、元の単語のベクトルを削除
+    if (newWord !== originalWord && app.customVectors[originalWord]) {
+        delete app.customVectors[originalWord];
+    }
+    
+    // ストレージに保存
+    saveCustomVectors();
+    
+    // UIを更新
+    renderExtractedWords(app.currentAnalysis.extractedWords);
+    
+    showToast(`「${newWord}」を保存しました`, 'success');
+    closeWordVectorEditModal();
+}
+
+// 編集モーダルを閉じる
+function closeWordVectorEditModal() {
+    const modal = document.getElementById('word-vector-edit-modal');
+    if (modal) {
+        modal.remove();
+    }
+}
+
 // グローバル関数として追加
 window.addCustomWord = addCustomWord;
 window.editExtractedWord = editExtractedWord;
@@ -2250,6 +2377,9 @@ window.saveWordVector = saveWordVector;
 window.resetWordVector = resetWordVector;
 window.closeWordVectorModal = closeWordVectorModal;
 window.fetchAllMissingVectors = fetchAllMissingVectors;
+window.updateEditVectorDisplay = updateEditVectorDisplay;
+window.saveEditedWord = saveEditedWord;
+window.closeWordVectorEditModal = closeWordVectorEditModal;
 
 class OnboardingFlow {
     constructor() {

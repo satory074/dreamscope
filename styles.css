@@ -728,11 +728,41 @@ body {
 
 .vector-value {
     display: inline-block;
-    width: 40px;
+    width: 45px;
     text-align: right;
     font-family: monospace;
-    color: var(--primary-color);
-    font-weight: bold;
+    color: var(--accent-color);
+}
+
+/* 単語名編集用 */
+.word-name-editor {
+    margin-bottom: 1.5rem;
+    padding: 1rem;
+    background: var(--card-bg);
+    border-radius: 8px;
+}
+
+.word-name-editor label {
+    display: inline-block;
+    margin-right: 1rem;
+    font-weight: 500;
+    color: var(--text-primary);
+}
+
+.word-name-input {
+    width: calc(100% - 100px);
+    padding: 0.5rem;
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    background: var(--input-bg);
+    color: var(--text-primary);
+    font-size: 1rem;
+}
+
+.word-name-input:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(147, 51, 234, 0.1);
 }
 
 .similar-words {

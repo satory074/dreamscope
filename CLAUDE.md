@@ -11,7 +11,7 @@ DreamScope is a Progressive Web Application (PWA) for dream journaling with AI-p
 ### Technology Stack
 - **Frontend**: Vanilla JavaScript, HTML5, CSS3 (no framework)
 - **Data Visualization**: D3.js v7 (loaded from CDN)
-- **AI Integration**: Gemini API (client-side, user provides API key)
+- **AI Integration**: Gemini API (server-side, no client API key needed)
 - **Storage**: Browser LocalStorage only
 - **PWA**: Service Worker for offline functionality
 
@@ -27,14 +27,26 @@ DreamScope is a Progressive Web Application (PWA) for dream journaling with AI-p
 Since this is a vanilla JS project with no build process:
 
 ### Running Locally
+
+#### Frontend Only (No AI)
 ```bash
 # Using Python's built-in server
 python -m http.server 8000
 
 # Or using Node.js http-server (if installed)
 npx http-server -p 8000
+```
 
-# Or any static file server
+#### With AI Server
+```bash
+# Install dependencies
+npm install
+
+# Set API key
+export GEMINI_API_KEY="your-api-key"
+
+# Start server (includes static file serving)
+npm start
 ```
 
 ### Testing Service Worker and PWA Features
@@ -74,9 +86,10 @@ Dreams are stored as:
 ```
 
 ### API Integration
-- Gemini API key stored in LocalStorage (`dreamscope_gemini_api_key`)
-- API calls made directly from browser (CORS must be enabled)
-- Fallback to offline mode if API unavailable
+- AI analysis handled by server endpoint at `/api/analyze-dream`
+- No API keys stored in client-side code
+- Server manages Gemini API authentication
+- Fallback to offline mode if server unavailable
 
 ## Important Considerations
 
