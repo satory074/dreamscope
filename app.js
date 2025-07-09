@@ -29,12 +29,12 @@ document.addEventListener('DOMContentLoaded', () => {
 // Data Management with error handling
 function loadDataFromStorage() {
     try {
-        const savedDreams = localStorage.getItem('dreamscope_dreams');
-        const savedSettings = localStorage.getItem('dreamscope_settings');
-        const savedApiKey = localStorage.getItem('dreamscope_apikey');
-        const savedWords = localStorage.getItem('dreamscope_words');
-        const savedVectors = localStorage.getItem('dreamscope_vectors');
-        const savedAIVectors = localStorage.getItem('dreamscope_ai_vectors');
+        const savedDreams = localStorage.getItem(CONSTANTS.STORAGE_KEYS.DREAMS);
+        const savedSettings = localStorage.getItem(CONSTANTS.STORAGE_KEYS.SETTINGS);
+        const savedApiKey = localStorage.getItem(CONSTANTS.STORAGE_KEYS.API_KEY);
+        const savedWords = localStorage.getItem(CONSTANTS.STORAGE_KEYS.WORDS);
+        const savedVectors = localStorage.getItem(CONSTANTS.STORAGE_KEYS.VECTORS);
+        const savedAIVectors = localStorage.getItem(CONSTANTS.STORAGE_KEYS.AI_VECTORS);
         
         if (savedDreams) {
             const dreams = JSON.parse(savedDreams);
@@ -100,12 +100,12 @@ function saveDataToStorage() {
             });
         }
         
-        localStorage.setItem('dreamscope_dreams', JSON.stringify(app.dreams));
-        localStorage.setItem('dreamscope_settings', JSON.stringify(app.settings));
-        localStorage.setItem('dreamscope_words', JSON.stringify(app.words));
-        localStorage.setItem('dreamscope_vectors', JSON.stringify(app.customVectors));
+        localStorage.setItem(CONSTANTS.STORAGE_KEYS.DREAMS, JSON.stringify(app.dreams));
+        localStorage.setItem(CONSTANTS.STORAGE_KEYS.SETTINGS, JSON.stringify(app.settings));
+        localStorage.setItem(CONSTANTS.STORAGE_KEYS.WORDS, JSON.stringify(app.words));
+        localStorage.setItem(CONSTANTS.STORAGE_KEYS.VECTORS, JSON.stringify(app.customVectors));
         if (app.apiKey) {
-            localStorage.setItem('dreamscope_apikey', app.apiKey);
+            localStorage.setItem(CONSTANTS.STORAGE_KEYS.API_KEY, app.apiKey);
         }
         
         // Create backup
@@ -130,7 +130,7 @@ function createBackup() {
     };
     
     try {
-        localStorage.setItem('dreamscope_backup', JSON.stringify(backup));
+        localStorage.setItem(CONSTANTS.STORAGE_KEYS.BACKUP, JSON.stringify(backup));
     } catch (error) {
         // Silently fail for backup
         console.warn('バックアップの作成に失敗:', error);
@@ -185,10 +185,22 @@ function initializeEventListeners() {
     document.getElementById('export-json').addEventListener('click', exportAsJSON);
     
     
-    // Settings
+    // Settings with validation
     document.getElementById('api-key').addEventListener('change', (e) => {
-        app.apiKey = e.target.value;
+        const newApiKey = e.target.value.trim();
+        
+        // Validate API key if provided
+        if (newApiKey && !window.apiService.validateApiKey(newApiKey)) {
+            showToast('APIキーの形式が正しくありません', 'warning');
+            return;
+        }
+        
+        app.apiKey = newApiKey;
         saveDataToStorage();
+        
+        if (newApiKey) {
+            showToast('APIキーが設定されました', 'success');
+        }
     });
     
     document.getElementById('reminder-enabled').addEventListener('change', (e) => {
@@ -255,28 +267,85 @@ function updateInputType(type) {
 const keywords = [];
 
 function addKeywordTag(keyword) {
-    if (!keywords.includes(keyword)) {
-        keywords.push(keyword);
-        renderKeywordTags();
+    // Validate and sanitize keyword
+    const sanitizedKeyword = SecurityUtils.sanitizeKeyword(keyword);
+    if (!sanitizedKeyword) return;
+    
+    // Check if keyword already exists
+    if (keywords.includes(sanitizedKeyword)) {
+        return;
     }
+    
+    // Check keywords limit
+    if (keywords.length >= CONSTANTS.VALIDATION.MAX_KEYWORDS_COUNT) {
+        showToast('キーワードが多すぎます', 'warning');
+        return;
+    }
+    
+    keywords.push(sanitizedKeyword);
+    renderKeywordTags();
 }
 
 function removeKeywordTag(keyword) {
-    const index = keywords.indexOf(keyword);
+    const sanitizedKeyword = SecurityUtils.sanitizeKeyword(keyword);
+    const index = keywords.indexOf(sanitizedKeyword);
+    
     if (index > -1) {
         keywords.splice(index, 1);
         renderKeywordTags();
+        
+        // Announce to screen reader
+        if (window.announceToScreenReader) {
+            announceToScreenReader(`${sanitizedKeyword} を削除しました`);
+        }
     }
 }
 
 function renderKeywordTags() {
     const container = document.getElementById('keyword-tags');
-    container.innerHTML = keywords.map(keyword => `
-        <span class="keyword-tag">
-            ${keyword}
-            <span class="remove" onclick="removeKeywordTag('${keyword}')">&times;</span>
-        </span>
-    `).join('');
+    if (!container) return;
+    
+    // Clear existing content
+    container.innerHTML = '';
+    
+    // Create safe elements for each keyword
+    keywords.forEach(keyword => {
+        const sanitizedKeyword = SecurityUtils.sanitizeKeyword(keyword);
+        
+        // Create main span element
+        const keywordSpan = DOMUtils.createSafeElement('span', '', {
+            class: 'keyword-tag'
+        });
+        
+        // Create text content
+        const textSpan = DOMUtils.createSafeElement('span', sanitizedKeyword);
+        
+        // Create remove button
+        const removeBtn = DOMUtils.createSafeElement('span', '×', {
+            class: 'remove',
+            'aria-label': `Remove ${sanitizedKeyword}`,
+            role: 'button',
+            tabindex: '0'
+        });
+        
+        // Add click handler safely
+        DOMUtils.safeAddEventListener(removeBtn, 'click', () => {
+            removeKeywordTag(sanitizedKeyword);
+        });
+        
+        // Add keyboard support
+        DOMUtils.safeAddEventListener(removeBtn, 'keydown', (e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                removeKeywordTag(sanitizedKeyword);
+            }
+        });
+        
+        // Assemble the element
+        keywordSpan.appendChild(textSpan);
+        keywordSpan.appendChild(removeBtn);
+        container.appendChild(keywordSpan);
+    });
 }
 
 // Dream Recording
@@ -299,21 +368,33 @@ async function recordDream() {
         // Get keywords from field and tags
         const fieldValue = document.getElementById('keywords-field').value.trim();
         if (fieldValue) {
-            keywords.push(...fieldValue.split(/\s+/));
+            // Add new keywords from field
+            const newKeywords = fieldValue.split(/\s+/).filter(k => k.trim());
+            newKeywords.forEach(keyword => addKeywordTag(keyword));
+            
+            // Clear the field
+            document.getElementById('keywords-field').value = '';
         }
         
-        if (keywords.length === 0) {
-            showError('キーワードを入力してください', 'keywords-field');
+        // Validate keywords
+        const validation = ValidationUtils.validateKeywords(keywords);
+        if (!validation.valid) {
+            showError(validation.error, 'keywords-field');
             return;
         }
         
-        dreamContent = keywords.join(' ');
+        dreamContent = validation.keywords.join(' ');
     } else {
-        dreamContent = document.getElementById('freetext-field').value.trim();
-        if (!dreamContent) {
-            showError('夢の内容を入力してください', 'freetext-field');
+        // Validate dream content
+        const rawContent = document.getElementById('freetext-field').value.trim();
+        const validation = ValidationUtils.validateDreamContent(rawContent);
+        
+        if (!validation.valid) {
+            showError(validation.error, 'freetext-field');
             return;
         }
+        
+        dreamContent = validation.content;
     }
     
     // Set analyzing flag and show loading
@@ -333,9 +414,15 @@ async function recordDream() {
         
         displayAnalysisResult(result);
         hideLoading();
+        
+        // Success feedback
+        announceToScreenReader('夢の分析が完了しました');
+        
     } catch (error) {
         hideLoading();
-        showError('夢の解析中にエラーが発生しました。もう一度お試しください。');
+        const errorMsg = error.message || '夢の解析中にエラーが発生しました。もう一度お試しください。';
+        showError(errorMsg);
+        announceToScreenReader('夢の解析に失敗しました');
     } finally {
         // 解析完了後にフラグをリセット
         isAnalyzing = false;
@@ -344,16 +431,26 @@ async function recordDream() {
 
 // Error handling functions
 function showError(message, fieldId = null) {
-    const errorElement = document.getElementById('error-message');
-    const ariaLive = document.getElementById('aria-live-region');
+    const errorElement = DOMUtils.safeGetElementById('error-message');
+    const ariaLive = DOMUtils.safeGetElementById('aria-live-region');
     
-    errorElement.textContent = message;
-    ariaLive.textContent = message;
+    // Sanitize error message
+    const sanitizedMessage = SecurityUtils.sanitizeHTML(message);
+    
+    if (errorElement) {
+        errorElement.textContent = sanitizedMessage;
+    }
+    
+    if (ariaLive) {
+        ariaLive.textContent = sanitizedMessage;
+    }
     
     if (fieldId) {
-        const field = document.getElementById(fieldId);
-        field.classList.add('input-error');
-        field.focus();
+        const field = DOMUtils.safeGetElementById(fieldId);
+        if (field) {
+            field.classList.add('input-error');
+            field.focus();
+        }
     }
 }
 
@@ -370,57 +467,22 @@ function clearError() {
     });
 }
 
-// AI Analysis
+// AI Analysis - Now using secure API service
 async function analyzeDream(content, isKeywords) {
-    if (!app.apiKey) {
-        // Fallback for demo without API key
-        return generateMockAnalysis(content, isKeywords);
-    }
-    
-    const prompt = `以下の夢の内容を心理学的に解釈してください。
-        
-        夢の内容: ${content}
-        
-        以下の形式でJSONで回答してください:
-        {
-            "dreamText": "${content}",
-            "symbols": [
-                {"symbol": "シンボル名", "meaning": "意味の説明"}
-            ],
-            "psychologicalMessage": "深層心理からのメッセージ",
-            "dailyInsight": "今日の気づき（1文）"
-        }`;
-    
     try {
-        const response = await fetch('https://api.openai.com/v1/chat/completions', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${app.apiKey}`
-            },
-            body: JSON.stringify({
-                model: 'gpt-4',
-                messages: [{
-                    role: 'system',
-                    content: 'あなたは夢の解釈の専門家です。ユング心理学と認知心理学の観点から夢を分析します。'
-                }, {
-                    role: 'user',
-                    content: prompt
-                }],
-                temperature: 0.7,
-                response_format: { type: "json_object" }
-            })
-        });
+        // Use the new API service for secure analysis
+        const result = await window.apiService.analyzeDream(content, isKeywords, app.apiKey);
+        return result;
+    } catch (error) {
+        console.error('Dream analysis failed:', error);
         
-        if (!response.ok) {
-            throw new Error('API request failed');
+        // Show user-friendly error message
+        if (error.details) {
+            showToast(error.error || 'AI分析でエラーが発生しました', 'error');
         }
         
-        const data = await response.json();
-        return JSON.parse(data.choices[0].message.content);
-    } catch (error) {
-        console.error('API Error:', error);
-        return generateMockAnalysis(content, isKeywords);
+        // Fallback to mock analysis
+        return window.apiService.generateMockAnalysis(content, isKeywords);
     }
 }
 
@@ -652,9 +714,9 @@ function renderDreamList(dreamsToShow = null) {
     }
     
     dreamList.innerHTML = dreams.map(dream => `
-        <div class="dream-item" onclick="showDreamDetail(${dream.id})">
+        <div class="dream-item" onclick="DreamScope.showDreamDetail(${dream.id})">
             <div class="dream-date">${formatDate(dream.date)}</div>
-            <div class="dream-preview">${dream.content.substring(0, 100)}...</div>
+            <div class="dream-preview">${SecurityUtils.sanitizeHTML(dream.content.substring(0, 100))}...</div>
         </div>
     `).join('');
 }
@@ -971,27 +1033,33 @@ function hideLoading() {
 
 // Toast notifications
 function showToast(message, type = 'info') {
-    const container = document.getElementById('toast-container');
-    const toast = document.createElement('div');
-    toast.className = `toast ${type}`;
-    toast.textContent = message;
-    toast.setAttribute('role', 'status');
-    toast.setAttribute('aria-live', 'polite');
+    const container = DOMUtils.safeGetElementById('toast-container');
+    if (!container) return;
+    
+    // Create toast element safely
+    const toast = DOMUtils.createSafeElement('div', SecurityUtils.sanitizeHTML(message), {
+        class: `toast ${type}`,
+        role: 'status',
+        'aria-live': 'polite'
+    });
     
     container.appendChild(toast);
     
-    // Remove toast after 3 seconds
+    // Remove toast after configured duration
     setTimeout(() => {
         toast.style.animation = 'fadeOut 0.3s ease-out';
         setTimeout(() => {
-            container.removeChild(toast);
-        }, 300);
-    }, 3000);
+            if (container.contains(toast)) {
+                container.removeChild(toast);
+            }
+        }, CONSTANTS.UI.ANIMATION_DURATION);
+    }, CONSTANTS.UI.TOAST_DURATION);
 }
 
-// Make functions globally accessible
-window.removeKeywordTag = removeKeywordTag;
-window.showDreamDetail = showDreamDetail;
+// Secure global function exposure - use namespace
+window.DreamScope = window.DreamScope || {};
+window.DreamScope.removeKeywordTag = removeKeywordTag;
+window.DreamScope.showDreamDetail = showDreamDetail;
 
 // Enhanced Accessibility
 function enhanceAccessibility() {
@@ -1161,7 +1229,7 @@ function navigateKeywordTags(direction) {
 
 // Onboarding for first-time users
 function checkFirstTimeUser() {
-    if (!localStorage.getItem('dreamscope_onboarded')) {
+    if (!localStorage.getItem(CONSTANTS.STORAGE_KEYS.ONBOARDED)) {
         setTimeout(() => {
             startOnboarding();
         }, 500);
@@ -1274,7 +1342,7 @@ function displayExtractedWords(words) {
         <div class="word-add-section">
             <h4>単語を追加</h4>
             <input type="text" id="new-word" placeholder="新しい単語を入力">
-            <button onclick="addCustomWord()">単語を追加</button>
+            <button onclick="DreamScope.addCustomWord()">単語を追加</button>
         </div>
     `;
     
@@ -1293,8 +1361,8 @@ function renderExtractedWords(words) {
     container.innerHTML = words.map((wordData, index) => `
         <div class="word-tag ${wordData.category}" data-index="${index}">
             <span>${wordData.word}</span>
-            <button onclick="editExtractedWord(${index})">編集</button>
-            <button onclick="removeExtractedWord(${index})">×</button>
+            <button onclick="DreamScope.editExtractedWord(${index})">編集</button>
+            <button onclick="DreamScope.removeExtractedWord(${index})">×</button>
         </div>
     `).join('');
 }
@@ -1461,7 +1529,7 @@ function updateWordCloud() {
             span.textContent = word;
             span.style.fontSize = `${Math.min(12 + freq * 4, 40)}px`;
             span.style.color = `hsl(${Math.random() * 60 + 240}, 70%, ${50 - freq * 2}%)`;
-            span.onclick = () => showWordDetails(word);
+            span.onclick = () => DreamScope.showWordDetails(word);
             wordCloud.appendChild(span);
         });
 
@@ -1549,35 +1617,35 @@ function showWordVectorModal(word, wordDataArray) {
                 <div class="vector-dimension">
                     <label>感情 <small>(ネガティブ ← → ポジティブ)</small></label>
                     <input type="range" id="vector-0" min="-100" max="100" value="${currentVector[0] * 100}" 
-                           oninput="updateVectorDisplay(0, this.value)">
+                           oninput="DreamScope.updateVectorDisplay(0, this.value)">
                     <span id="vector-value-0" class="vector-value">${currentVector[0].toFixed(2)}</span>
                 </div>
                 
                 <div class="vector-dimension">
                     <label>活動性 <small>(受動的 ← → 能動的)</small></label>
                     <input type="range" id="vector-1" min="-100" max="100" value="${currentVector[1] * 100}"
-                           oninput="updateVectorDisplay(1, this.value)">
+                           oninput="DreamScope.updateVectorDisplay(1, this.value)">
                     <span id="vector-value-1" class="vector-value">${currentVector[1].toFixed(2)}</span>
                 </div>
                 
                 <div class="vector-dimension">
                     <label>意識レベル <small>(無意識的 ← → 意識的)</small></label>
                     <input type="range" id="vector-2" min="-100" max="100" value="${currentVector[2] * 100}"
-                           oninput="updateVectorDisplay(2, this.value)">
+                           oninput="DreamScope.updateVectorDisplay(2, this.value)">
                     <span id="vector-value-2" class="vector-value">${currentVector[2].toFixed(2)}</span>
                 </div>
                 
                 <div class="vector-dimension">
                     <label>社会性 <small>(個人的 ← → 社会的)</small></label>
                     <input type="range" id="vector-3" min="-100" max="100" value="${currentVector[3] * 100}"
-                           oninput="updateVectorDisplay(3, this.value)">
+                           oninput="DreamScope.updateVectorDisplay(3, this.value)">
                     <span id="vector-value-3" class="vector-value">${currentVector[3].toFixed(2)}</span>
                 </div>
                 
                 <div class="vector-dimension">
                     <label>象徴性 <small>(具体的 ← → 象徴的)</small></label>
                     <input type="range" id="vector-4" min="-100" max="100" value="${currentVector[4] * 100}"
-                           oninput="updateVectorDisplay(4, this.value)">
+                           oninput="DreamScope.updateVectorDisplay(4, this.value)">
                     <span id="vector-value-4" class="vector-value">${currentVector[4].toFixed(2)}</span>
                 </div>
                 
@@ -1587,9 +1655,9 @@ function showWordVectorModal(word, wordDataArray) {
                 </div>
                 
                 <div class="modal-actions">
-                    <button onclick="saveWordVector('${word}')" class="action-btn primary">保存</button>
-                    <button onclick="resetWordVector('${word}')" class="action-btn secondary">リセット</button>
-                    <button onclick="closeWordVectorModal()" class="action-btn tertiary">キャンセル</button>
+                    <button onclick="DreamScope.saveWordVector('${word}')" class="action-btn primary">保存</button>
+                    <button onclick="DreamScope.resetWordVector('${word}')" class="action-btn secondary">リセット</button>
+                    <button onclick="DreamScope.closeWordVectorModal()" class="action-btn tertiary">キャンセル</button>
                 </div>
             </div>
         </div>
@@ -2033,7 +2101,7 @@ function renderWordTimeline() {
             tooltip.transition().duration(500).style('opacity', 0);
         })
         .on('click', function(event, d) {
-            showWordDetails(d.word);
+            DreamScope.showWordDetails(d.word);
         });
     
     // Add word labels for high-frequency words
@@ -2195,16 +2263,19 @@ function fetchAllMissingVectors() {
     fetchMultipleWordVectors(uniqueWords);
 }
 
-// グローバル関数として追加
-window.addCustomWord = addCustomWord;
-window.editExtractedWord = editExtractedWord;
-window.removeExtractedWord = removeExtractedWord;
-window.showWordDetails = showWordDetails;
-window.updateVectorDisplay = updateVectorDisplay;
-window.saveWordVector = saveWordVector;
-window.resetWordVector = resetWordVector;
-window.closeWordVectorModal = closeWordVectorModal;
-window.fetchAllMissingVectors = fetchAllMissingVectors;
+// Secure global function exposure - use namespace
+window.DreamScope = window.DreamScope || {};
+Object.assign(window.DreamScope, {
+    addCustomWord,
+    editExtractedWord,
+    removeExtractedWord,
+    showWordDetails,
+    updateVectorDisplay,
+    saveWordVector,
+    resetWordVector,
+    closeWordVectorModal,
+    fetchAllMissingVectors
+});
 
 class OnboardingFlow {
     constructor() {
@@ -2338,11 +2409,11 @@ class OnboardingFlow {
     }
     
     complete() {
-        localStorage.setItem('dreamscope_onboarded', 'true');
+        localStorage.setItem(CONSTANTS.STORAGE_KEYS.ONBOARDED, 'true');
         this.overlay.style.animation = 'onboardingFadeOut 0.3s ease-out';
         setTimeout(() => {
             this.overlay.remove();
-        }, 300);
+        }, CONSTANTS.UI.ANIMATION_DURATION);
         
         // Show welcome toast
         showToast('DreamScopeへようこそ！最初の夢を記録してみましょう', 'success');
