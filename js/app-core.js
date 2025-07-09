@@ -1,4 +1,5 @@
 // Core functionality and Service Worker registration
+console.log('app-core.js loaded');
 
 // Register Service Worker
 if ('serviceWorker' in navigator) {

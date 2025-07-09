@@ -1,4 +1,5 @@
 // DreamScope App - Main JavaScript File
+console.log('app.js loaded');
 
 // App State
 const app = {
@@ -143,31 +144,41 @@ function initializeEventListeners() {
     // Input type selection
     document.querySelectorAll('.type-btn').forEach(btn => {
         btn.addEventListener('click', (e) => {
-            const type = e.target.dataset.type;
+            e.preventDefault();
+            const button = e.target.closest('.type-btn');
+            const type = button.dataset.type;
             updateInputType(type);
         });
     });
     
     // Keywords input handling
     const keywordsField = document.getElementById('keywords-field');
-    keywordsField.addEventListener('keydown', (e) => {
-        if (e.key === 'Enter' || e.key === ' ') {
-            e.preventDefault();
-            const value = e.target.value.trim();
-            if (value) {
-                addKeywordTag(value);
-                e.target.value = '';
+    if (keywordsField) {
+        keywordsField.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                const value = e.target.value.trim();
+                if (value) {
+                    addKeywordTag(value);
+                    e.target.value = '';
+                }
             }
-        }
-    });
+        });
+    }
     
     // Record button
-    document.getElementById('record-btn').addEventListener('click', recordDream);
+    const recordBtn = document.getElementById('record-btn');
+    if (recordBtn) recordBtn.addEventListener('click', recordDream);
     
     // Result actions
-    document.getElementById('save-dream-btn').addEventListener('click', saveDream);
-    document.getElementById('share-dream-btn').addEventListener('click', showShareModal);
-    document.getElementById('new-dream-btn').addEventListener('click', resetInput);
+    const saveDreamBtn = document.getElementById('save-dream-btn');
+    if (saveDreamBtn) saveDreamBtn.addEventListener('click', saveDream);
+    
+    const shareDreamBtn = document.getElementById('share-dream-btn');
+    if (shareDreamBtn) shareDreamBtn.addEventListener('click', showShareModal);
+    
+    const newDreamBtn = document.getElementById('new-dream-btn');
+    if (newDreamBtn) newDreamBtn.addEventListener('click', resetInput);
     
     // Calendar navigation
     document.getElementById('prev-month').addEventListener('click', () => navigateCalendar(-1));
@@ -218,7 +229,6 @@ function updateView(viewName) {
         updateWordStatistics();
         renderTagCloud();
         renderWordAnalysis();
-        renderWordTimeline();
         
         // 分析画面表示時のAPI呼び出しを削除（登録時のみ呼ぶため）
     }
@@ -1797,7 +1807,6 @@ function saveWordVector(word) {
     
     // 分析画面を更新
     if (app.currentView === 'analysis') {
-        renderWordTimeline();
     }
 }
 
@@ -1896,128 +1905,16 @@ async function fetchWordVectorFromAI(word) {
     }
 }
 
-// 複数の単語のベクトルを一括取得
-async function fetchMultipleWordVectors(words) {
-    if (words.length === 0) return;
-    
-    // まだ取得していない単語をフィルタ
-    const wordsToFetch = words.filter(word => 
-        !app.aiGeneratedVectors[word] && !app.customVectors[word]
-    );
-    
-    if (wordsToFetch.length === 0) return;
-    
-    const systemPrompt = 'あなたは夢分析の専門家です。単語の意味的特徴を数値化して評価します。';
-    
-    const prompt = `以下の単語リストについて、夢分析の観点から各単語の10の特徴を-1.0から1.0の範囲で評価してください。
-
-単語リスト: ${wordsToFetch.join(', ')}
-
-特徴:
-1. 気持ち (暗い:-1.0 ← → 明るい:1.0)
-2. 動き (じっと:-1.0 ← → 活発:1.0)
-3. 深さ (表面的:-1.0 ← → 深層的:1.0)
-4. つながり (ひとり:-1.0 ← → みんな:1.0)
-5. 形 (はっきり:-1.0 ← → ぼんやり:1.0)
-6. 時 (過去:-1.0 ← → 未来:1.0)
-7. 不思議さ (普通:-1.0 ← → 不思議:1.0)
-8. 体感 (心:-1.0 ← → 体:1.0)
-9. 変化 (同じ:-1.0 ← → 変わる:1.0)
-10. 広がり (自分だけ:-1.0 ← → みんなの:1.0)
-
-必ず以下のJSON形式で回答してください:
-{
-    "words": [
-        {
-            "word": "単語1",
-            "vector": [気持ち, 動き, 深さ, つながり, 形, 時, 不思議さ, 体感, 変化, 広がり]
-        },
-        {
-            "word": "単語2",
-            "vector": [気持ち, 動き, 深さ, つながり, 形, 時, 不思議さ, 体感, 変化, 広がり]
-        }
-    ]
-}`;
-
-    try {
-        showToast(`${wordsToFetch.length}個の単語の特徴をAIから取得中...`, 'info');
-        
-        const response = await fetch(app.serverEndpoint, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                type: 'word_vector',
-                word: word,
-                systemPrompt: systemPrompt,
-                prompt: prompt
-            })
-        });
-        
-        if (!response.ok) {
-            throw new Error('API request failed');
-        }
-        
-        const data = await response.json();
-        const result = data;
-        
-        // 結果を保存
-        if (!app.aiGeneratedVectors) {
-            app.aiGeneratedVectors = {};
-        }
-        
-        result.words.forEach(wordData => {
-            app.aiGeneratedVectors[wordData.word] = wordData.vector;
-        });
-        
-        // ストレージに保存
-        localStorage.setItem('dreamscope_ai_vectors', JSON.stringify(app.aiGeneratedVectors));
-        
-        showToast(`${result.words.length}個の単語の特徴を取得しました`, 'success');
-        
-        // 分析画面を更新
-        if (app.currentView === 'analysis') {
-            renderWordTimeline();
-        }
-    } catch (error) {
-        console.error('AI Batch Vector Fetch Error:', error);
-        showToast('AIからの一括取得に失敗しました', 'error');
-    }
-}
 
 // 単語分析のレンダリング
 function renderWordAnalysis() {
     updateWordStatistics();
+    
+    // This function appears to be incomplete or merged with another function
+    // For now, just close it properly
 }
 
-// 単語の意味的距離散布図
-function renderWordTimeline() {
-    const chartContainer = document.getElementById('word-timeline-chart');
-    if (!chartContainer) return;
-    
-    // Clear existing chart and tooltips
-    if (chartContainer._tooltip) {
-        chartContainer._tooltip.remove();
-    }
-    chartContainer.innerHTML = '';
-    
-    // Get words from the last 7 days
-    const endDate = new Date();
-    const startDate = new Date();
-    startDate.setDate(startDate.getDate() - 7);
-    
-    // Update date range display
-    const rangeElement = document.getElementById('timeline-range');
-    rangeElement.textContent = `過去7日間の単語分布`;
-    
-    // Filter words within the date range
-    const recentWords = app.words.filter(word => {
-        const wordDate = new Date(word.date);
-        return wordDate >= startDate && wordDate <= endDate;
-    });
-    
-    if (recentWords.length === 0) {
+/* ORPHANED CODE - Commenting out to fix syntax error
         chartContainer.innerHTML = '<p style="text-align: center; color: var(--text-secondary);">この期間のデータがありません</p>';
         return;
     }
@@ -2170,6 +2067,7 @@ function renderWordTimeline() {
     // Store tooltip reference for cleanup
     chartContainer._tooltip = tooltip;
 }
+*/ // END OF ORPHANED CODE
 
 // 単語の意味的位置を計算
 function calculateSemanticPositions(words) {
@@ -2307,11 +2205,6 @@ function getCategoryLabel(category) {
     return labels[category] || category;
 }
 
-// 未取得の単語のベクトルを一括取得
-function fetchAllMissingVectors() {
-    const uniqueWords = [...new Set(app.words.map(w => w.word))];
-    fetchMultipleWordVectors(uniqueWords);
-}
 
 // 編集モーダル用の表示更新
 function updateEditVectorDisplay(index, value) {
@@ -2376,7 +2269,6 @@ window.updateVectorDisplay = updateVectorDisplay;
 window.saveWordVector = saveWordVector;
 window.resetWordVector = resetWordVector;
 window.closeWordVectorModal = closeWordVectorModal;
-window.fetchAllMissingVectors = fetchAllMissingVectors;
 window.updateEditVectorDisplay = updateEditVectorDisplay;
 window.saveEditedWord = saveEditedWord;
 window.closeWordVectorEditModal = closeWordVectorEditModal;

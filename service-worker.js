@@ -1,5 +1,5 @@
 // Service Worker for DreamScope PWA
-const CACHE_NAME = 'dreamscope-v1';
+const CACHE_NAME = 'dreamscope-v2';
 const urlsToCache = [
   '/',
   '/index.html',
