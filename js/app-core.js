@@ -24,12 +24,6 @@ if ('serviceWorker' in navigator) {
             });
     });
     
-    // Handle messages from Service Worker
-    navigator.serviceWorker.addEventListener('message', event => {
-        if (event.data.type === 'SYNC_DREAMS') {
-            syncDreamsToServer();
-        }
-    });
 }
 
 // Check if app is installed
@@ -124,57 +118,5 @@ function dismissInstall() {
     localStorage.setItem('installPromptDismissed', Date.now());
 }
 
-// Background sync
-async function syncDreamsToServer() {
-    // This would sync dreams to a backend server
-    console.log('Syncing dreams in background...');
-}
-
-// Request notification permission
-async function requestNotificationPermission() {
-    if ('Notification' in window && Notification.permission === 'default') {
-        const permission = await Notification.requestPermission();
-        if (permission === 'granted') {
-            console.log('Notification permission granted');
-            // Register for push notifications
-            registerPushNotifications();
-        }
-    }
-}
-
-async function registerPushNotifications() {
-    if ('serviceWorker' in navigator && 'PushManager' in window) {
-        try {
-            const registration = await navigator.serviceWorker.ready;
-            const subscription = await registration.pushManager.subscribe({
-                userVisibleOnly: true,
-                applicationServerKey: urlBase64ToUint8Array('YOUR_VAPID_PUBLIC_KEY')
-            });
-            console.log('Push notification subscription:', subscription);
-            // Send subscription to server
-        } catch (error) {
-            console.error('Failed to subscribe to push notifications:', error);
-        }
-    }
-}
-
-function urlBase64ToUint8Array(base64String) {
-    const padding = '='.repeat((4 - base64String.length % 4) % 4);
-    const base64 = (base64String + padding)
-        .replace(/-/g, '+')
-        .replace(/_/g, '/');
-    
-    const rawData = window.atob(base64);
-    const outputArray = new Uint8Array(rawData.length);
-    
-    for (let i = 0; i < rawData.length; ++i) {
-        outputArray[i] = rawData.charCodeAt(i);
-    }
-    return outputArray;
-}
-
 // Export functions
-window.AppCore = {
-    requestNotificationPermission,
-    syncDreamsToServer
-};
+window.AppCore = {};
