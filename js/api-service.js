@@ -5,20 +5,7 @@
  */
 class APIService {
     constructor() {
-        this.currentProvider = 'openai'; // Default to OpenAI, will switch to Gemini later
         this.requestTimeout = CONSTANTS.API.REQUEST_TIMEOUT;
-    }
-
-    /**
-     * Set API provider (openai or gemini)
-     * @param {string} provider - API provider name
-     */
-    setProvider(provider) {
-        if (['openai', 'gemini'].includes(provider)) {
-            this.currentProvider = provider;
-        } else {
-            throw new Error('Invalid API provider');
-        }
     }
 
     /**
@@ -27,17 +14,11 @@ class APIService {
      * @returns {boolean} - Is valid
      */
     validateApiKey(apiKey) {
-        if (this.currentProvider === 'openai') {
-            return SecurityUtils.validateApiKey(apiKey);
-        } else if (this.currentProvider === 'gemini') {
-            // Gemini API key validation (different format)
-            return typeof apiKey === 'string' && apiKey.length > 20;
-        }
-        return false;
+        return SecurityUtils.validateApiKey(apiKey);
     }
 
     /**
-     * Analyze dream content using selected AI provider
+     * Analyze dream content using OpenAI API
      * @param {string} content - Dream content to analyze
      * @param {boolean} isKeywords - Whether input is keywords or full text
      * @param {string} apiKey - API key for the service
@@ -59,11 +40,7 @@ class APIService {
         }
 
         try {
-            if (this.currentProvider === 'openai') {
-                return await this.analyzeWithOpenAI(sanitizedContent, isKeywords, apiKey);
-            } else if (this.currentProvider === 'gemini') {
-                return await this.analyzeWithGemini(sanitizedContent, isKeywords, apiKey);
-            }
+            return await this.analyzeWithOpenAI(sanitizedContent, isKeywords, apiKey);
         } catch (error) {
             console.error('API analysis failed, falling back to mock:', error);
             return this.generateMockAnalysis(sanitizedContent, isKeywords);
@@ -128,19 +105,6 @@ class APIService {
         }
     }
 
-    /**
-     * Analyze dream with Google Gemini (future implementation)
-     * @param {string} content - Sanitized dream content
-     * @param {boolean} isKeywords - Whether input is keywords
-     * @param {string} apiKey - Gemini API key
-     * @returns {Promise<Object>} - Analysis result
-     */
-    async analyzeWithGemini(content, isKeywords, apiKey) {
-        // TODO: Implement Gemini API integration
-        // For now, return mock analysis
-        console.log('Gemini integration not yet implemented, using mock analysis');
-        return this.generateMockAnalysis(content, isKeywords);
-    }
 
     /**
      * Build prompt for OpenAI API
@@ -250,207 +214,6 @@ ${inputType}: ${content}
         return sanitized;
     }
 
-    /**
-     * Fetch word vector from AI (for word analysis features)
-     * @param {string} word - Word to analyze
-     * @param {string} apiKey - API key
-     * @returns {Promise<Array>} - Word vector
-     */
-    async fetchWordVector(word, apiKey) {
-        if (!word || !apiKey) {
-            throw new Error('Word and API key are required');
-        }
-
-        const sanitizedWord = SecurityUtils.sanitizeHTML(word);
-        
-        if (this.currentProvider === 'openai') {
-            return await this.fetchWordVectorFromOpenAI(sanitizedWord, apiKey);
-        } else if (this.currentProvider === 'gemini') {
-            // TODO: Implement Gemini word vector fetching
-            throw new Error('Gemini word vector fetching not yet implemented');
-        }
-    }
-
-    /**
-     * Fetch word vector from OpenAI
-     * @param {string} word - Sanitized word
-     * @param {string} apiKey - OpenAI API key
-     * @returns {Promise<Array>} - Word vector
-     */
-    async fetchWordVectorFromOpenAI(word, apiKey) {
-        const prompt = `以下の単語「${word}」について、夢分析の観点から5つの特徴を-1.0から1.0の範囲で評価してください。
-
-特徴:
-1. 感情 (ネガティブ:-1.0 ← → ポジティブ:1.0)
-2. 活動性 (受動的:-1.0 ← → 能動的:1.0)
-3. 意識レベル (無意識的:-1.0 ← → 意識的:1.0)
-4. 社会性 (個人的:-1.0 ← → 社会的:1.0)
-5. 象徴性 (具体的:-1.0 ← → 象徴的:1.0)
-
-必ず以下のJSON形式で回答してください:
-{
-    "word": "${word}",
-    "vector": [感情値, 活動性値, 意識レベル値, 社会性値, 象徴性値],
-    "explanation": "この評価の簡単な説明"
-}`;
-
-        const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), this.requestTimeout);
-
-        try {
-            const response = await fetch(CONSTANTS.API.OPENAI_ENDPOINT, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${apiKey}`
-                },
-                body: JSON.stringify({
-                    model: CONSTANTS.API.MODEL_GPT4,
-                    messages: [
-                        {
-                            role: 'system',
-                            content: 'あなたは夢分析の専門家です。単語の意味的特徴を数値化して評価します。'
-                        },
-                        {
-                            role: 'user',
-                            content: prompt
-                        }
-                    ],
-                    temperature: CONSTANTS.API.TEMPERATURE,
-                    response_format: { type: "json_object" }
-                }),
-                signal: controller.signal
-            });
-
-            clearTimeout(timeoutId);
-
-            if (!response.ok) {
-                throw new Error(`OpenAI API error: ${response.status}`);
-            }
-
-            const data = await response.json();
-            const result = JSON.parse(data.choices[0].message.content);
-            
-            // Validate vector format
-            if (!Array.isArray(result.vector) || result.vector.length !== 5) {
-                throw new Error('Invalid vector format from API');
-            }
-
-            return result.vector;
-            
-        } catch (error) {
-            clearTimeout(timeoutId);
-            throw ErrorHandler.handleApiError(error, 'OpenAI word vector fetch');
-        }
-    }
-
-    /**
-     * Batch fetch word vectors for multiple words
-     * @param {Array<string>} words - Words to analyze
-     * @param {string} apiKey - API key
-     * @returns {Promise<Object>} - Word vectors map
-     */
-    async fetchMultipleWordVectors(words, apiKey) {
-        if (!Array.isArray(words) || words.length === 0) {
-            return {};
-        }
-
-        const sanitizedWords = words.map(word => SecurityUtils.sanitizeHTML(word));
-        
-        if (this.currentProvider === 'openai') {
-            return await this.fetchMultipleWordVectorsFromOpenAI(sanitizedWords, apiKey);
-        } else if (this.currentProvider === 'gemini') {
-            // TODO: Implement Gemini batch word vector fetching
-            throw new Error('Gemini batch word vector fetching not yet implemented');
-        }
-    }
-
-    /**
-     * Fetch multiple word vectors from OpenAI
-     * @param {Array<string>} words - Sanitized words
-     * @param {string} apiKey - OpenAI API key
-     * @returns {Promise<Object>} - Word vectors map
-     */
-    async fetchMultipleWordVectorsFromOpenAI(words, apiKey) {
-        const prompt = `以下の単語リストについて、夢分析の観点から各単語の5つの特徴を-1.0から1.0の範囲で評価してください。
-
-単語リスト: ${words.join(', ')}
-
-特徴:
-1. 感情 (ネガティブ:-1.0 ← → ポジティブ:1.0)
-2. 活動性 (受動的:-1.0 ← → 能動的:1.0)
-3. 意識レベル (無意識的:-1.0 ← → 意識的:1.0)
-4. 社会性 (個人的:-1.0 ← → 社会的:1.0)
-5. 象徴性 (具体的:-1.0 ← → 象徴的:1.0)
-
-必ず以下のJSON形式で回答してください:
-{
-    "words": [
-        {
-            "word": "単語1",
-            "vector": [感情値, 活動性値, 意識レベル値, 社会性値, 象徴性値]
-        },
-        {
-            "word": "単語2",
-            "vector": [感情値, 活動性値, 意識レベル値, 社会性値, 象徴性値]
-        }
-    ]
-}`;
-
-        const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), this.requestTimeout);
-
-        try {
-            const response = await fetch(CONSTANTS.API.OPENAI_ENDPOINT, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${apiKey}`
-                },
-                body: JSON.stringify({
-                    model: CONSTANTS.API.MODEL_GPT4,
-                    messages: [
-                        {
-                            role: 'system',
-                            content: 'あなたは夢分析の専門家です。単語の意味的特徴を数値化して評価します。'
-                        },
-                        {
-                            role: 'user',
-                            content: prompt
-                        }
-                    ],
-                    temperature: CONSTANTS.API.TEMPERATURE,
-                    response_format: { type: "json_object" }
-                }),
-                signal: controller.signal
-            });
-
-            clearTimeout(timeoutId);
-
-            if (!response.ok) {
-                throw new Error(`OpenAI API error: ${response.status}`);
-            }
-
-            const data = await response.json();
-            const result = JSON.parse(data.choices[0].message.content);
-            
-            // Convert array to map
-            const vectorMap = {};
-            if (Array.isArray(result.words)) {
-                result.words.forEach(wordData => {
-                    if (wordData.word && Array.isArray(wordData.vector) && wordData.vector.length === 5) {
-                        vectorMap[wordData.word] = wordData.vector;
-                    }
-                });
-            }
-
-            return vectorMap;
-            
-        } catch (error) {
-            clearTimeout(timeoutId);
-            throw ErrorHandler.handleApiError(error, 'OpenAI batch word vector fetch');
-        }
-    }
 }
 
 // Create global instance

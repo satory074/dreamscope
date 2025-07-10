@@ -28,8 +28,6 @@
     
     <link rel="stylesheet" href="styles.css">
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;700&display=swap" rel="stylesheet">
-    <!-- D3.js for data visualization -->
-    <script src="https://d3js.org/d3.v7.min.js"></script>
 </head>
 <body>
     <div id="app">
@@ -153,21 +151,6 @@
                         </div>
                     </div>
                     
-                    <!-- 単語の意味的距離散布図 -->
-                    <div class="word-timeline-container">
-                        <h3>夢の意味マップ</h3>
-                        <p class="chart-description">各単語の意味的な関係性を表示（クリックで特徴を編集）</p>
-                        <div class="timeline-controls">
-                            <span id="timeline-range" class="timeline-range"></span>
-                            <button id="fetch-all-vectors" class="action-btn secondary" onclick="fetchAllMissingVectors()">AIで特徴を取得</button>
-                        </div>
-                        <div id="word-timeline-chart" class="word-timeline-chart"></div>
-                        <div class="timeline-legend">
-                            <span class="legend-item emotion">感情</span>
-                            <span class="legend-item theme">テーマ</span>
-                            <span class="legend-item symbol">シンボル</span>
-                        </div>
-                    </div>
 
                     <!-- エクスポート -->
                     <div class="export-section">
@@ -267,10 +250,6 @@
                 <div id="modal-symbols" class="symbol-meanings"></div>
             </div>
             
-            <div class="modal-section" style="display: none;">
-                <h4>抽出された単語</h4>
-                <div id="modal-extracted-words" class="extracted-words-display"></div>
-            </div>
         </div>
     </div>
     
@@ -289,11 +268,6 @@
     
     <!-- Scripts with async loading -->
     <script src="js/app-core.js"></script>
-    <script src="js/word-embeddings.js"></script>
-    <script src="js/offline-handler.js" defer></script>
-    <script src="js/swipe-handler.js" defer></script>
-    <script src="js/biometric-auth.js" defer></script>
-    <script src="js/performance-monitor.js" defer></script>
     <script src="app.js" defer></script>
 </body>
 </html>

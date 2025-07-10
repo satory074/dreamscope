@@ -8,11 +8,7 @@ const app = {
     serverEndpoint: '/api/analyze-dream',  // サーバーエンドポイント
     settings: {
         reminderEnabled: false
-    },
-    words: [],  // 単語データの追加
-    wordAnalysis: {},  // 単語分析用データ
-    customVectors: {},  // カスタム単語ベクトル
-    aiGeneratedVectors: {}  // AI生成単語ベクトル
+    }
 };
 
 // Initialize app
@@ -21,7 +17,6 @@ document.addEventListener('DOMContentLoaded', () => {
     initializeEventListeners();
     updateView('input');
     updateStatistics();
-    updateWordStatistics();  // 単語統計の初期化
     enhanceAccessibility();
     addMicroInteractions();
     checkFirstTimeUser();
@@ -33,9 +28,6 @@ function loadDataFromStorage() {
         const savedDreams = localStorage.getItem('dreamscope_dreams');
         const savedSettings = localStorage.getItem('dreamscope_settings');
         // API key loading removed
-        const savedWords = localStorage.getItem('dreamscope_words');
-        const savedVectors = localStorage.getItem('dreamscope_vectors');
-        const savedAIVectors = localStorage.getItem('dreamscope_ai_vectors');
         
         if (savedDreams) {
             const dreams = JSON.parse(savedDreams);
@@ -55,21 +47,6 @@ function loadDataFromStorage() {
         }
         
         // API key loading removed - using server endpoint
-        
-        if (savedWords) {
-            const words = JSON.parse(savedWords);
-            if (Array.isArray(words)) {
-                app.words = words;
-            }
-        }
-        
-        if (savedVectors) {
-            app.customVectors = JSON.parse(savedVectors);
-        }
-        
-        if (savedAIVectors) {
-            app.aiGeneratedVectors = JSON.parse(savedAIVectors);
-        }
     } catch (error) {
         console.error('データの読み込みエラー:', error);
         showToast('データの読み込みに失敗しました。データをリセットします。', 'error');
@@ -98,8 +75,6 @@ function saveDataToStorage() {
         
         localStorage.setItem('dreamscope_dreams', JSON.stringify(app.dreams));
         localStorage.setItem('dreamscope_settings', JSON.stringify(app.settings));
-        localStorage.setItem('dreamscope_words', JSON.stringify(app.words));
-        localStorage.setItem('dreamscope_vectors', JSON.stringify(app.customVectors));
         // API key storage removed - using server endpoint
         
         // Create backup
@@ -1150,97 +1125,39 @@ function navigateKeywordTags(direction) {
     });
 }
 
-// Onboarding for first-time users
+// Simplified first-time user check
 function checkFirstTimeUser() {
     if (!localStorage.getItem('dreamscope_onboarded')) {
         setTimeout(() => {
-            startOnboarding();
-        }, 500);
+            showToast('DreamScopeへようこそ！夢を記録してAIで分析しましょう', 'info');
+            localStorage.setItem('dreamscope_onboarded', 'true');
+        }, 1000);
     }
 }
 
-// Onboarding flow
-function startOnboarding() {
-    const onboarding = new OnboardingFlow();
-    onboarding.start();
-}
+// Removed complex onboarding flow
 
-// 単語抽出関数
-async function extractWordsFromDream(content, analysis) {
+// Simplified word extraction - removed complex pattern matching
+function extractWordsFromDream(content, analysis) {
     const extractedWords = [];
     
-    // 感情単語の検出
-    const emotionPatterns = {
-        '不安': ['心配', '不安', 'そわそわ', '落ち着かない'],
-        '喜び': ['嬉しい', '楽しい', '幸せ', 'happy'],
-        '恐怖': ['怖い', '恐ろしい', 'こわい', '逃げ'],
-        '悲しみ': ['悲しい', '泣', '涙', 'さみしい'],
-        '怒り': ['怒', 'いらいら', 'むかつく', '腹立'],
-        '驚き': ['驚', 'びっくり', '突然', '急に'],
-        '期待': ['期待', '楽しみ', 'わくわく', '待ち遠しい'],
-        '安心': ['安心', 'ほっと', '落ち着', '穏やか']
-    };
-
-    for (const [emotion, patterns] of Object.entries(emotionPatterns)) {
-        if (patterns.some(pattern => content.includes(pattern))) {
-            extractedWords.push({ 
-                word: emotion, 
-                category: 'emotion', 
-                confidence: 0.8,
-                source: 'pattern' 
-            });
-        }
-    }
-
-    // テーマの抽出
-    const themes = {
-        '家族': ['家族', '母', '父', '兄', '弟', '姉', '妹', '親', '子供'],
-        '仕事': ['仕事', '会社', '職場', '上司', '同僚', '締切', 'プロジェクト'],
-        '学校': ['学校', '授業', '試験', 'テスト', '先生', '勉強', '宿題'],
-        '旅行': ['旅行', '旅', '飛行機', '電車', '外国', '観光', 'ホテル'],
-        '自然': ['山', '海', '川', '森', '空', '雲', '太陽', '月', '星']
-    };
-
-    for (const [theme, keywords] of Object.entries(themes)) {
-        if (keywords.some(keyword => content.includes(keyword))) {
-            extractedWords.push({ 
-                word: theme, 
-                category: 'theme', 
-                confidence: 0.7,
-                source: 'pattern' 
-            });
-        }
-    }
-
-    // シンボルの抽出
-    const symbolPatterns = {
-        '水': ['水', '海', '川', '雨', '涙', 'プール'],
-        '火': ['火', '炎', '燃える', '熱い', '太陽'],
-        '動物': ['犬', '猫', '鳥', '魚', '馬', '蛇', '虫'],
-        '建物': ['家', '建物', 'ビル', '部屋', '扉', '窓'],
-        '乗り物': ['車', '電車', '飛行機', '自転車', 'バス', '船']
-    };
-
-    for (const [symbol, patterns] of Object.entries(symbolPatterns)) {
-        if (patterns.some(pattern => content.includes(pattern))) {
-            extractedWords.push({ 
-                word: symbol, 
-                category: 'symbol', 
-                confidence: 0.6,
-                source: 'pattern' 
-            });
-        }
-    }
-    
-    // AI分析からのシンボルも追加
+    // Basic symbol extraction from AI analysis only
     if (analysis.symbols) {
         analysis.symbols.forEach(symbol => {
-            if (!extractedWords.some(w => w.word === symbol.symbol)) {
+            extractedWords.push({
+                word: symbol.symbol,
+                category: 'symbol'
+            });
+        });
+    }
+    
+    // Simple keyword extraction from user input keywords
+    if (keywords && keywords.length > 0) {
+        keywords.forEach(keyword => {
+            if (!extractedWords.some(w => w.word === keyword)) {
                 extractedWords.push({
-                    word: symbol.symbol,
-                    category: 'symbol',
-                    confidence: 0.9,
-                    source: 'ai'
+                    word: keyword,
+                    category: 'general'
                 });
             }
         });
@@ -1313,129 +1230,21 @@ function addCustomWord() {
     }
 }
 
-// 単語の編集
+// Simplified word editing - removed vector modal
 function editExtractedWord(index) {
     if (!app.currentAnalysis || !app.currentAnalysis.extractedWords) return;
     
     const wordData = app.currentAnalysis.extractedWords[index];
+    const newWord = prompt('単語を編集:', wordData.word);
     
-    // パラメータ編集モーダルを表示
-    showWordVectorEditModal(wordData, index);
+    if (newWord && newWord.trim()) {
+        app.currentAnalysis.extractedWords[index].word = newWord.trim();
+        renderExtractedWords(app.currentAnalysis.extractedWords);
+        showToast('単語を更新しました', 'success');
+    }
 }
 
-// 単語ベクトル編集モーダルの表示（夢登録時用）
-function showWordVectorEditModal(wordData, index) {
-    const word = wordData.word;
-    
-    // 既存のベクトルを取得、なければデフォルト値
-    const currentVector = app.customVectors[word] || 
-                         app.aiGeneratedVectors[word] || 
-                         [0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
-    
-    // モーダルを作成
-    const modal = document.createElement('div');
-    modal.id = 'word-vector-edit-modal';
-    modal.className = 'modal-overlay';
-    modal.innerHTML = `
-        <div class="modal-content vector-modal" onclick="event.stopPropagation()">
-            <button class="modal-close" onclick="closeWordVectorEditModal()">×</button>
-            <h3 class="modal-title">「${word}」の編集</h3>
-            
-            <div class="word-name-editor">
-                <label>単語名:</label>
-                <input type="text" id="word-name-input" value="${word}" class="word-name-input">
-            </div>
-            
-            <div class="vector-editor">
-                <h4>意味的特徴（-1.0 〜 1.0）</h4>
-                
-                <div class="vector-dimension">
-                    <label>気持ち <small>(暗い ← → 明るい)</small></label>
-                    <input type="range" id="edit-vector-0" min="-100" max="100" value="${currentVector[0] * 100}" 
-                           oninput="updateEditVectorDisplay(0, this.value)">
-                    <span id="edit-vector-value-0" class="vector-value">${currentVector[0].toFixed(2)}</span>
-                </div>
-                
-                <div class="vector-dimension">
-                    <label>動き <small>(じっと ← → 活発)</small></label>
-                    <input type="range" id="edit-vector-1" min="-100" max="100" value="${currentVector[1] * 100}"
-                           oninput="updateEditVectorDisplay(1, this.value)">
-                    <span id="edit-vector-value-1" class="vector-value">${currentVector[1].toFixed(2)}</span>
-                </div>
-                
-                <div class="vector-dimension">
-                    <label>深さ <small>(表面的 ← → 深層的)</small></label>
-                    <input type="range" id="edit-vector-2" min="-100" max="100" value="${currentVector[2] * 100}"
-                           oninput="updateEditVectorDisplay(2, this.value)">
-                    <span id="edit-vector-value-2" class="vector-value">${currentVector[2].toFixed(2)}</span>
-                </div>
-                
-                <div class="vector-dimension">
-                    <label>つながり <small>(ひとり ← → みんな)</small></label>
-                    <input type="range" id="edit-vector-3" min="-100" max="100" value="${currentVector[3] * 100}"
-                           oninput="updateEditVectorDisplay(3, this.value)">
-                    <span id="edit-vector-value-3" class="vector-value">${currentVector[3].toFixed(2)}</span>
-                </div>
-                
-                <div class="vector-dimension">
-                    <label>形 <small>(はっきり ← → ぼんやり)</small></label>
-                    <input type="range" id="edit-vector-4" min="-100" max="100" value="${currentVector[4] * 100}"
-                           oninput="updateEditVectorDisplay(4, this.value)">
-                    <span id="edit-vector-value-4" class="vector-value">${currentVector[4].toFixed(2)}</span>
-                </div>
-                
-                <div class="vector-dimension">
-                    <label>時 <small>(過去 ← → 未来)</small></label>
-                    <input type="range" id="edit-vector-5" min="-100" max="100" value="${currentVector[5] * 100}"
-                           oninput="updateEditVectorDisplay(5, this.value)">
-                    <span id="edit-vector-value-5" class="vector-value">${currentVector[5].toFixed(2)}</span>
-                </div>
-                
-                <div class="vector-dimension">
-                    <label>不思議さ <small>(普通 ← → 不思議)</small></label>
-                    <input type="range" id="edit-vector-6" min="-100" max="100" value="${currentVector[6] * 100}"
-                           oninput="updateEditVectorDisplay(6, this.value)">
-                    <span id="edit-vector-value-6" class="vector-value">${currentVector[6].toFixed(2)}</span>
-                </div>
-                
-                <div class="vector-dimension">
-                    <label>体感 <small>(心 ← → 体)</small></label>
-                    <input type="range" id="edit-vector-7" min="-100" max="100" value="${currentVector[7] * 100}"
-                           oninput="updateEditVectorDisplay(7, this.value)">
-                    <span id="edit-vector-value-7" class="vector-value">${currentVector[7].toFixed(2)}</span>
-                </div>
-                
-                <div class="vector-dimension">
-                    <label>変化 <small>(同じ ← → 変わる)</small></label>
-                    <input type="range" id="edit-vector-8" min="-100" max="100" value="${currentVector[8] * 100}"
-                           oninput="updateEditVectorDisplay(8, this.value)">
-                    <span id="edit-vector-value-8" class="vector-value">${currentVector[8].toFixed(2)}</span>
-                </div>
-                
-                <div class="vector-dimension">
-                    <label>広がり <small>(自分だけ ← → みんなの)</small></label>
-                    <input type="range" id="edit-vector-9" min="-100" max="100" value="${currentVector[9] * 100}"
-                           oninput="updateEditVectorDisplay(9, this.value)">
-                    <span id="edit-vector-value-9" class="vector-value">${currentVector[9].toFixed(2)}</span>
-                </div>
-            </div>
-            
-            <div class="modal-actions">
-                <button class="primary-btn" onclick="saveEditedWord(${index}, '${word}')">保存</button>
-                <button class="secondary-btn" onclick="closeWordVectorEditModal()">キャンセル</button>
-            </div>
-        </div>
-    `;
-    
-    document.body.appendChild(modal);
-    
-    // クリックで閉じる
-    modal.addEventListener('click', (e) => {
-        if (e.target === modal) {
-            closeWordVectorEditModal();
-        }
-    });
-}
+// Removed complex vector edit modal function
 
 // 単語の削除
 function removeExtractedWord(index) {
@@ -1445,476 +1254,74 @@ function removeExtractedWord(index) {
     renderExtractedWords(app.currentAnalysis.extractedWords);
 }
 
-// 抽出した単語の保存
+// Simplified word saving - removed vector complexity
 function saveExtractedWords(dreamId, extractedWords) {
     extractedWords.forEach((wordData, index) => {
-        // デフォルトのベクトル値を設定または既存の値を使用
-        const vector = getOrCreateWordVector(wordData.word);
-        
         app.words.push({
             id: Date.now() + index,
             word: wordData.word,
             category: wordData.category,
             dreamId: dreamId,
-            date: new Date().toISOString(),
-            confidence: wordData.confidence,
-            source: wordData.source,
-            vector: vector // ベクトル情報を追加
+            date: new Date().toISOString()
         });
     });
-    
-    // カスタムベクトルを保存
-    saveCustomVectors();
 }
 
-// 単語のベクトルを取得または作成
-function getOrCreateWordVector(word) {
-    // カスタムベクトルが存在する場合
-    if (app.customVectors && app.customVectors[word]) {
-        return app.customVectors[word];
-    }
-    
-    // AIで生成されたベクトルが存在する場合
-    if (app.aiGeneratedVectors && app.aiGeneratedVectors[word]) {
-        return app.aiGeneratedVectors[word];
-    }
-    
-    // 既定のベクトルが存在する場合
-    if (window.dreamWordEmbeddings && window.dreamWordEmbeddings[word]) {
-        return window.dreamWordEmbeddings[word];
-    }
-    
-    // 新規作成（デフォルト値）- 10次元
-    return [0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
-}
+// Removed complex vector creation function
 
-// 単語統計の更新
+// Simplified word statistics - removed complex features
 function updateWordStatistics() {
-    if (!document.getElementById('word-stats')) {
-        // 単語統計セクションを追加
-        const analysisView = document.getElementById('analysis-view');
-        const statsSection = document.createElement('div');
-        statsSection.className = 'word-statistics';
-        statsSection.innerHTML = `
-            <h3>単語分析</h3>
-            <div id="word-stats" class="stats-grid">
-                <div class="stat-card">
-                    <span class="stat-number" id="total-words">0</span>
-                    <span class="stat-label">総単語数</span>
-                </div>
-                <div class="stat-card">
-                    <span class="stat-number" id="unique-words">0</span>
-                    <span class="stat-label">ユニーク単語数</span>
-                </div>
-                <div class="stat-card">
-                    <span class="stat-number" id="avg-words-per-dream">0</span>
-                    <span class="stat-label">平均単語数/夢</span>
-                </div>
-            </div>
-            <div class="word-cloud-container">
-                <h4>ワードクラウド</h4>
-                <div id="word-cloud" class="word-cloud"></div>
-            </div>
-            <div class="word-frequency-container">
-                <h4>頻出単語</h4>
-                <div id="word-frequency-list" class="frequency-list"></div>
-            </div>
-        `;
-        
-        const tagCloudContainer = analysisView.querySelector('.tag-cloud-container');
-        tagCloudContainer.insertAdjacentElement('afterend', statsSection);
-    }
-    
-    // 統計値の計算
-    document.getElementById('total-words').textContent = app.words.length;
-    
-    const uniqueWords = new Set(app.words.map(w => w.word));
-    document.getElementById('unique-words').textContent = uniqueWords.size;
-    
+    // Basic word statistics only
+    const totalWords = app.words.length;
+    const uniqueWords = new Set(app.words.map(w => w.word)).size;
     const avgWords = app.dreams.length > 0 ? 
         Math.round(app.words.length / app.dreams.length * 10) / 10 : 0;
-    document.getElementById('avg-words-per-dream').textContent = avgWords;
     
-    // ワードクラウドと頻出単語を更新
-    updateWordCloud();
-    updateWordFrequency();
+    // Update only if elements exist
+    const totalElement = document.getElementById('total-words');
+    const uniqueElement = document.getElementById('unique-words');
+    const avgElement = document.getElementById('avg-words-per-dream');
+    
+    if (totalElement) totalElement.textContent = totalWords;
+    if (uniqueElement) uniqueElement.textContent = uniqueWords;
+    if (avgElement) avgElement.textContent = avgWords;
 }
 
-// ワードクラウドの更新
-function updateWordCloud() {
-    const wordCloud = document.getElementById('word-cloud');
-    if (!wordCloud) return;
-    
-    const wordFreq = {};
-    
-    // 単語の頻度を計算
-    app.words.forEach(w => {
-        wordFreq[w.word] = (wordFreq[w.word] || 0) + 1;
-    });
+// Removed complex word cloud generation
 
-    // ワードクラウドを生成
-    wordCloud.innerHTML = '';
-    Object.entries(wordFreq)
-        .sort((a, b) => b[1] - a[1])
-        .slice(0, 30)
-        .forEach(([word, freq]) => {
-            const span = document.createElement('span');
-            span.className = 'cloud-word';
-            span.textContent = word;
-            span.style.fontSize = `${Math.min(12 + freq * 4, 40)}px`;
-            span.style.color = `hsl(${Math.random() * 60 + 240}, 70%, ${50 - freq * 2}%)`;
-            span.onclick = () => showWordDetails(word);
-            wordCloud.appendChild(span);
-        });
+// Removed complex word frequency analysis
 
-    if (app.words.length === 0) {
-        wordCloud.innerHTML = '<p style="color: var(--text-secondary);">まだ単語が登録されていません</p>';
-    }
-}
-
-// 頻出単語リストの更新
-function updateWordFrequency() {
-    const frequencyList = document.getElementById('word-frequency-list');
-    if (!frequencyList) return;
-    
-    const wordFreq = {};
-    app.words.forEach(w => {
-        wordFreq[w.word] = (wordFreq[w.word] || 0) + 1;
-    });
-    
-    const sortedWords = Object.entries(wordFreq)
-        .sort((a, b) => b[1] - a[1])
-        .slice(0, 10);
-    
-    frequencyList.innerHTML = sortedWords.map(([word, count], index) => `
-        <div class="frequency-item">
-            <span class="rank">${index + 1}</span>
-            <span class="word">${word}</span>
-            <span class="count">${count}回</span>
-        </div>
-    `).join('');
-    
-    if (sortedWords.length === 0) {
-        frequencyList.innerHTML = '<p style="color: var(--text-secondary);">データがありません</p>';
-    }
-}
-
-// 単語の詳細表示
+// Simplified word details - removed complex vector modal
 function showWordDetails(word) {
     const wordData = app.words.filter(w => w.word === word);
-    const dreams = wordData.map(w => {
-        return app.dreams.find(d => d.id === w.dreamId);
-    }).filter(d => d);
-    
-    // ベクトル編集モーダルを表示
-    showWordVectorModal(word, wordData);
+    const count = wordData.length;
+    showToast(`「${word}」は${count}回出現しました`, 'info');
 }
 
-// 単語ベクトル編集モーダルの表示
-function showWordVectorModal(word, wordDataArray) {
-    // 既存のモーダルを削除
-    const existingModal = document.getElementById('word-vector-modal');
-    if (existingModal) {
-        existingModal.remove();
-    }
-    
-    // AIベクトルは登録時に取得しているため、ここでの取得は不要
-    
-    // 現在のベクトルを取得
-    const currentVector = getOrCreateWordVector(word);
-    
-    // モーダルを作成
-    const modal = document.createElement('div');
-    modal.id = 'word-vector-modal';
-    modal.className = 'modal-overlay';
-    modal.innerHTML = `
-        <div class="modal-content vector-modal" onclick="event.stopPropagation()">
-            <button class="modal-close" onclick="closeWordVectorModal()">×</button>
-            <h3 class="modal-title">「${word}」の特徴</h3>
-            
-            <div class="vector-info">
-                <p>出現回数: ${wordDataArray.length}回</p>
-                ${app.aiGeneratedVectors[word] ? '<p class="ai-generated-tag">🤖 AI生成</p>' : ''}
-            </div>
-            
-            <div class="vector-editor">
-                <h4>意味的特徴（-1.0 〜 1.0）</h4>
-                
-                <div class="vector-dimension">
-                    <label>気持ち <small>(暗い ← → 明るい)</small></label>
-                    <input type="range" id="vector-0" min="-100" max="100" value="${currentVector[0] * 100}" 
-                           oninput="updateVectorDisplay(0, this.value)">
-                    <span id="vector-value-0" class="vector-value">${currentVector[0].toFixed(2)}</span>
-                </div>
-                
-                <div class="vector-dimension">
-                    <label>動き <small>(じっと ← → 活発)</small></label>
-                    <input type="range" id="vector-1" min="-100" max="100" value="${currentVector[1] * 100}"
-                           oninput="updateVectorDisplay(1, this.value)">
-                    <span id="vector-value-1" class="vector-value">${currentVector[1].toFixed(2)}</span>
-                </div>
-                
-                <div class="vector-dimension">
-                    <label>深さ <small>(表面的 ← → 深層的)</small></label>
-                    <input type="range" id="vector-2" min="-100" max="100" value="${currentVector[2] * 100}"
-                           oninput="updateVectorDisplay(2, this.value)">
-                    <span id="vector-value-2" class="vector-value">${currentVector[2].toFixed(2)}</span>
-                </div>
-                
-                <div class="vector-dimension">
-                    <label>つながり <small>(ひとり ← → みんな)</small></label>
-                    <input type="range" id="vector-3" min="-100" max="100" value="${currentVector[3] * 100}"
-                           oninput="updateVectorDisplay(3, this.value)">
-                    <span id="vector-value-3" class="vector-value">${currentVector[3].toFixed(2)}</span>
-                </div>
-                
-                <div class="vector-dimension">
-                    <label>形 <small>(はっきり ← → ぼんやり)</small></label>
-                    <input type="range" id="vector-4" min="-100" max="100" value="${currentVector[4] * 100}"
-                           oninput="updateVectorDisplay(4, this.value)">
-                    <span id="vector-value-4" class="vector-value">${currentVector[4].toFixed(2)}</span>
-                </div>
-                
-                <div class="vector-dimension">
-                    <label>時 <small>(過去 ← → 未来)</small></label>
-                    <input type="range" id="vector-5" min="-100" max="100" value="${(currentVector[5] || 0) * 100}"
-                           oninput="updateVectorDisplay(5, this.value)">
-                    <span id="vector-value-5" class="vector-value">${(currentVector[5] || 0).toFixed(2)}</span>
-                </div>
-                
-                <div class="vector-dimension">
-                    <label>不思議さ <small>(普通 ← → 不思議)</small></label>
-                    <input type="range" id="vector-6" min="-100" max="100" value="${(currentVector[6] || 0) * 100}"
-                           oninput="updateVectorDisplay(6, this.value)">
-                    <span id="vector-value-6" class="vector-value">${(currentVector[6] || 0).toFixed(2)}</span>
-                </div>
-                
-                <div class="vector-dimension">
-                    <label>体感 <small>(心 ← → 体)</small></label>
-                    <input type="range" id="vector-7" min="-100" max="100" value="${(currentVector[7] || 0) * 100}"
-                           oninput="updateVectorDisplay(7, this.value)">
-                    <span id="vector-value-7" class="vector-value">${(currentVector[7] || 0).toFixed(2)}</span>
-                </div>
-                
-                <div class="vector-dimension">
-                    <label>変化 <small>(同じ ← → 変わる)</small></label>
-                    <input type="range" id="vector-8" min="-100" max="100" value="${(currentVector[8] || 0) * 100}"
-                           oninput="updateVectorDisplay(8, this.value)">
-                    <span id="vector-value-8" class="vector-value">${(currentVector[8] || 0).toFixed(2)}</span>
-                </div>
-                
-                <div class="vector-dimension">
-                    <label>広がり <small>(自分だけ ← → みんなの)</small></label>
-                    <input type="range" id="vector-9" min="-100" max="100" value="${(currentVector[9] || 0) * 100}"
-                           oninput="updateVectorDisplay(9, this.value)">
-                    <span id="vector-value-9" class="vector-value">${(currentVector[9] || 0).toFixed(2)}</span>
-                </div>
-                
-                <div class="similar-words">
-                    <h4>類似する単語</h4>
-                    <div id="similar-words-list"></div>
-                </div>
-                
-                <div class="modal-actions">
-                    <button onclick="saveWordVector('${word}')" class="action-btn primary">保存</button>
-                    <button onclick="resetWordVector('${word}')" class="action-btn secondary">リセット</button>
-                    <button onclick="closeWordVectorModal()" class="action-btn tertiary">キャンセル</button>
-                </div>
-            </div>
-        </div>
-    `;
-    
-    document.body.appendChild(modal);
-    modal.onclick = closeWordVectorModal;
-    
-    // 類似単語を表示
-    updateSimilarWords(word);
-}
+// Removed complex word vector modal
 
-// ベクトル値の表示更新
-function updateVectorDisplay(index, value) {
-    const displayValue = (value / 100).toFixed(2);
-    document.getElementById(`vector-value-${index}`).textContent = displayValue;
-    
-    // 現在編集中の単語を取得
-    const modalTitle = document.querySelector('.vector-modal h3').textContent;
-    const word = modalTitle.match(/「(.+)」/)[1];
-    
-    // 類似単語を更新
-    updateSimilarWords(word);
-}
+// Removed complex vector display update
 
-// 類似単語の更新
-function updateSimilarWords(targetWord) {
-    // 現在のベクトル値を取得
-    const currentVector = [];
-    for (let i = 0; i < 5; i++) {
-        const value = document.getElementById(`vector-${i}`).value / 100;
-        currentVector.push(value);
-    }
-    
-    // すべての単語との類似度を計算
-    const similarities = [];
-    const allWords = new Set();
-    
-    // 既存の単語を収集
-    if (window.dreamWordEmbeddings) {
-        Object.keys(window.dreamWordEmbeddings).forEach(word => allWords.add(word));
-    }
-    app.words.forEach(w => allWords.add(w.word));
-    
-    allWords.forEach(word => {
-        if (word !== targetWord) {
-            const wordVector = getOrCreateWordVector(word);
-            const similarity = window.cosineSimilarity ? 
-                window.cosineSimilarity(currentVector, wordVector) : 0;
-            similarities.push({ word, similarity });
-        }
-    });
-    
-    // 類似度でソート
-    similarities.sort((a, b) => b.similarity - a.similarity);
-    
-    // 上位5個を表示
-    const listHtml = similarities.slice(0, 5).map(item => 
-        `<div class="similar-word-item">
-            <span class="word">${item.word}</span>
-            <span class="similarity">${(item.similarity * 100).toFixed(0)}%</span>
-        </div>`
-    ).join('');
-    
-    document.getElementById('similar-words-list').innerHTML = listHtml || '<p>類似単語が見つかりません</p>';
-}
+// Removed complex similar words calculation
 
-// 単語ベクトルの保存
-function saveWordVector(word) {
-    const vector = [];
-    for (let i = 0; i < 10; i++) {
-        vector.push(document.getElementById(`vector-${i}`).value / 100);
-    }
-    
-    // カスタムベクトルとして保存
-    if (!app.customVectors) {
-        app.customVectors = {};
-    }
-    app.customVectors[word] = vector;
-    
-    // ストレージに保存
-    saveCustomVectors();
-    
-    showToast(`「${word}」の特徴を保存しました`, 'success');
-    closeWordVectorModal();
-    
-    // 分析画面を更新
-    if (app.currentView === 'analysis') {
-    }
-}
+// Removed complex vector saving
 
-// カスタムベクトルの保存
-function saveCustomVectors() {
-    localStorage.setItem('dreamscope_vectors', JSON.stringify(app.customVectors));
-}
+// Removed custom vector storage
 
-// 単語ベクトルのリセット
-function resetWordVector(word) {
-    // デフォルトベクトルを取得
-    const defaultVector = window.dreamWordEmbeddings && window.dreamWordEmbeddings[word] ?
-        window.dreamWordEmbeddings[word] : [0, 0, 0, 0, 0];
-    
-    // スライダーを更新
-    for (let i = 0; i < 5; i++) {
-        document.getElementById(`vector-${i}`).value = defaultVector[i] * 100;
-        document.getElementById(`vector-value-${i}`).textContent = defaultVector[i].toFixed(2);
-    }
-    
-    // 類似単語を更新
-    updateSimilarWords(word);
-}
+// Removed vector reset functionality
 
-// モーダルを閉じる
-function closeWordVectorModal() {
-    const modal = document.getElementById('word-vector-modal');
-    if (modal) {
-        modal.remove();
-    }
-}
+// Removed modal close function
 
-// AIから単語ベクトルを取得
-async function fetchWordVectorFromAI(word) {
-    
-    const systemPrompt = 'あなたは夢分析の専門家です。単語の意味的特徴を数値化して評価します。';
-    
-    const prompt = `以下の単語「${word}」について、夢分析の観点から10の特徴を-1.0から1.0の範囲で評価してください。
-
-特徴:
-1. 気持ち (暗い:-1.0 ← → 明るい:1.0)
-2. 動き (じっと:-1.0 ← → 活発:1.0)
-3. 深さ (表面的:-1.0 ← → 深層的:1.0)
-4. つながり (ひとり:-1.0 ← → みんな:1.0)
-5. 形 (はっきり:-1.0 ← → ぼんやり:1.0)
-6. 時 (過去:-1.0 ← → 未来:1.0)
-7. 不思議さ (普通:-1.0 ← → 不思議:1.0)
-8. 体感 (心:-1.0 ← → 体:1.0)
-9. 変化 (同じ:-1.0 ← → 変わる:1.0)
-10. 広がり (自分だけ:-1.0 ← → みんなの:1.0)
-
-必ず以下のJSON形式で回答してください:
-{
-    "word": "${word}",
-    "vector": [気持ち, 動き, 深さ, つながり, 形, 時, 不思議さ, 体感, 変化, 広がり],
-    "explanation": "この評価の簡単な説明"
-}`;
-
-    try {
-        const response = await fetch(app.serverEndpoint, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                type: 'word_vector',
-                word: word,
-                systemPrompt: systemPrompt,
-                prompt: prompt
-            })
-        });
-        
-        if (!response.ok) {
-            throw new Error('API request failed');
-        }
-        
-        const data = await response.json();
-        const result = data;
-        
-        // 結果を保存
-        if (!app.aiGeneratedVectors) {
-            app.aiGeneratedVectors = {};
-        }
-        app.aiGeneratedVectors[word] = result.vector;
-        
-        // ストレージに保存
-        localStorage.setItem('dreamscope_ai_vectors', JSON.stringify(app.aiGeneratedVectors));
-        
-        showToast(`「${word}」の特徴をAIから取得しました`, 'success');
-        
-        return result.vector;
-    } catch (error) {
-        console.error('AI Vector Fetch Error:', error);
-        showToast('AIからの取得に失敗しました', 'error');
-        return null;
-    }
-}
+// Removed complex AI vector generation function
 
 
-// 単語分析のレンダリング
+// Simplified word analysis rendering
 function renderWordAnalysis() {
+    // Basic word statistics only
     updateWordStatistics();
-    
-    // This function appears to be incomplete or merged with another function
-    // For now, just close it properly
 }
 
-/* ORPHANED CODE - Commenting out to fix syntax error
+// Removed complex D3.js visualization code
         chartContainer.innerHTML = '<p style="text-align: center; color: var(--text-secondary);">この期間のデータがありません</p>';
         return;
     }
@@ -2067,124 +1474,8 @@ function renderWordAnalysis() {
     // Store tooltip reference for cleanup
     chartContainer._tooltip = tooltip;
 }
-*/ // END OF ORPHANED CODE
 
-// 単語の意味的位置を計算
-function calculateSemanticPositions(words) {
-    // 単語の頻度を計算
-    const wordFrequency = {};
-    const wordLastDate = {};
-    
-    words.forEach(word => {
-        wordFrequency[word.word] = (wordFrequency[word.word] || 0) + 1;
-        wordLastDate[word.word] = word.date;
-    });
-    
-    // ユニークな単語とその属性を取得
-    const uniqueWords = {};
-    words.forEach(word => {
-        if (!uniqueWords[word.word]) {
-            uniqueWords[word.word] = {
-                word: word.word,
-                category: word.category,
-                frequency: wordFrequency[word.word],
-                lastDate: wordLastDate[word.word]
-            };
-        }
-    });
-    
-    // word-embeddings.jsの高度な配置を使用
-    if (window.calculateWordPositions) {
-        try {
-            const uniqueWordsArray = Object.values(uniqueWords);
-            return window.calculateWordPositions(uniqueWordsArray);
-        } catch (error) {
-            console.log('埋め込みベースの配置にフォールバック');
-        }
-    }
-    
-    // フォールバック：既存の意味的位置計算（夢分析に特化）
-    const processedWords = Object.values(uniqueWords).map(wordData => {
-        // カテゴリーと単語の意味に基づいて2D座標を割り当て
-        let x = 0, y = 0;
-        
-        // X軸：意識的内容 ←→ 無意識的内容
-        // 意識的（右側）：日常的、具体的、現実的な要素
-        const consciousWords = {
-            '仕事': 0.8, '学校': 0.7, '家': 0.6, '友達': 0.6, '電話': 0.7,
-            '車': 0.5, '食事': 0.6, '会社': 0.8, '勉強': 0.7, 'お金': 0.8
-        };
-        
-        // 無意識的（左側）：象徴的、抽象的、非現実的な要素
-        const unconsciousWords = {
-            '飛ぶ': -0.8, '落ちる': -0.7, '追われる': -0.8, '変身': -0.9,
-            '死': -0.9, '光': -0.6, '闇': -0.7, '迷う': -0.6, '消える': -0.7,
-            '生まれる': -0.8, '溶ける': -0.8, '浮かぶ': -0.7
-        };
-        
-        // Y軸：個人的体験 ←→ 普遍的・元型的体験
-        // 個人的（上側）：個人の経験、記憶、具体的な人物
-        const personalWords = {
-            '母': -0.8, '父': -0.8, '兄弟': -0.7, '恋人': -0.8, '上司': -0.6,
-            '同僚': -0.6, 'ペット': -0.7, '自分': -0.9, '名前': -0.8
-        };
-        
-        // 普遍的（下側）：元型的シンボル、集合的無意識
-        const archetypeWords = {
-            '太陽': 0.8, '月': 0.8, '海': 0.7, '山': 0.6, '火': 0.7,
-            '水': 0.7, '風': 0.6, '大地': 0.7, '宇宙': 0.9, '神': 0.9,
-            '悪魔': 0.8, '天使': 0.8, '竜': 0.8, '蛇': 0.7
-        };
-        
-        // 単語による位置の決定
-        if (consciousWords[wordData.word]) {
-            x = consciousWords[wordData.word] + (Math.random() - 0.5) * 0.1;
-        } else if (unconsciousWords[wordData.word]) {
-            x = unconsciousWords[wordData.word] + (Math.random() - 0.5) * 0.1;
-        }
-        
-        if (personalWords[wordData.word]) {
-            y = personalWords[wordData.word] + (Math.random() - 0.5) * 0.1;
-        } else if (archetypeWords[wordData.word]) {
-            y = archetypeWords[wordData.word] + (Math.random() - 0.5) * 0.1;
-        }
-        
-        // カテゴリーによる調整
-        switch(wordData.category) {
-            case 'emotion':
-                // 感情は個人的体験寄り
-                if (y === 0) y = -0.3 + (Math.random() - 0.5) * 0.4;
-                if (x === 0) x = (Math.random() - 0.5) * 0.6;
-                break;
-            case 'theme':
-                // テーマは中央寄り
-                if (x === 0) x = (Math.random() - 0.5) * 0.5;
-                if (y === 0) y = (Math.random() - 0.5) * 0.5;
-                break;
-            case 'symbol':
-                // シンボルは無意識・普遍的寄り
-                if (x === 0) x = -0.3 + (Math.random() - 0.5) * 0.4;
-                if (y === 0) y = 0.3 + (Math.random() - 0.5) * 0.4;
-                break;
-            default:
-                // その他はランダム配置
-                if (x === 0) x = (Math.random() - 0.5) * 0.8;
-                if (y === 0) y = (Math.random() - 0.5) * 0.8;
-        }
-        
-        // 重なり防止の微調整
-        x += (Math.random() - 0.5) * 0.05;
-        y += (Math.random() - 0.5) * 0.05;
-        
-        return {
-            ...wordData,
-            x: Math.max(-0.95, Math.min(0.95, x)),
-            y: Math.max(-0.95, Math.min(0.95, y))
-        };
-    });
-    
-    return processedWords;
-}
+// Removed complex semantic analysis with consciousness mapping
 
 // タイムライン操作の削除（不要）
 function navigateTimeline(days) {
@@ -2206,212 +1497,16 @@ function getCategoryLabel(category) {
 }
 
 
-// 編集モーダル用の表示更新
-function updateEditVectorDisplay(index, value) {
-    const floatValue = value / 100;
-    document.getElementById(`edit-vector-value-${index}`).textContent = floatValue.toFixed(2);
-}
+// Removed complex edit vector display
 
-// 編集した単語の保存
-function saveEditedWord(index, originalWord) {
-    if (!app.currentAnalysis || !app.currentAnalysis.extractedWords) return;
-    
-    const newWord = document.getElementById('word-name-input').value.trim();
-    if (!newWord) {
-        showToast('単語名を入力してください', 'error');
-        return;
-    }
-    
-    // ベクトルを取得
-    const vector = [];
-    for (let i = 0; i < 10; i++) {
-        vector.push(document.getElementById(`edit-vector-${i}`).value / 100);
-    }
-    
-    // 単語データを更新
-    app.currentAnalysis.extractedWords[index].word = newWord;
-    
-    // カスタムベクトルとして保存
-    if (!app.customVectors) {
-        app.customVectors = {};
-    }
-    app.customVectors[newWord] = vector;
-    
-    // 元の単語と異なる場合、元の単語のベクトルを削除
-    if (newWord !== originalWord && app.customVectors[originalWord]) {
-        delete app.customVectors[originalWord];
-    }
-    
-    // ストレージに保存
-    saveCustomVectors();
-    
-    // UIを更新
-    renderExtractedWords(app.currentAnalysis.extractedWords);
-    
-    showToast(`「${newWord}」を保存しました`, 'success');
-    closeWordVectorEditModal();
-}
+// Removed complex word editing with vectors
 
-// 編集モーダルを閉じる
-function closeWordVectorEditModal() {
-    const modal = document.getElementById('word-vector-edit-modal');
-    if (modal) {
-        modal.remove();
-    }
-}
+// Removed complex edit modal close
 
-// グローバル関数として追加
+// Simplified global function registrations
 window.addCustomWord = addCustomWord;
 window.editExtractedWord = editExtractedWord;
 window.removeExtractedWord = removeExtractedWord;
 window.showWordDetails = showWordDetails;
-window.updateVectorDisplay = updateVectorDisplay;
-window.saveWordVector = saveWordVector;
-window.resetWordVector = resetWordVector;
-window.closeWordVectorModal = closeWordVectorModal;
-window.updateEditVectorDisplay = updateEditVectorDisplay;
-window.saveEditedWord = saveEditedWord;
-window.closeWordVectorEditModal = closeWordVectorEditModal;
 
-class OnboardingFlow {
-    constructor() {
-        this.steps = [
-            {
-                title: "DreamScopeへようこそ 🌙",
-                content: "夢を記録し、AIが深層心理を読み解きます",
-                action: null,
-                position: 'center'
-            },
-            {
-                title: "簡単な記録方法",
-                content: "単語だけでもOK。AIが文章に整えます",
-                action: () => this.highlightElement('.keywords-input-field'),
-                position: 'bottom'
-            },
-            {
-                title: "AIによる解析",
-                content: "心理学的な視点から夢の意味を解釈します",
-                action: () => this.showSampleAnalysis(),
-                position: 'center'
-            },
-            {
-                title: "プライバシー保護",
-                content: "あなたの夢は安全に保護されます",
-                action: null,
-                position: 'center'
-            }
-        ];
-        this.currentStep = 0;
-    }
-    
-    start() {
-        this.createOverlay();
-        this.showStep(0);
-    }
-    
-    createOverlay() {
-        this.overlay = document.createElement('div');
-        this.overlay.className = 'onboarding-overlay';
-        this.overlay.innerHTML = `
-            <div class="onboarding-content">
-                <button class="onboarding-skip">スキップ</button>
-                <div class="onboarding-step">
-                    <h2 class="onboarding-title"></h2>
-                    <p class="onboarding-text"></p>
-                    <div class="onboarding-sample hidden"></div>
-                    <div class="onboarding-actions">
-                        <button class="onboarding-prev hidden">戻る</button>
-                        <button class="onboarding-next">次へ</button>
-                    </div>
-                </div>
-            </div>
-        `;
-        
-        document.body.appendChild(this.overlay);
-        
-        // Event listeners
-        this.overlay.querySelector('.onboarding-skip').addEventListener('click', () => this.complete());
-        this.overlay.querySelector('.onboarding-next').addEventListener('click', () => this.nextStep());
-        this.overlay.querySelector('.onboarding-prev').addEventListener('click', () => this.prevStep());
-    }
-    
-    showStep(index) {
-        const step = this.steps[index];
-        const content = this.overlay.querySelector('.onboarding-content');
-        
-        // Update content
-        this.overlay.querySelector('.onboarding-title').textContent = step.title;
-        this.overlay.querySelector('.onboarding-text').textContent = step.content;
-        
-        // Update buttons
-        this.overlay.querySelector('.onboarding-prev').classList.toggle('hidden', index === 0);
-        this.overlay.querySelector('.onboarding-next').textContent = 
-            index === this.steps.length - 1 ? '始める' : '次へ';
-        
-        // Execute action
-        if (step.action) {
-            step.action();
-        }
-        
-        // Update position
-        content.className = `onboarding-content position-${step.position}`;
-        
-        // Animate
-        content.style.animation = 'onboardingFadeIn 0.3s ease-out';
-    }
-    
-    nextStep() {
-        if (this.currentStep < this.steps.length - 1) {
-            this.currentStep++;
-            this.showStep(this.currentStep);
-        } else {
-            this.complete();
-        }
-    }
-    
-    prevStep() {
-        if (this.currentStep > 0) {
-            this.currentStep--;
-            this.showStep(this.currentStep);
-        }
-    }
-    
-    highlightElement(selector) {
-        const element = document.querySelector(selector);
-        if (element) {
-            element.scrollIntoView({ behavior: 'smooth', block: 'center' });
-            element.classList.add('highlighted');
-            setTimeout(() => {
-                element.classList.remove('highlighted');
-            }, 2000);
-        }
-    }
-    
-    showSampleAnalysis() {
-        const sample = this.overlay.querySelector('.onboarding-sample');
-        sample.innerHTML = `
-            <div class="sample-analysis">
-                <h3>サンプル解析結果</h3>
-                <p class="sample-dream">「崖から海に落ちる夢」</p>
-                <div class="sample-symbols">
-                    <span class="symbol-tag">崖: 人生の転機</span>
-                    <span class="symbol-tag">海: 無意識の深層</span>
-                    <span class="symbol-tag">落下: コントロールの喪失</span>
-                </div>
-                <p class="sample-insight">新しい挑戦への不安と期待が入り混じっています</p>
-            </div>
-        `;
-        sample.classList.remove('hidden');
-    }
-    
-    complete() {
-        localStorage.setItem('dreamscope_onboarded', 'true');
-        this.overlay.style.animation = 'onboardingFadeOut 0.3s ease-out';
-        setTimeout(() => {
-            this.overlay.remove();
-        }, 300);
-        
-        // Show welcome toast
-        showToast('DreamScopeへようこそ！最初の夢を記録してみましょう', 'success');
-    }
-}
+// Removed complex onboarding flow class

@@ -1,10 +1,11 @@
 // Service Worker for DreamScope PWA
-const CACHE_NAME = 'dreamscope-v2';
+const CACHE_NAME = 'dreamscope-v3';
 const urlsToCache = [
   '/',
   '/index.html',
   '/styles.css',
   '/app.js',
+  '/js/app-core.js',
   '/manifest.json',
   'https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;700&display=swap'
 ];
@@ -78,67 +79,3 @@ self.addEventListener('fetch', event => {
   );
 });
 
-// Background sync for saving dreams
-self.addEventListener('sync', event => {
-  if (event.tag === 'sync-dreams') {
-    event.waitUntil(syncDreams());
-  }
-});
-
-async function syncDreams() {
-  // Get all clients
-  const clients = await self.clients.matchAll();
-  
-  // Request sync from the first client
-  if (clients.length > 0) {
-    clients[0].postMessage({ type: 'SYNC_DREAMS' });
-  }
-}
-
-// Push notifications
-self.addEventListener('push', event => {
-  const options = {
-    body: event.data ? event.data.text() : '夢を記録する時間です',
-    icon: '/icons/icon-192x192.png',
-    badge: '/icons/badge-72x72.png',
-    vibrate: [200, 100, 200],
-    data: {
-      dateOfArrival: Date.now(),
-      primaryKey: 1
-    },
-    actions: [
-      {
-        action: 'record',
-        title: '記録する',
-        icon: '/icons/action-record.png'
-      },
-      {
-        action: 'dismiss',
-        title: '後で',
-        icon: '/icons/action-dismiss.png'
-      }
-    ]
-  };
-
-  event.waitUntil(
-    self.registration.showNotification('DreamScope', options)
-  );
-});
-
-self.addEventListener('notificationclick', event => {
-  event.notification.close();
-
-  if (event.action === 'record') {
-    // Open the app to record view
-    event.waitUntil(
-      clients.openWindow('/?view=input')
-    );
-  }
-});
-
-// Message handling
-self.addEventListener('message', event => {
-  if (event.data && event.data.type === 'SKIP_WAITING') {
-    self.skipWaiting();
-  }
-});
