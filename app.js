@@ -176,9 +176,6 @@ function initializeEventListeners() {
     document.getElementById('restore-data').addEventListener('click', restoreData);
     document.getElementById('clear-data').addEventListener('click', clearData);
     
-    // Modal
-    document.querySelector('.close-modal').addEventListener('click', hideShareModal);
-    document.getElementById('copy-text').addEventListener('click', copyShareText);
 }
 
 // View Management
@@ -202,8 +199,6 @@ function updateView(viewName) {
     } else if (viewName === 'analysis') {
         updateStatistics();
         updateWordStatistics();
-        renderTagCloud();
-        renderWordAnalysis();
         
         // 分析画面表示時のAPI呼び出しを削除（登録時のみ呼ぶため）
     }
@@ -638,270 +633,27 @@ function showDreamDetail(dreamId) {
     showDreamInModal(dream);
 }
 
-// Tag Cloud
-function renderTagCloud() {
-    const tagCounts = {};
-    
-    app.dreams.forEach(dream => {
-        dream.tags.forEach(tag => {
-            tagCounts[tag] = (tagCounts[tag] || 0) + 1;
-        });
-    });
-    
-    const tagCloud = document.getElementById('tag-cloud');
-    
-    if (Object.keys(tagCounts).length === 0) {
-        tagCloud.innerHTML = '<p style="color: var(--text-secondary);">まだタグがありません</p>';
-        return;
-    }
-    
-    const maxCount = Math.max(...Object.values(tagCounts));
-    
-    tagCloud.innerHTML = Object.entries(tagCounts)
-        .sort((a, b) => b[1] - a[1])
-        .slice(0, 20)
-        .map(([tag, count]) => {
-            const size = 0.8 + (count / maxCount) * 1.2;
-            return `<span class="tag-cloud-item" style="font-size: ${size}rem">${tag}</span>`;
-        })
-        .join('');
-}
 
 // Statistics
 function updateStatistics() {
     document.getElementById('total-dreams').textContent = app.dreams.length;
-    
-    // Calculate streak
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    let streak = 0;
-    let checkDate = new Date(today);
-    
-    while (true) {
-        const dateStr = checkDate.toISOString().split('T')[0];
-        const hasDream = app.dreams.some(dream => dream.date.startsWith(dateStr));
-        
-        if (hasDream) {
-            streak++;
-            checkDate.setDate(checkDate.getDate() - 1);
-        } else {
-            break;
-        }
-    }
-    
-    document.getElementById('current-streak').textContent = streak;
-    
-    // Most common theme
-    const themeCounts = {};
-    app.dreams.forEach(dream => {
-        dream.tags.forEach(tag => {
-            themeCounts[tag] = (themeCounts[tag] || 0) + 1;
-        });
-    });
-    
-    const mostCommon = Object.entries(themeCounts)
-        .sort((a, b) => b[1] - a[1])[0];
-    
-    document.getElementById('common-theme').textContent = mostCommon ? mostCommon[0] : '-';
 }
 
-// Export Functions
-function exportAsCSV() {
-    const headers = ['日付', '夢の内容', 'キーワード', '今日の気づき'];
-    const rows = app.dreams.map(dream => [
-        formatDate(dream.date),
-        dream.content,
-        dream.keywords.join(' '),
-        dream.analysis.dailyInsight
-    ]);
-    
-    const csv = [headers, ...rows]
-        .map(row => row.map(cell => `"${cell}"`).join(','))
-        .join('\n');
-    
-    downloadFile(csv, 'dreamscope_export.csv', 'text/csv');
-}
 
-function exportAsJSON() {
-    const json = JSON.stringify(app.dreams, null, 2);
-    downloadFile(json, 'dreamscope_export.json', 'application/json');
-}
 
-function downloadFile(content, filename, type) {
-    const blob = new Blob([content], { type });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = filename;
-    a.click();
-    URL.revokeObjectURL(url);
-}
 
-// Share Modal
-let previouslyFocused = null;
 
-function showShareModal() {
-    if (!app.currentAnalysis) return;
-    
-    // Store previously focused element
-    previouslyFocused = document.activeElement;
-    
-    generateShareText();
-    const modal = document.getElementById('share-modal');
-    modal.classList.remove('hidden');
-    
-    // Set initial focus to close button
-    const closeBtn = modal.querySelector('.close-modal');
-    closeBtn.focus();
-    
-    // Add focus trap
-    setupFocusTrap(modal);
-}
 
-function hideShareModal() {
-    const modal = document.getElementById('share-modal');
-    modal.classList.add('hidden');
-    
-    // Remove focus trap
-    removeFocusTrap(modal);
-    
-    // Restore focus to previously focused element
-    if (previouslyFocused) {
-        previouslyFocused.focus();
-        previouslyFocused = null;
-    }
-}
 
-// Focus trap implementation
-function setupFocusTrap(element) {
-    const focusableElements = element.querySelectorAll(
-        'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
-    );
-    const firstFocusable = focusableElements[0];
-    const lastFocusable = focusableElements[focusableElements.length - 1];
-    
-    function handleTabKey(e) {
-        if (e.key !== 'Tab') return;
-        
-        if (e.shiftKey) {
-            if (document.activeElement === firstFocusable) {
-                e.preventDefault();
-                lastFocusable.focus();
-            }
-        } else {
-            if (document.activeElement === lastFocusable) {
-                e.preventDefault();
-                firstFocusable.focus();
-            }
-        }
-    }
-    
-    function handleEscKey(e) {
-        if (e.key === 'Escape') {
-            hideShareModal();
-        }
-    }
-    
-    element.addEventListener('keydown', handleTabKey);
-    element.addEventListener('keydown', handleEscKey);
-    
-    // Store handlers for removal
-    element._focusTrapHandlers = { handleTabKey, handleEscKey };
-}
-
-function removeFocusTrap(element) {
-    if (element._focusTrapHandlers) {
-        element.removeEventListener('keydown', element._focusTrapHandlers.handleTabKey);
-        element.removeEventListener('keydown', element._focusTrapHandlers.handleEscKey);
-        delete element._focusTrapHandlers;
-    }
-}
-
-function generateShareText() {
-    const shareTextArea = document.getElementById('share-text');
-    const date = formatDate(new Date().toISOString());
-    const dreamContent = app.currentAnalysis.originalInput || app.currentAnalysis.dreamText || '';
-    const symbols = app.currentAnalysis.symbols || [];
-    
-    let shareText = `🌙 DreamScope - ${date}\n\n`;
-    shareText += `【夢の内容】\n${dreamContent}\n\n`;
-    
-    if (symbols.length > 0) {
-        shareText += `【象徴と意味】\n`;
-        symbols.forEach(symbol => {
-            shareText += `・${symbol.symbol}: ${symbol.meaning}\n`;
-        });
-    }
-    
-    shareText += `\n#DreamScope #夢日記 #夢分析`;
-    
-    shareTextArea.value = shareText;
-}
-
-function copyShareText() {
-    const shareTextArea = document.getElementById('share-text');
-    shareTextArea.select();
-    document.execCommand('copy');
-    
-    // Show feedback
-    const button = document.getElementById('copy-text');
-    const originalText = button.textContent;
-    button.textContent = 'コピーしました！';
-    setTimeout(() => {
-        button.textContent = originalText;
-    }, 2000);
-}
 
 
 // Settings Functions
-function backupData() {
-    const backup = {
-        dreams: app.dreams,
-        settings: app.settings,
-        date: new Date().toISOString()
-    };
-    
-    const json = JSON.stringify(backup, null, 2);
-    downloadFile(json, `dreamscope_backup_${Date.now()}.json`, 'application/json');
-}
 
-function restoreData() {
-    const input = document.createElement('input');
-    input.type = 'file';
-    input.accept = '.json';
-    
-    input.onchange = async (e) => {
-        const file = e.target.files[0];
-        if (!file) return;
-        
-        try {
-            const text = await file.text();
-            const backup = JSON.parse(text);
-            
-            if (backup.dreams && backup.settings) {
-                app.dreams = backup.dreams;
-                app.settings = backup.settings;
-                saveDataToStorage();
-                
-                alert('データを復元しました！');
-                location.reload();
-            } else {
-                alert('無効なバックアップファイルです');
-            }
-        } catch (err) {
-            alert('ファイルの読み込みに失敗しました');
-        }
-    };
-    
-    input.click();
-}
 
 function clearData() {
     if (confirm('すべてのデータを削除してもよろしいですか？この操作は取り消せません。')) {
         localStorage.clear();
         app.dreams = [];
-        app.settings = { reminderEnabled: false };
-        // API key removed - using server endpoint
         
         alert('すべてのデータを削除しました');
         location.reload();
@@ -1322,158 +1074,6 @@ function renderWordAnalysis() {
 }
 
 // Removed complex D3.js visualization code
-        chartContainer.innerHTML = '<p style="text-align: center; color: var(--text-secondary);">この期間のデータがありません</p>';
-        return;
-    }
-    
-    // Process words for semantic distance calculation
-    const processedWords = calculateSemanticPositions(recentWords);
-    
-    // Set up D3.js chart dimensions
-    const margin = {top: 20, right: 20, bottom: 40, left: 40};
-    const width = Math.min(chartContainer.offsetWidth - margin.left - margin.right, 600);
-    const height = Math.min(400 - margin.top - margin.bottom, 400);
-    
-    // Create SVG
-    const svg = d3.select(chartContainer)
-        .append('svg')
-        .attr('width', width + margin.left + margin.right)
-        .attr('height', height + margin.top + margin.bottom)
-        .append('g')
-        .attr('transform', `translate(${margin.left},${margin.top})`);
-    
-    // Create scales based on semantic positions
-    const xScale = d3.scaleLinear()
-        .domain([-1, 1])
-        .range([0, width]);
-    
-    const yScale = d3.scaleLinear()
-        .domain([-1, 1])
-        .range([height, 0]);
-    
-    // Color scale for categories
-    const colorScale = d3.scaleOrdinal()
-        .domain(['emotion', 'theme', 'symbol', 'general'])
-        .range(['#ff6b6b', '#4ecdc4', '#45b7d1', '#95a5a6']);
-    
-    // Size scale for frequency
-    const sizeScale = d3.scaleSqrt()
-        .domain([1, d3.max(processedWords, d => d.frequency) || 1])
-        .range([5, 20]);
-    
-    // Add axes with labels
-    const xAxis = d3.axisBottom(xScale).tickValues([-1, -0.5, 0, 0.5, 1]);
-    const yAxis = d3.axisLeft(yScale).tickValues([-1, -0.5, 0, 0.5, 1]);
-    
-    svg.append('g')
-        .attr('transform', `translate(0,${height})`)
-        .call(xAxis)
-        .style('opacity', 0.3);
-    
-    svg.append('g')
-        .call(yAxis)
-        .style('opacity', 0.3);
-    
-    // Add center lines
-    svg.append('line')
-        .attr('x1', xScale(0))
-        .attr('x2', xScale(0))
-        .attr('y1', 0)
-        .attr('y2', height)
-        .style('stroke', 'var(--border-color)')
-        .style('stroke-width', 1)
-        .style('opacity', 0.5);
-    
-    svg.append('line')
-        .attr('x1', 0)
-        .attr('x2', width)
-        .attr('y1', yScale(0))
-        .attr('y2', yScale(0))
-        .style('stroke', 'var(--border-color)')
-        .style('stroke-width', 1)
-        .style('opacity', 0.5);
-    
-    // Add quadrant labels
-    const quadrantLabels = [
-        { x: 0.7, y: -0.7, text: '意識的・個人的' },
-        { x: -0.7, y: -0.7, text: '無意識的・個人的' },
-        { x: -0.7, y: 0.7, text: '無意識的・普遍的' },
-        { x: 0.7, y: 0.7, text: '意識的・普遍的' }
-    ];
-    
-    svg.selectAll('.quadrant-label')
-        .data(quadrantLabels)
-        .enter().append('text')
-        .attr('class', 'quadrant-label')
-        .attr('x', d => xScale(d.x))
-        .attr('y', d => yScale(d.y))
-        .attr('text-anchor', 'middle')
-        .style('fill', 'var(--text-secondary)')
-        .style('font-size', '11px')
-        .style('opacity', 0.6)
-        .text(d => d.text);
-    
-    // Add tooltip
-    const tooltip = d3.select('body').append('div')
-        .attr('class', 'word-tooltip')
-        .style('opacity', 0)
-        .style('position', 'absolute')
-        .style('background', 'rgba(0, 0, 0, 0.8)')
-        .style('color', 'white')
-        .style('padding', '8px')
-        .style('border-radius', '4px')
-        .style('font-size', '12px')
-        .style('pointer-events', 'none')
-        .style('z-index', '1000');
-    
-    const bubbles = svg.selectAll('.word-bubble')
-        .data(processedWords)
-        .enter().append('g')
-        .attr('class', 'word-bubble');
-    
-    bubbles.append('circle')
-        .attr('cx', d => xScale(d.x))
-        .attr('cy', d => yScale(d.y))
-        .attr('r', d => sizeScale(d.frequency))
-        .attr('fill', d => colorScale(d.category))
-        .attr('opacity', 0.7)
-        .style('cursor', 'pointer')
-        .on('mouseover', function(event, d) {
-            d3.select(this).attr('opacity', 1);
-            tooltip.transition().duration(200).style('opacity', .9);
-            tooltip.html(`
-                <strong>${d.word}</strong><br/>
-                カテゴリ: ${getCategoryLabel(d.category)}<br/>
-                出現回数: ${d.frequency}<br/>
-                最近の出現: ${formatShortDate(new Date(d.lastDate))}
-            `)
-            .style('left', (event.pageX + 10) + 'px')
-            .style('top', (event.pageY - 28) + 'px');
-        })
-        .on('mouseout', function(d) {
-            d3.select(this).attr('opacity', 0.7);
-            tooltip.transition().duration(500).style('opacity', 0);
-        })
-        .on('click', function(event, d) {
-            showWordDetails(d.word);
-        });
-    
-    // Add word labels for high-frequency words
-    bubbles.filter(d => d.frequency >= 3)
-        .append('text')
-        .attr('x', d => xScale(d.x))
-        .attr('y', d => yScale(d.y))
-        .attr('text-anchor', 'middle')
-        .attr('dy', '.35em')
-        .style('font-size', '10px')
-        .style('fill', 'var(--text-primary)')
-        .style('font-weight', 'bold')
-        .style('pointer-events', 'none')
-        .text(d => d.word.length > 6 ? d.word.substring(0, 6) + '...' : d.word);
-    
-    // Store tooltip reference for cleanup
-    chartContainer._tooltip = tooltip;
-}
 
 // Removed complex semantic analysis with consciousness mapping
 

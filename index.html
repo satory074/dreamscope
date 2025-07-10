@@ -5,26 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>DreamScope - 夢を記録し、意味づけ、人生のヒントにする</title>
     
-    <!-- PWA Meta Tags -->
-    <meta name="theme-color" content="#B39DDB">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="DreamScope">
-    
-    <!-- iOS Splash Screens -->
-    <link rel="apple-touch-icon" href="/icons/icon-192x192.png">
-    <link rel="apple-touch-startup-image" href="/splash/splash-2048x2732.png" media="(device-width: 1024px) and (device-height: 1366px) and (-webkit-device-pixel-ratio: 2)">
-    <link rel="apple-touch-startup-image" href="/splash/splash-1668x2388.png" media="(device-width: 834px) and (device-height: 1194px) and (-webkit-device-pixel-ratio: 2)">
-    <link rel="apple-touch-startup-image" href="/splash/splash-1536x2048.png" media="(device-width: 768px) and (device-height: 1024px) and (-webkit-device-pixel-ratio: 2)">
-    <link rel="apple-touch-startup-image" href="/splash/splash-1125x2436.png" media="(device-width: 375px) and (device-height: 812px) and (-webkit-device-pixel-ratio: 3)">
-    <link rel="apple-touch-startup-image" href="/splash/splash-1242x2688.png" media="(device-width: 414px) and (device-height: 896px) and (-webkit-device-pixel-ratio: 3)">
-    <link rel="apple-touch-startup-image" href="/splash/splash-828x1792.png" media="(device-width: 414px) and (device-height: 896px) and (-webkit-device-pixel-ratio: 2)">
-    <link rel="apple-touch-startup-image" href="/splash/splash-1170x2532.png" media="(device-width: 390px) and (device-height: 844px) and (-webkit-device-pixel-ratio: 3)">
-    <link rel="apple-touch-startup-image" href="/splash/splash-1284x2778.png" media="(device-width: 428px) and (device-height: 926px) and (-webkit-device-pixel-ratio: 3)">
-    <link rel="apple-touch-startup-image" href="/splash/splash-750x1334.png" media="(device-width: 375px) and (device-height: 667px) and (-webkit-device-pixel-ratio: 2)">
-    
-    <!-- Manifest -->
-    <link rel="manifest" href="/manifest.json">
     
     <link rel="stylesheet" href="styles.css">
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;700&display=swap" rel="stylesheet">
@@ -98,7 +78,6 @@
                     <!-- アクションボタン -->
                     <div class="result-actions">
                         <button id="save-dream-btn" class="action-btn primary">保存する</button>
-                        <button id="share-dream-btn" class="action-btn secondary">夢をシェア</button>
                         <button id="new-dream-btn" class="action-btn tertiary">新しい夢を記録</button>
                     </div>
                 </div>
@@ -129,11 +108,6 @@
                 <div class="analysis-container">
                     <h2 class="section-title">夢の傾向分析</h2>
                     
-                    <!-- タグクラウド -->
-                    <div class="tag-cloud-container">
-                        <h3>よく見る夢のキーワード</h3>
-                        <div id="tag-cloud" class="tag-cloud"></div>
-                    </div>
 
                     <!-- 統計情報 -->
                     <div class="statistics">
@@ -141,23 +115,9 @@
                             <span class="stat-number" id="total-dreams">0</span>
                             <span class="stat-label">記録した夢</span>
                         </div>
-                        <div class="stat-card">
-                            <span class="stat-number" id="current-streak">0</span>
-                            <span class="stat-label">連続記録日数</span>
-                        </div>
-                        <div class="stat-card">
-                            <span class="stat-number" id="common-theme">-</span>
-                            <span class="stat-label">最も多いテーマ</span>
-                        </div>
                     </div>
                     
 
-                    <!-- エクスポート -->
-                    <div class="export-section">
-                        <h3>データのエクスポート</h3>
-                        <button id="export-csv" class="export-btn">CSVでダウンロード</button>
-                        <button id="export-json" class="export-btn">JSONでダウンロード</button>
-                    </div>
                 </div>
             </section>
 
@@ -172,40 +132,16 @@
                         <p class="settings-hint">AI機能はサーバー側で処理されます</p>
                     </div>
 
-                    <!-- 通知設定 -->
-                    <div class="settings-group">
-                        <h3>通知設定</h3>
-                        <label class="switch">
-                            <input type="checkbox" id="reminder-enabled">
-                            <span class="slider"></span>
-                            <span class="switch-label">毎朝の記録リマインダー</span>
-                        </label>
-                    </div>
 
                     <!-- データ管理 -->
                     <div class="settings-group">
                         <h3>データ管理</h3>
-                        <button id="backup-data" class="settings-btn">データをバックアップ</button>
-                        <button id="restore-data" class="settings-btn">データを復元</button>
                         <button id="clear-data" class="settings-btn danger">すべてのデータを削除</button>
                     </div>
                 </div>
             </section>
         </main>
 
-        <!-- シェア画像生成モーダル -->
-        <div id="share-modal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="share-modal-title">
-            <div class="modal-content">
-                <button class="close-modal" aria-label="閉じる">&times;</button>
-                <h3 id="share-modal-title">夢をシェア</h3>
-                <div id="share-text-container" class="share-text-container">
-                    <textarea id="share-text" class="share-text" readonly></textarea>
-                </div>
-                <div class="modal-actions">
-                    <button id="copy-text" class="action-btn primary">テキストをコピー</button>
-                </div>
-            </div>
-        </div>
 
         <!-- ローディング表示 -->
         <div id="loading" class="loading hidden">
@@ -256,18 +192,8 @@
     <!-- Toast通知コンテナ -->
     <div id="toast-container" class="toast-container"></div>
     
-    <!-- オフラインインジケーター -->
-    <div id="offline-indicator" class="offline-indicator">
-        インターネット接続がありません - オフラインモードで動作中
-    </div>
-    
-    <!-- Pull to refresh -->
-    <div id="pull-to-refresh" class="pull-to-refresh">
-        <div class="spinner"></div>
-    </div>
     
     <!-- Scripts with async loading -->
-    <script src="js/app-core.js"></script>
     <script src="app.js" defer></script>
 </body>
 </html>
