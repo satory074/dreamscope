@@ -116,30 +116,6 @@ function initializeEventListeners() {
         });
     });
     
-    // Input type selection
-    document.querySelectorAll('.type-btn').forEach(btn => {
-        btn.addEventListener('click', (e) => {
-            e.preventDefault();
-            const button = e.target.closest('.type-btn');
-            const type = button.dataset.type;
-            updateInputType(type);
-        });
-    });
-    
-    // Keywords input handling
-    const keywordsField = document.getElementById('keywords-field');
-    if (keywordsField) {
-        keywordsField.addEventListener('keydown', (e) => {
-            if (e.key === 'Enter' || e.key === ' ') {
-                e.preventDefault();
-                const value = e.target.value.trim();
-                if (value) {
-                    addKeywordTag(value);
-                    e.target.value = '';
-                }
-            }
-        });
-    }
     
     // Record button
     const recordBtn = document.getElementById('record-btn');
@@ -206,46 +182,6 @@ function updateView(viewName) {
     app.currentView = viewName;
 }
 
-// Input Type Management
-function updateInputType(type) {
-    document.querySelectorAll('.type-btn').forEach(btn => {
-        btn.classList.remove('active');
-    });
-    document.querySelector(`[data-type="${type}"]`).classList.add('active');
-    
-    document.querySelectorAll('.input-form').forEach(form => {
-        form.classList.remove('active');
-    });
-    document.getElementById(`${type}-input`).classList.add('active');
-}
-
-// Keywords Management
-const keywords = [];
-
-function addKeywordTag(keyword) {
-    if (!keywords.includes(keyword)) {
-        keywords.push(keyword);
-        renderKeywordTags();
-    }
-}
-
-function removeKeywordTag(keyword) {
-    const index = keywords.indexOf(keyword);
-    if (index > -1) {
-        keywords.splice(index, 1);
-        renderKeywordTags();
-    }
-}
-
-function renderKeywordTags() {
-    const container = document.getElementById('keyword-tags');
-    container.innerHTML = keywords.map(keyword => `
-        <span class="keyword-tag">
-            ${keyword}
-            <span class="remove" onclick="removeKeywordTag('${keyword}')">&times;</span>
-        </span>
-    `).join('');
-}
 
 // Dream Recording
 let isAnalyzing = false; // 解析中フラグを追加
@@ -257,31 +193,15 @@ async function recordDream() {
         return;
     }
     
-    const isKeywordsMode = document.querySelector('[data-type="keywords"]').classList.contains('active');
     let dreamContent = '';
     
     // Clear previous errors
     clearError();
     
-    if (isKeywordsMode) {
-        // Get keywords from field and tags
-        const fieldValue = document.getElementById('keywords-field').value.trim();
-        if (fieldValue) {
-            keywords.push(...fieldValue.split(/\s+/));
-        }
-        
-        if (keywords.length === 0) {
-            showError('キーワードを入力してください', 'keywords-field');
-            return;
-        }
-        
-        dreamContent = keywords.join(' ');
-    } else {
-        dreamContent = document.getElementById('freetext-field').value.trim();
-        if (!dreamContent) {
-            showError('夢の内容を入力してください', 'freetext-field');
-            return;
-        }
+    dreamContent = document.getElementById('freetext-field').value.trim();
+    if (!dreamContent) {
+        showError('夢の内容を入力してください', 'freetext-field');
+        return;
     }
     
     // Set analyzing flag and show loading
@@ -290,7 +210,7 @@ async function recordDream() {
     
     try {
         // Process dream with AI
-        const result = await analyzeDream(dreamContent, isKeywordsMode);
+        const result = await analyzeDream(dreamContent);
         
         // 元の入力内容を保持
         result.originalInput = dreamContent;
@@ -339,7 +259,7 @@ function clearError() {
 }
 
 // AI Analysis
-async function analyzeDream(content, isKeywords) {
+async function analyzeDream(content) {
     const systemPrompt = 'あなたは夢の解釈の専門家です。ユング心理学と認知心理学の観点から夢を分析します。';
     
     const prompt = `以下の夢の内容を心理学的に解釈してください。
@@ -364,7 +284,6 @@ async function analyzeDream(content, isKeywords) {
             },
             body: JSON.stringify({
                 dreamContent: content,
-                isKeywords: isKeywords,
                 systemPrompt: systemPrompt,
                 prompt: prompt
             })
@@ -379,12 +298,12 @@ async function analyzeDream(content, isKeywords) {
     } catch (error) {
         console.error('API Error:', error);
         console.log('サーバーに接続できません。モック分析を使用します。');
-        return generateMockAnalysis(content, isKeywords);
+        return generateMockAnalysis(content);
     }
 }
 
 // Mock Analysis for Demo
-function generateMockAnalysis(content, isKeywords) {
+function generateMockAnalysis(content) {
     const words = content.split(/\s+/);
     
     const dreamText = content;
@@ -444,7 +363,6 @@ function saveDream() {
         id: Date.now(),
         date: new Date().toISOString(),
         content: app.currentAnalysis.originalInput || app.currentAnalysis.dreamText,
-        keywords: keywords.slice(),
         analysis: app.currentAnalysis,
         tags: extractTags(app.currentAnalysis)
     };
@@ -474,9 +392,7 @@ function extractTags(analysis) {
 
 // Reset Input
 function resetInput() {
-    document.getElementById('keywords-field').value = '';
     document.getElementById('freetext-field').value = '';
-    keywords.length = 0;
     renderKeywordTags();
     document.getElementById('analysis-result').classList.add('hidden');
     app.currentAnalysis = null;
@@ -708,7 +624,6 @@ function showToast(message, type = 'info') {
 }
 
 // Make functions globally accessible
-window.removeKeywordTag = removeKeywordTag;
 window.showDreamDetail = showDreamDetail;
 
 // Enhanced Accessibility
@@ -727,17 +642,6 @@ function enhanceAccessibility() {
     // Store reference to updateView function
     window.updateView = updateView;
     
-    // Enhance keyboard navigation for keyword tags
-    const keywordsField = document.getElementById('keywords-field');
-    keywordsField.addEventListener('keydown', (e) => {
-        if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
-            const tags = document.querySelectorAll('.keyword-tag');
-            if (tags.length > 0) {
-                e.preventDefault();
-                navigateKeywordTags(e.key === 'ArrowRight' ? 1 : -1);
-            }
-        }
-    });
     
     // Add skip to content link
     const skipLink = document.createElement('a');
@@ -858,24 +762,6 @@ function addInputFeedback() {
     });
 }
 
-// Keyboard navigation for tags
-let currentTagIndex = -1;
-
-function navigateKeywordTags(direction) {
-    const tags = document.querySelectorAll('.keyword-tag');
-    if (tags.length === 0) return;
-    
-    currentTagIndex += direction;
-    if (currentTagIndex < 0) currentTagIndex = tags.length - 1;
-    if (currentTagIndex >= tags.length) currentTagIndex = 0;
-    
-    tags.forEach((tag, index) => {
-        tag.classList.toggle('focused', index === currentTagIndex);
-        if (index === currentTagIndex) {
-            tag.focus();
-        }
-    });
-}
 
 // Simplified first-time user check
 function checkFirstTimeUser() {
@@ -903,17 +789,6 @@ function extractWordsFromDream(content, analysis) {
         });
     }
     
-    // Simple keyword extraction from user input keywords
-    if (keywords && keywords.length > 0) {
-        keywords.forEach(keyword => {
-            if (!extractedWords.some(w => w.word === keyword)) {
-                extractedWords.push({
-                    word: keyword,
-                    category: 'general'
-                });
-            }
-        });
-    }
 
     return extractedWords;
 }

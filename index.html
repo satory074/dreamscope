@@ -29,23 +29,11 @@
                 <div class="input-container">
                     <h2 class="section-title">今日の夢を記録</h2>
                     
-                    <!-- 入力方式選択 -->
-                    <div class="input-type-selector">
-                        <button class="type-btn active" data-type="freetext">文章で記録</button>
-                        <button class="type-btn" data-type="keywords">単語で記録</button>
-                    </div>
 
                     <!-- 自由記述入力フォーム -->
-                    <div id="freetext-input" class="input-form active">
+                    <div id="freetext-input" class="input-form">
                         <p class="input-hint">夢の内容を自由に記述してください</p>
                         <textarea id="freetext-field" class="freetext-input-field" rows="6" placeholder="夢の内容を詳しく書いてください..." aria-required="true" aria-label="夢の内容"></textarea>
-                    </div>
-
-                    <!-- 単語入力フォーム -->
-                    <div id="keywords-input" class="input-form">
-                        <p class="input-hint">夢の印象的な要素を単語で入力してください（例：海 崖 落ちた 怖い）</p>
-                        <input type="text" id="keywords-field" class="keywords-input-field" placeholder="スペースで区切って入力" aria-required="true" aria-label="夢のキーワード">
-                        <div id="keyword-tags" class="keyword-tags"></div>
                     </div>
 
                     <!-- 記録ボタン -->
