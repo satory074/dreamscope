@@ -270,6 +270,46 @@ body {
     border-left: 4px solid var(--primary-color);
 }
 
+.symbol-comment {
+    margin-top: 0.5rem;
+    padding: 0.5rem;
+    background: rgba(108, 92, 231, 0.1);
+    border-radius: 8px;
+    font-size: 0.9rem;
+    line-height: 1.5;
+}
+
+.symbol-interpretation {
+    margin-top: 0.5rem;
+    padding: 0.5rem;
+    background: rgba(255, 165, 0, 0.1);
+    border-radius: 8px;
+    font-size: 0.9rem;
+    line-height: 1.5;
+    font-style: italic;
+}
+
+.overall-analysis {
+    margin-top: 2rem;
+    padding: 1.5rem;
+    background: var(--card-bg);
+    border-radius: 12px;
+    border: 1px solid var(--border-color);
+}
+
+.dream-theme {
+    font-size: 1.2rem;
+    color: var(--primary-color);
+    margin-bottom: 1rem;
+    text-align: center;
+}
+
+.overall-comment {
+    font-size: 1rem;
+    line-height: 1.8;
+    color: var(--text-muted);
+}
+
 @keyframes insightReveal {
     0% {
         opacity: 0;

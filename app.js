@@ -472,9 +472,25 @@ function displayAnalysisResult(result) {
     symbolsContainer.innerHTML = result.symbols.map(symbol => `
         <div class="symbol-item">
             <strong>${symbol.symbol}</strong>: ${symbol.meaning}
+            ${symbol.comment ? `<div class="symbol-comment">💭 ${symbol.comment}</div>` : ''}
+            ${symbol.interpretation ? `<div class="symbol-interpretation">🔍 ${symbol.interpretation}</div>` : ''}
         </div>
     `).join('');
     
+    
+    // Display overall analysis if available
+    if (result.overallComment || result.dreamTheme) {
+        const overallAnalysis = document.getElementById('overall-analysis');
+        overallAnalysis.classList.remove('hidden');
+        
+        if (result.dreamTheme) {
+            document.getElementById('dream-theme').innerHTML = `<strong>テーマ:</strong> ${result.dreamTheme}`;
+        }
+        
+        if (result.overallComment) {
+            document.getElementById('overall-comment').innerHTML = `<p>${result.overallComment}</p>`;
+        }
+    }
     
     // 抽出された単語を表示
     if (result.extractedWords && result.extractedWords.length > 0) {

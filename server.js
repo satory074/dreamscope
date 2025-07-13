@@ -217,11 +217,15 @@ ${symbols.map(s => `・${s}`).join('\n')}
   "symbols": [
     {
       "symbol": "象徴名",
-      "meaning": "この象徴の心理的意味の説明（50-100文字程度）"
+      "meaning": "この象徴の心理的意味の説明（50-100文字程度）",
+      "comment": "この象徴が夢の文脈でどのように現れ、どんな役割を果たしているかの詳細なコメント（100-150文字程度）",
+      "interpretation": "ユング心理学やフロイト心理学の観点からの深い解釈（80-120文字程度）"
     }
   ],
+  "overallComment": "夢全体の内容についての総合的なコメント。象徴同士の関係性、夢のストーリー展開、感情的な側面などを含む（200-300文字程度）",
   "psychologicalMessage": "深層心理からのメッセージ（100-200文字程度）",
-  "dailyInsight": "今日の洞察（1文、30文字程度）"
+  "dailyInsight": "今日の洞察（1文、30文字程度）",
+  "dreamTheme": "この夢の主要なテーマ（20-40文字程度）"
 }`;
 
         const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${GEMINI_API_KEY}`, {
