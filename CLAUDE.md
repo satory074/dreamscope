@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-DreamScope is a dream journaling web application with AI-powered analysis. Currently implemented as a client-server architecture with plans for PWA features.
+DreamScope is a dream journaling web application that records dreams and analyzes deep psychology using AI. Privacy-first design with all data stored in browser LocalStorage.
 
 ## Architecture
 
@@ -19,8 +19,10 @@ DreamScope is a dream journaling web application with AI-powered analysis. Curre
 - `index.html` - Single-page application with all views
 - `app.js` - Main application logic, state management, event handling
 - `styles.css` - Dark mode design with CSS variables
-- `server.js` - Express server with `/api/analyze-dream` endpoint
-- `/js/api-service.js` - API service module (note: contains legacy OpenAI code)
+- `color-palettes.css` - 8 color theme definitions
+- `server.js` - Express server with Gemini API integration
+- `/js/utils.js` - Utility functions
+- `theme-preview.html` - Color theme preview page
 
 ## Development Commands
 
@@ -55,36 +57,52 @@ Dreams stored in LocalStorage (`dreamscope_dreams`):
   id: Date.now(),
   date: new Date().toISOString(),
   content: "dream description",
-  keywords: ["keyword1", "keyword2"],
-  aiAnalysis: "AI-generated analysis"
+  symbols: ["symbol1", "symbol2"],  // Extracted symbols
+  aiAnalysis: {                      // AI analysis results
+    symbols: [
+      {
+        symbol: "symbol name",
+        meaning: "psychological interpretation"
+      }
+    ],
+    overall: "overall dream analysis"
+  }
 }
 ```
 
 ### API Integration
-- Server endpoint: `POST /api/analyze-dream`
-- Request body: `{ content: "dream text" }`
-- Response: `{ analysis: "AI analysis text" }`
+- **Dream Analysis**: `POST /api/analyze-dream`
+  - Request: `{ content: "dream text" }`
+  - Response: `{ analysis: "AI analysis text" }`
+- **Symbol Extraction**: `POST /api/extract-symbols`
+  - Request: `{ content: "dream text" }`
+  - Response: `{ symbols: ["symbol1", "symbol2"] }`
+- **Symbol Analysis**: `POST /api/analyze-symbols`
+  - Request: `{ content: "dream text", symbols: ["symbol1", "symbol2"] }`
+  - Response: `{ symbols: [{symbol: "name", meaning: "interpretation"}], overall: "analysis" }`
 - Gemini API key from environment variable
-- Client falls back to mock analysis if server unavailable
+- All responses in easy-to-understand Japanese
 
 ### State Management
 - Global `app` object in `app.js`
 - LocalStorage keys:
   - `dreamscope_dreams` - Dream entries array
-  - `dreamscope_settings` - User preferences
+  - `dreamscope_settings` - User preferences (includes theme selection)
+  - Storage quota monitoring with visual indicators
 
 ### Adding Features
 1. **UI Changes**: Edit `index.html` and `styles.css`
-2. **Logic**: Add to `app.js` or create modules in `/js/`
-3. **API Changes**: Update `server.js` and corresponding client code
+2. **Color Themes**: Add new themes to `color-palettes.css`
+3. **Logic**: Add to `app.js` or create modules in `/js/`
+4. **API Changes**: Update `server.js` and corresponding client code
 
 ## Important Notes
 
 1. **No PWA Features Yet**: Service worker and manifest.json mentioned in docs but not implemented
-2. **API Mismatch**: `api-service.js` has OpenAI code but server uses Gemini
-3. **No Build Process**: Edit files directly, refresh browser
-4. **Privacy-First**: All data stored locally, no user accounts
-5. **Storage Limits**: LocalStorage ~5-10MB limit
+2. **No Build Process**: Edit files directly, refresh browser
+3. **Privacy-First**: All data stored locally, no user accounts
+4. **Storage Limits**: LocalStorage ~5-10MB limit with monitoring
+5. **Archive Directory Removed**: Legacy OpenAI integration files have been archived and removed
 
 ## Common Tasks
 
@@ -97,11 +115,32 @@ localStorage.getItem('dreamscope_settings')
 
 ### Test AI Analysis
 ```bash
-# With server running
+# Test dream analysis
 curl -X POST http://localhost:3000/api/analyze-dream \
   -H "Content-Type: application/json" \
-  -d '{"content": "I had a dream about flying"}'
+  -d '{"content": "空を飛ぶ夢を見ました"}'
+
+# Test symbol extraction
+curl -X POST http://localhost:3000/api/extract-symbols \
+  -H "Content-Type: application/json" \
+  -d '{"content": "空を飛ぶ夢を見ました"}'
+
+# Test symbol analysis
+curl -X POST http://localhost:3000/api/analyze-symbols \
+  -H "Content-Type: application/json" \
+  -d '{"content": "空を飛ぶ夢を見ました", "symbols": ["空", "飛ぶ"]}'
 ```
 
 ### Monitor Storage Usage
-The app includes storage quota monitoring - check console for warnings when approaching limits.
+The app includes visual storage quota monitoring:
+- Progress bar shows current usage
+- Warnings appear when approaching limits
+- Check console for detailed storage information
+
+## Recent Updates
+
+- **Color Themes**: Added 8 color themes (Default, Midnight, Ocean, Forest, Sunset, Lavender, Rose, Monochrome)
+- **AI Analysis Improvements**: Enhanced Japanese output with easier-to-understand explanations
+- **Symbol Analysis**: Advanced dream symbol extraction and interpretation
+- **UI Enhancements**: Bento grid layout for AI analysis results
+- **Storage Monitoring**: Visual indicators for LocalStorage usage
