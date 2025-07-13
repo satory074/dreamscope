@@ -291,28 +291,7 @@ body {
     line-height: 1.6;
 }
 
-.confidence-indicator {
-    position: absolute;
-    bottom: 12px;
-    right: 24px;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    font-size: 0.85rem;
-}
-
-.confidence-label {
-    color: var(--text-secondary);
-    opacity: 0.8;
-}
-
-.confidence-bar {
-    width: 80px;
-    height: 6px;
-    background-color: rgba(255, 255, 255, 0.1);
-    border-radius: 3px;
-    overflow: hidden;
-}
+/* Confidence indicator styles removed - 機能削除 */
 
 .confidence-fill {
     height: 100%;
@@ -339,6 +318,11 @@ body {
 .analysis-card:hover {
     transform: translateY(-2px);
     box-shadow: 0 5px 20px rgba(0, 0, 0, 0.3);
+}
+
+/* 象徴・感情統合カード */
+.symbols-emotion-card {
+    grid-column: 1 / -1;
 }
 
 .card-header {
@@ -1481,11 +1465,7 @@ button::before, a::before, .clickable::before {
         font-size: 1.2rem;
     }
     
-    .confidence-indicator {
-        position: static;
-        margin-top: 16px;
-        justify-content: center;
-    }
+    /* Mobile confidence indicator styles removed */
     
     .analysis-grid {
         grid-template-columns: 1fr;

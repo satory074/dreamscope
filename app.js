@@ -270,8 +270,9 @@ async function recordDream() {
         
         hideLoading();
     } catch (error) {
+        console.error('recordDream error:', error);
         hideLoading();
-        showError('象徴の抽出中にエラーが発生しました。もう一度お試しください。');
+        showError('分析中にエラーが発生しました。もう一度お試しください。');
     } finally {
         // 解析完了後にフラグをリセット
         isAnalyzing = false;
@@ -318,8 +319,14 @@ async function extractSymbols(dreamContent) {
         };
         console.log('Request body:', JSON.stringify(requestBody));
         
-        const apiUrl = window.location.origin + '/api/extract-symbols';
+        // Check if running on Node.js server or Python server
+        const isNodeServer = window.location.port === '3000' || window.location.port === '';
+        const apiUrl = isNodeServer ? '/api/extract-symbols' : 'http://localhost:3000/api/extract-symbols';
+        
         console.log('Fetching from:', apiUrl);
+        console.log('Current origin:', window.location.origin);
+        console.log('Current port:', window.location.port);
+        console.log('Is Node server:', isNodeServer);
         
         const response = await fetch(apiUrl, {
             method: 'POST',
@@ -356,7 +363,9 @@ async function extractSymbols(dreamContent) {
 // Analyze dream with edited symbols
 async function analyzeWithSymbols(dreamContent, symbols) {
     try {
-        const apiUrl = window.location.origin + '/api/analyze-symbols';
+        // Check if running on Node.js server or Python server
+        const isNodeServer = window.location.port === '3000' || window.location.port === '';
+        const apiUrl = isNodeServer ? '/api/analyze-symbols' : 'http://localhost:3000/api/analyze-symbols';
         console.log('Analyzing with symbols at:', apiUrl);
         
         const response = await fetch(apiUrl, {
@@ -401,7 +410,11 @@ async function analyzeDream(content) {
         }`;
     
     try {
-        const response = await fetch(app.serverEndpoint, {
+        // Check if running on Node.js server or Python server
+        const isNodeServer = window.location.port === '3000' || window.location.port === '';
+        const apiUrl = isNodeServer ? app.serverEndpoint : 'http://localhost:3000' + app.serverEndpoint;
+        
+        const response = await fetch(apiUrl, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -466,14 +479,13 @@ function displayAnalysisResult(result) {
         result.extractedWords = extractWordsFromDream(result.dreamText, result);
     }
     
-    // Update Hero Card
+    // Update Hero Card - 総合的な解釈を最初に表示
     const heroTheme = document.getElementById('hero-theme');
     const heroInsight = document.getElementById('hero-insight');
-    if (result.dreamTheme) {
-        heroTheme.textContent = result.dreamTheme;
-        heroInsight.textContent = result.overallComment ? 
-            result.overallComment.substring(0, 100) + '...' : 
-            '夢の深層を分析しています...';
+    if (result.overallComment) {
+        // 総合的な解釈を冒頭に表示
+        heroTheme.textContent = result.dreamTheme || '夢の分析';
+        heroInsight.textContent = result.overallComment;
     } else {
         heroTheme.textContent = '夢の分析完了';
         heroInsight.textContent = '以下の分析結果をご確認ください。';

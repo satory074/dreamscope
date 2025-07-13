@@ -57,12 +57,7 @@
                             <h4 id="hero-theme" class="hero-theme"></h4>
                             <p id="hero-insight" class="hero-insight"></p>
                         </div>
-                        <div class="confidence-indicator">
-                            <span class="confidence-label">分析深度</span>
-                            <div class="confidence-bar">
-                                <div class="confidence-fill" style="width: 85%;"></div>
-                            </div>
-                        </div>
+                        <!-- 分析深度表示を削除 -->
                     </div>
                     
                     <!-- Bento Grid Layout -->
@@ -80,45 +75,23 @@
                             </div>
                         </div>
                         
-                        <!-- 象徴分析カード -->
-                        <div class="analysis-card symbols-card">
+                        <!-- 象徴・感情統合カード -->
+                        <div class="analysis-card symbols-emotion-card">
                             <div class="card-header">
-                                <h4>🔮 象徴の意味</h4>
+                                <h4>🔮 象徴と心のメッセージ</h4>
                                 <span class="card-badge" id="symbols-count">0個</span>
                             </div>
                             <div class="card-content">
+                                <!-- テーマ表示 -->
+                                <div id="dream-theme" class="dream-theme"></div>
+                                <!-- 象徴一覧 -->
                                 <div id="symbol-meanings" class="symbol-meanings-grid"></div>
+                                <!-- 感情指標 -->
+                                <div id="emotion-indicators" class="emotion-indicators"></div>
                             </div>
                         </div>
                         
-                        <!-- 感情分析カード -->
-                        <div class="analysis-card emotion-card">
-                            <div class="card-header">
-                                <h4>💭 感情とテーマ</h4>
-                            </div>
-                            <div class="card-content">
-                                <div id="emotion-analysis" class="emotion-analysis">
-                                    <div id="dream-theme" class="dream-theme"></div>
-                                    <div id="emotion-indicators" class="emotion-indicators"></div>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <!-- 総合分析カード -->
-                        <div class="analysis-card overall-card">
-                            <div class="card-header">
-                                <h4>🌟 総合的な解釈</h4>
-                            </div>
-                            <div class="card-content">
-                                <div id="overall-comment" class="overall-comment"></div>
-                                <div class="insight-actions">
-                                    <button class="insight-btn" onclick="askFollowUp()">
-                                        <span class="btn-icon">💬</span>
-                                        さらに詳しく
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
+                        <!-- 総合分析カードを削除（上部に統合済み） -->
                     </div>
 
                     <!-- アクションボタン -->

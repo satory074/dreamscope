@@ -84,6 +84,16 @@ postgres-data/
 # Logs
 logs/
 *.log
+server*.log
+server-debug.log
+
+# Test files
+test_*.html
+test_*.py
+test_screenshots/
+
+# Archive folder
+archive/
 
 # Jupyter
 .ipynb_checkpoints/
