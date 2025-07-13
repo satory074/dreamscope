@@ -362,31 +362,48 @@ async function extractSymbols(dreamContent) {
 
 // Analyze dream with edited symbols
 async function analyzeWithSymbols(dreamContent, symbols) {
+    console.log('=== analyzeWithSymbols called ===');
+    console.log('Dream content:', dreamContent);
+    console.log('Symbols:', symbols);
+    
     try {
         // Check if running on Node.js server or Python server
         const isNodeServer = window.location.port === '3000' || window.location.port === '';
         const apiUrl = isNodeServer ? '/api/analyze-symbols' : 'http://localhost:3000/api/analyze-symbols';
         console.log('Analyzing with symbols at:', apiUrl);
         
+        const requestBody = {
+            dreamContent: dreamContent,
+            symbols: symbols.map(s => typeof s === 'string' ? s : s.text)
+        };
+        console.log('Request body:', JSON.stringify(requestBody));
+        
         const response = await fetch(apiUrl, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
             },
-            body: JSON.stringify({
-                dreamContent: dreamContent,
-                symbols: symbols.map(s => typeof s === 'string' ? s : s.text)
-            })
+            body: JSON.stringify(requestBody)
         });
         
+        console.log('Response status:', response.status);
+        console.log('Response ok:', response.ok);
+        
         if (!response.ok) {
-            throw new Error('Failed to analyze symbols');
+            const errorText = await response.text();
+            console.error('Error response:', errorText);
+            throw new Error(`Failed to analyze symbols: ${response.status} ${errorText}`);
         }
         
         const result = await response.json();
+        console.log('Analysis result:', result);
         return result;
     } catch (error) {
-        console.error('Symbol analysis error:', error);
+        console.error('Symbol analysis error details:', {
+            message: error.message,
+            stack: error.stack,
+            error: error
+        });
         throw error;
     }
 }
@@ -534,10 +551,7 @@ function displayAnalysisResult(result) {
         ).join('');
     }
     
-    // Update overall analysis
-    if (result.overallComment) {
-        document.getElementById('overall-comment').innerHTML = `<p>${result.overallComment}</p>`;
-    }
+    // Overall comment is displayed in the hero card, so no need for separate element
     
     document.getElementById('analysis-result').classList.remove('hidden');
 }
@@ -659,28 +673,43 @@ function getEditedSymbols() {
 
 // Handle symbol analysis after editing
 async function analyzeEditedSymbols() {
+    console.log('=== analyzeEditedSymbols called ===');
+    
     if (isAnalyzing) {
         showToast('現在解析中です。しばらくお待ちください。', 'warning');
         return;
     }
     
     const symbols = getEditedSymbols();
+    console.log('Edited symbols:', symbols);
+    
     if (symbols.length === 0) {
         showSymbolError('少なくとも1つの象徴が必要です');
         return;
     }
+    
+    // Check if tempDreamData exists
+    if (!app.tempDreamData || !app.tempDreamData.dreamContent) {
+        console.error('app.tempDreamData is missing or invalid:', app.tempDreamData);
+        showSymbolError('夢の内容が見つかりません。もう一度最初からやり直してください。');
+        return;
+    }
+    
+    console.log('Dream content:', app.tempDreamData.dreamContent);
     
     isAnalyzing = true;
     showLoading();
     
     try {
         const result = await analyzeWithSymbols(app.tempDreamData.dreamContent, symbols);
+        console.log('Analysis result:', result);
         
         // Display the final analysis result
         displayAnalysisResult(result);
         updateView('input');
         hideLoading();
     } catch (error) {
+        console.error('Error in analyzeEditedSymbols:', error);
         hideLoading();
         showSymbolError('分析中にエラーが発生しました。もう一度お試しください。');
     } finally {
