@@ -6,23 +6,29 @@
 }
 
 :root {
-    /* Optimized dark mode colors for better readability and reduced eye strain */
-    --primary-color: #B39DDB; /* Soft lavender */
-    --secondary-color: #7986CB; /* Muted blue */
-    --accent-color: #FFB6C1; /* Gentle pink */
-    --background-color: #121212; /* Material Design recommended dark grey */
-    --surface-color: #1E1E1E; /* Elevated surface */
-    --surface-elevated: #232323; /* Higher elevation */
+    /* Sleep-friendly dark mode colors optimized for dream journaling */
+    --primary-color: #B19CD9; /* Soft lavender - promotes tranquility */
+    --secondary-color: #8B7AA8; /* Deeper purple - dream states */
+    --accent-color: #E0BBE4; /* Gentle lilac - softer than pink */
+    --background-color: #0D1117; /* Deep navy - night sky feeling */
+    --surface-color: #161B22; /* Elevated surface */
+    --surface-elevated: #1F2937; /* Higher elevation */
     --surface-overlay: #2C2C2C; /* Overlay dialogs */
     --text-primary: rgba(255, 255, 255, 0.87); /* High emphasis text */
     --text-secondary: rgba(255, 255, 255, 0.6); /* Medium emphasis text */
     --text-disabled: rgba(255, 255, 255, 0.38); /* Disabled text */
     --border-color: rgba(255, 255, 255, 0.12); /* Subtle borders */
-    --success-color: #66BB6A; /* Softer green */
+    --success-color: #87A96B; /* Sage green - calming nature */
     --danger-color: #EF5350; /* Softer red */
-    --warning-color: #FFD54F; /* Warm amber */
+    --warning-color: #E6C79C; /* Warm earth tone */
     --shadow: rgba(0, 0, 0, 0.5);
     --shadow-elevated: 0 2px 4px rgba(0, 0, 0, 0.2), 0 4px 8px rgba(0, 0, 0, 0.1);
+    
+    /* Additional nature-inspired colors */
+    --nature-green: #87A96B; /* Sage green */
+    --earth-brown: #A67B5B; /* Earthy brown */
+    --moon-silver: #C0C0C0; /* Moonlight silver */
+    --star-gold: #D4AF37; /* Subtle star gold */
     
     /* Animation timing */
     --animation-fast: 200ms;
@@ -240,8 +246,8 @@ body {
 
 /* Hero Insight Card */
 .ai-hero-card {
-    background: linear-gradient(135deg, #2d2d2d 0%, #3a3a4a 100%);
-    border: 1px solid rgba(139, 92, 246, 0.3);
+    background: linear-gradient(135deg, #1F2937 0%, #2D3748 100%);
+    border: 1px solid rgba(177, 156, 217, 0.2);
     border-radius: 20px;
     padding: 24px;
     margin-bottom: 24px;
@@ -259,7 +265,7 @@ body {
     right: 0;
     width: 150px;
     height: 150px;
-    background: radial-gradient(circle, rgba(139, 92, 246, 0.1) 0%, transparent 70%);
+    background: radial-gradient(circle, rgba(177, 156, 217, 0.15) 0%, transparent 70%);
     border-radius: 50%;
     transform: translate(50%, -50%);
 }
@@ -398,6 +404,10 @@ body {
 .symbol-item[data-category="action"] { border-left-color: #a8e6cf; }
 .symbol-item[data-category="color"] { border-left-color: #ff8b94; }
 .symbol-item[data-category="number"] { border-left-color: #b4a7d6; }
+.symbol-item[data-category="nature"] { border-left-color: var(--nature-green); }
+.symbol-item[data-category="earth"] { border-left-color: var(--earth-brown); }
+.symbol-item[data-category="celestial"] { border-left-color: var(--moon-silver); }
+.symbol-item[data-category="spiritual"] { border-left-color: var(--star-gold); }
 
 .symbol-item strong {
     color: var(--accent-color);
@@ -434,12 +444,12 @@ body {
 }
 
 .emotion-tag {
-    background-color: rgba(139, 92, 246, 0.1);
+    background-color: rgba(177, 156, 217, 0.1);
     color: var(--secondary-color);
     padding: 6px 16px;
     border-radius: 20px;
     font-size: 0.9rem;
-    border: 1px solid rgba(139, 92, 246, 0.3);
+    border: 1px solid rgba(177, 156, 217, 0.3);
 }
 
 /* Overall Analysis Card */
@@ -455,9 +465,9 @@ body {
 }
 
 .insight-btn {
-    background-color: rgba(139, 92, 246, 0.1);
+    background-color: rgba(177, 156, 217, 0.1);
     color: var(--secondary-color);
-    border: 1px solid rgba(139, 92, 246, 0.3);
+    border: 1px solid rgba(177, 156, 217, 0.3);
     padding: 8px 16px;
     border-radius: 10px;
     cursor: pointer;
@@ -468,7 +478,7 @@ body {
 }
 
 .insight-btn:hover {
-    background-color: rgba(139, 92, 246, 0.2);
+    background-color: rgba(177, 156, 217, 0.2);
     transform: translateY(-2px);
 }
 
@@ -682,7 +692,7 @@ body {
 
 .symbol-tag:hover {
     transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(132, 204, 255, 0.3);
+    box-shadow: 0 4px 12px rgba(177, 156, 217, 0.3);
 }
 
 /* Category badge styling */
@@ -1507,6 +1517,55 @@ button::before, a::before, .clickable::before {
         font-size: 1.2rem;
     }
     
+}
+
+/* テーマセレクター関連スタイル */
+.theme-selector-container {
+    margin-top: 1rem;
+}
+
+.settings-select {
+    width: 100%;
+    padding: 0.8rem;
+    background-color: var(--background-color);
+    border: 2px solid var(--border-color);
+    color: var(--text-primary);
+    border-radius: 10px;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: border-color 0.3s ease;
+}
+
+.settings-select:focus {
+    outline: none;
+    border-color: var(--secondary-color);
+    box-shadow: 0 0 0 2px rgba(139, 122, 168, 0.2);
+}
+
+.theme-preview {
+    margin-top: 1rem;
+    padding: 1rem;
+    background-color: var(--background-color);
+    border-radius: 10px;
+    border: 1px solid var(--border-color);
+}
+
+.preview-colors {
+    display: flex;
+    gap: 0.5rem;
+    justify-content: center;
+}
+
+.color-dot {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    border: 2px solid var(--border-color);
+    transition: transform 0.2s ease;
+}
+
+.color-dot:hover {
+    transform: scale(1.2);
 }
 
 /* エラーメッセージスタイル */

@@ -8,7 +8,8 @@ const app = {
     words: [],  // 抽出された単語を保存するための配列
     serverEndpoint: '/api/analyze-dream',  // サーバーエンドポイント
     settings: {
-        reminderEnabled: false
+        reminderEnabled: false,
+        theme: '' // デフォルトテーマ（空文字列）
     }
 };
 
@@ -21,6 +22,7 @@ document.addEventListener('DOMContentLoaded', () => {
     enhanceAccessibility();
     addMicroInteractions();
     checkFirstTimeUser();
+    applyTheme(); // テーマを適用
 });
 
 // Data Management with error handling
@@ -45,6 +47,10 @@ function loadDataFromStorage() {
             if (document.getElementById('reminder-enabled')) {
                 document.getElementById('reminder-enabled').checked = app.settings.reminderEnabled;
             }
+            // テーマ設定を復元
+            if (document.getElementById('theme-selector')) {
+                document.getElementById('theme-selector').value = app.settings.theme || '';
+            }
         }
         
         // API key loading removed - using server endpoint
@@ -54,7 +60,7 @@ function loadDataFromStorage() {
         
         // Reset corrupted data
         app.dreams = [];
-        app.settings = { reminderEnabled: false };
+        app.settings = { reminderEnabled: false, theme: '' };
         // API key removed - using server endpoint
         
         // Try to save clean state
@@ -150,6 +156,17 @@ function initializeEventListeners() {
         app.settings.reminderEnabled = e.target.checked;
         saveDataToStorage();
     });
+    
+    // テーマセレクターのイベントリスナー
+    const themeSelector = document.getElementById('theme-selector');
+    if (themeSelector) {
+        themeSelector.addEventListener('change', (e) => {
+            app.settings.theme = e.target.value;
+            applyTheme();
+            saveDataToStorage();
+            showToast('テーマを変更しました', 'success');
+        });
+    }
     
     document.getElementById('backup-data').addEventListener('click', backupData);
     document.getElementById('restore-data').addEventListener('click', restoreData);
@@ -1197,6 +1214,19 @@ function showToast(message, type = 'info') {
             container.removeChild(toast);
         }, 300);
     }, 3000);
+}
+
+// Theme management
+function applyTheme() {
+    const theme = app.settings.theme || '';
+    document.body.className = theme;
+    
+    // テーマが設定されている場合、ローカルストレージに保存
+    if (theme) {
+        localStorage.setItem('dreamscope_theme', theme);
+    } else {
+        localStorage.removeItem('dreamscope_theme');
+    }
 }
 
 // Make functions globally accessible

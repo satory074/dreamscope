@@ -7,6 +7,7 @@
     
     
     <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="color-palettes.css">
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;700&display=swap" rel="stylesheet">
 </head>
 <body>
@@ -234,6 +235,32 @@
                     <div class="settings-group">
                         <h3>AI設定</h3>
                         <p class="settings-hint">AI機能はサーバー側で処理されます</p>
+                    </div>
+
+                    <!-- テーマ設定 -->
+                    <div class="settings-group">
+                        <h3>テーマ設定</h3>
+                        <p class="settings-hint">お好みのカラーテーマを選択してください</p>
+                        <div class="theme-selector-container">
+                            <select id="theme-selector" class="settings-select">
+                                <option value="">月夜の夢（デフォルト）</option>
+                                <option value="theme-ocean">深海の静寂</option>
+                                <option value="theme-forest">森の夢路</option>
+                                <option value="theme-stardust">星屑の記憶</option>
+                                <option value="theme-twilight">黄昏の瞑想</option>
+                                <option value="theme-clouds">雲海の夢</option>
+                                <option value="theme-sakura">桜の夢</option>
+                                <option value="theme-aurora">極光の夢</option>
+                            </select>
+                            <div class="theme-preview">
+                                <div class="preview-colors">
+                                    <span class="color-dot" style="background: var(--primary-color)"></span>
+                                    <span class="color-dot" style="background: var(--secondary-color)"></span>
+                                    <span class="color-dot" style="background: var(--accent-color)"></span>
+                                    <span class="color-dot" style="background: var(--success-color)"></span>
+                                </div>
+                            </div>
+                        </div>
                     </div>
 
                     <!-- 通知設定 -->

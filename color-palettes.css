@@ -1,0 +1,118 @@
+/* DreamScope カラーパレット提案 */
+
+/* 1. 月夜の夢 (Moonlit Dreams) - 現在実装中 */
+.theme-moonlit {
+    --primary-color: #B19CD9;      /* ソフトラベンダー */
+    --secondary-color: #8B7AA8;    /* ディープパープル */
+    --accent-color: #E0BBE4;       /* ライラック */
+    --background-color: #0D1117;   /* ディープネイビー */
+    --surface-color: #161B22;
+    --success-color: #87A96B;      /* セージグリーン */
+}
+
+/* 2. 深海の静寂 (Deep Ocean Serenity) */
+.theme-ocean {
+    --primary-color: #5DADE2;      /* ソフトブルー */
+    --secondary-color: #2E86AB;    /* オーシャンブルー */
+    --accent-color: #A6E3E9;       /* アクアミント */
+    --background-color: #0A1628;   /* ミッドナイトブルー */
+    --surface-color: #162447;
+    --success-color: #71C9CE;      /* ターコイズ */
+    --warning-color: #F9CA24;      /* サンドイエロー */
+}
+
+/* 3. 森の夢路 (Forest Dreampath) */
+.theme-forest {
+    --primary-color: #52B788;      /* フォレストグリーン */
+    --secondary-color: #40916C;    /* エバーグリーン */
+    --accent-color: #95D5B2;       /* ミントグリーン */
+    --background-color: #081C15;   /* ダークフォレスト */
+    --surface-color: #1B4332;
+    --success-color: #74C69D;      /* スプリンググリーン */
+    --warning-color: #F3E5AB;      /* ソフトアンバー */
+}
+
+/* 4. 星屑の記憶 (Stardust Memories) */
+.theme-stardust {
+    --primary-color: #C77DFF;      /* アメジスト */
+    --secondary-color: #9D4EDD;    /* バイオレット */
+    --accent-color: #E0AAFF;       /* ペールラベンダー */
+    --background-color: #10002B;   /* コズミックパープル */
+    --surface-color: #240046;
+    --success-color: #7209B7;      /* ロイヤルパープル */
+    --warning-color: #FFC300;      /* スターゴールド */
+}
+
+/* 5. 黄昏の瞑想 (Twilight Meditation) */
+.theme-twilight {
+    --primary-color: #F4A261;      /* サンセットオレンジ */
+    --secondary-color: #E76F51;    /* テラコッタ */
+    --accent-color: #F4E4C1;       /* クリームベージュ */
+    --background-color: #264653;   /* ダークティール */
+    --surface-color: #2A9D8F;
+    --success-color: #E9C46A;      /* ゴールデンサンド */
+    --warning-color: #E76F51;      /* コーラル */
+}
+
+/* 6. 雲海の夢 (Cloud Dreams) */
+.theme-clouds {
+    --primary-color: #B8C0D8;      /* ペリウィンクル */
+    --secondary-color: #8B95A7;    /* スレートグレー */
+    --accent-color: #E8DFF5;       /* ラベンダーミスト */
+    --background-color: #1A1D29;   /* チャコール */
+    --surface-color: #2F3545;
+    --success-color: #A8DADC;      /* パウダーブルー */
+    --warning-color: #FFE66D;      /* レモンクリーム */
+}
+
+/* 7. 桜の夢 (Sakura Dreams) - 和風テイスト */
+.theme-sakura {
+    --primary-color: #FFB7C5;      /* 桜色 */
+    --secondary-color: #CD5C5C;    /* 紅梅色 */
+    --accent-color: #FFF0F5;       /* 薄桜 */
+    --background-color: #1C1C2E;   /* 濃紺 */
+    --surface-color: #2D2E45;
+    --success-color: #98D8C8;      /* 薄青磁 */
+    --warning-color: #F7DC6F;      /* 山吹色 */
+}
+
+/* 8. 極光の夢 (Aurora Dreams) */
+.theme-aurora {
+    --primary-color: #00D9FF;      /* シアン */
+    --secondary-color: #00FFC6;    /* ミントグリーン */
+    --accent-color: #FF006E;       /* マゼンタ */
+    --background-color: #0D0221;   /* ダークインディゴ */
+    --surface-color: #1A0B2E;
+    --success-color: #00FF88;      /* ネオングリーン */
+    --warning-color: #FFBE0B;      /* アンバー */
+}
+
+/* 共通のテキストカラー（全テーマ共通） */
+:root {
+    --text-primary: rgba(255, 255, 255, 0.87);
+    --text-secondary: rgba(255, 255, 255, 0.6);
+    --text-disabled: rgba(255, 255, 255, 0.38);
+    --border-color: rgba(255, 255, 255, 0.12);
+    --shadow: rgba(0, 0, 0, 0.5);
+}
+
+/* テーマ適用例 */
+/* 
+JavaScriptで以下のように切り替え可能:
+document.body.className = 'theme-ocean';
+
+またはCSSクラスで部分適用:
+<div class="analysis-result theme-forest">
+*/
+
+/* 各テーマの特徴 */
+/*
+1. 月夜の夢: 落ち着いたラベンダー系。睡眠前に最適
+2. 深海の静寂: 青系統で深い瞑想的な雰囲気
+3. 森の夢路: 自然のグリーン系。リラックス効果
+4. 星屑の記憶: 神秘的な紫系。創造的な夢に
+5. 黄昏の瞑想: 温かみのある夕暮れカラー
+6. 雲海の夢: 優しいグレー系。中立的で穏やか
+7. 桜の夢: 和風の優しいピンク系
+8. 極光の夢: ビビッドで幻想的。鮮明な夢に
+*/

@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DreamScope カラーパレット プレビュー</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="color-palettes.css">
+    <style>
+        body {
+            padding: 2rem;
+            background-color: var(--background-color);
+        }
+        .theme-selector {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1000;
+            background: var(--surface-elevated);
+            padding: 1rem;
+            border-radius: 10px;
+            box-shadow: var(--shadow-elevated);
+        }
+        .theme-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            margin-top: 2rem;
+        }
+        .theme-card {
+            background: var(--surface-color);
+            padding: 2rem;
+            border-radius: 15px;
+            border: 1px solid var(--border-color);
+        }
+        .color-swatch {
+            display: flex;
+            gap: 1rem;
+            margin: 1rem 0;
+        }
+        .swatch {
+            width: 50px;
+            height: 50px;
+            border-radius: 10px;
+            position: relative;
+            cursor: pointer;
+        }
+        .swatch:hover::after {
+            content: attr(data-color);
+            position: absolute;
+            top: -25px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--surface-elevated);
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            white-space: nowrap;
+        }
+        .sample-components {
+            margin-top: 2rem;
+        }
+        .sample-button {
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 0.8rem 1.5rem;
+            border-radius: 25px;
+            margin: 0.5rem;
+            cursor: pointer;
+        }
+        .sample-card {
+            background: var(--surface-elevated);
+            padding: 1.5rem;
+            border-radius: 10px;
+            margin: 1rem 0;
+        }
+        .sample-tag {
+            display: inline-block;
+            background: rgba(255, 255, 255, 0.1);
+            color: var(--accent-color);
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            margin: 0.25rem;
+            border: 1px solid var(--accent-color);
+        }
+    </style>
+</head>
+<body class="theme-moonlit">
+    <div class="theme-selector">
+        <h3>テーマ選択</h3>
+        <select id="themeSelect" onchange="changeTheme(this.value)">
+            <option value="theme-moonlit">1. 月夜の夢</option>
+            <option value="theme-ocean">2. 深海の静寂</option>
+            <option value="theme-forest">3. 森の夢路</option>
+            <option value="theme-stardust">4. 星屑の記憶</option>
+            <option value="theme-twilight">5. 黄昏の瞑想</option>
+            <option value="theme-clouds">6. 雲海の夢</option>
+            <option value="theme-sakura">7. 桜の夢</option>
+            <option value="theme-aurora">8. 極光の夢</option>
+        </select>
+    </div>
+
+    <h1 style="color: var(--primary-color); text-align: center;">DreamScope カラーパレット プレビュー</h1>
+
+    <div class="theme-grid">
+        <!-- パレット1: 月夜の夢 -->
+        <div class="theme-card">
+            <h2 style="color: var(--accent-color);">1. 月夜の夢 (Moonlit Dreams)</h2>
+            <p style="color: var(--text-secondary);">落ち着いたラベンダー系。睡眠前の使用に最適な配色です。</p>
+            <div class="color-swatch">
+                <div class="swatch" style="background: #B19CD9;" data-color="#B19CD9"></div>
+                <div class="swatch" style="background: #8B7AA8;" data-color="#8B7AA8"></div>
+                <div class="swatch" style="background: #E0BBE4;" data-color="#E0BBE4"></div>
+                <div class="swatch" style="background: #0D1117;" data-color="#0D1117"></div>
+                <div class="swatch" style="background: #87A96B;" data-color="#87A96B"></div>
+            </div>
+        </div>
+
+        <!-- パレット2: 深海の静寂 -->
+        <div class="theme-card">
+            <h2 style="color: var(--accent-color);">2. 深海の静寂 (Deep Ocean)</h2>
+            <p style="color: var(--text-secondary);">青系統で深い瞑想的な雰囲気を演出します。</p>
+            <div class="color-swatch">
+                <div class="swatch" style="background: #5DADE2;" data-color="#5DADE2"></div>
+                <div class="swatch" style="background: #2E86AB;" data-color="#2E86AB"></div>
+                <div class="swatch" style="background: #A6E3E9;" data-color="#A6E3E9"></div>
+                <div class="swatch" style="background: #0A1628;" data-color="#0A1628"></div>
+                <div class="swatch" style="background: #71C9CE;" data-color="#71C9CE"></div>
+            </div>
+        </div>
+
+        <!-- パレット3: 森の夢路 -->
+        <div class="theme-card">
+            <h2 style="color: var(--accent-color);">3. 森の夢路 (Forest Path)</h2>
+            <p style="color: var(--text-secondary);">自然のグリーン系。リラックス効果が期待できます。</p>
+            <div class="color-swatch">
+                <div class="swatch" style="background: #52B788;" data-color="#52B788"></div>
+                <div class="swatch" style="background: #40916C;" data-color="#40916C"></div>
+                <div class="swatch" style="background: #95D5B2;" data-color="#95D5B2"></div>
+                <div class="swatch" style="background: #081C15;" data-color="#081C15"></div>
+                <div class="swatch" style="background: #74C69D;" data-color="#74C69D"></div>
+            </div>
+        </div>
+
+        <!-- パレット4: 星屑の記憶 -->
+        <div class="theme-card">
+            <h2 style="color: var(--accent-color);">4. 星屑の記憶 (Stardust)</h2>
+            <p style="color: var(--text-secondary);">神秘的な紫系。創造的な夢の記録に適しています。</p>
+            <div class="color-swatch">
+                <div class="swatch" style="background: #C77DFF;" data-color="#C77DFF"></div>
+                <div class="swatch" style="background: #9D4EDD;" data-color="#9D4EDD"></div>
+                <div class="swatch" style="background: #E0AAFF;" data-color="#E0AAFF"></div>
+                <div class="swatch" style="background: #10002B;" data-color="#10002B"></div>
+                <div class="swatch" style="background: #FFC300;" data-color="#FFC300"></div>
+            </div>
+        </div>
+
+        <!-- パレット5: 黄昏の瞑想 -->
+        <div class="theme-card">
+            <h2 style="color: var(--accent-color);">5. 黄昏の瞑想 (Twilight)</h2>
+            <p style="color: var(--text-secondary);">温かみのある夕暮れカラー。心を落ち着けます。</p>
+            <div class="color-swatch">
+                <div class="swatch" style="background: #F4A261;" data-color="#F4A261"></div>
+                <div class="swatch" style="background: #E76F51;" data-color="#E76F51"></div>
+                <div class="swatch" style="background: #F4E4C1;" data-color="#F4E4C1"></div>
+                <div class="swatch" style="background: #264653;" data-color="#264653"></div>
+                <div class="swatch" style="background: #E9C46A;" data-color="#E9C46A"></div>
+            </div>
+        </div>
+
+        <!-- パレット6: 雲海の夢 -->
+        <div class="theme-card">
+            <h2 style="color: var(--accent-color);">6. 雲海の夢 (Cloud Dreams)</h2>
+            <p style="color: var(--text-secondary);">優しいグレー系。中立的で穏やかな印象です。</p>
+            <div class="color-swatch">
+                <div class="swatch" style="background: #B8C0D8;" data-color="#B8C0D8"></div>
+                <div class="swatch" style="background: #8B95A7;" data-color="#8B95A7"></div>
+                <div class="swatch" style="background: #E8DFF5;" data-color="#E8DFF5"></div>
+                <div class="swatch" style="background: #1A1D29;" data-color="#1A1D29"></div>
+                <div class="swatch" style="background: #A8DADC;" data-color="#A8DADC"></div>
+            </div>
+        </div>
+
+        <!-- パレット7: 桜の夢 -->
+        <div class="theme-card">
+            <h2 style="color: var(--accent-color);">7. 桜の夢 (Sakura Dreams)</h2>
+            <p style="color: var(--text-secondary);">和風の優しいピンク系。日本的な美意識を表現。</p>
+            <div class="color-swatch">
+                <div class="swatch" style="background: #FFB7C5;" data-color="#FFB7C5"></div>
+                <div class="swatch" style="background: #CD5C5C;" data-color="#CD5C5C"></div>
+                <div class="swatch" style="background: #FFF0F5;" data-color="#FFF0F5"></div>
+                <div class="swatch" style="background: #1C1C2E;" data-color="#1C1C2E"></div>
+                <div class="swatch" style="background: #98D8C8;" data-color="#98D8C8"></div>
+            </div>
+        </div>
+
+        <!-- パレット8: 極光の夢 -->
+        <div class="theme-card">
+            <h2 style="color: var(--accent-color);">8. 極光の夢 (Aurora Dreams)</h2>
+            <p style="color: var(--text-secondary);">ビビッドで幻想的。鮮明な夢の記録に。</p>
+            <div class="color-swatch">
+                <div class="swatch" style="background: #00D9FF;" data-color="#00D9FF"></div>
+                <div class="swatch" style="background: #00FFC6;" data-color="#00FFC6"></div>
+                <div class="swatch" style="background: #FF006E;" data-color="#FF006E"></div>
+                <div class="swatch" style="background: #0D0221;" data-color="#0D0221"></div>
+                <div class="swatch" style="background: #FFBE0B;" data-color="#FFBE0B"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- サンプルコンポーネント -->
+    <div class="sample-components" style="max-width: 800px; margin: 3rem auto;">
+        <h2 style="color: var(--primary-color);">コンポーネントサンプル</h2>
+        
+        <div class="sample-card">
+            <h3 style="color: var(--accent-color);">夢の分析結果</h3>
+            <p style="color: var(--text-primary);">選択されたテーマでの表示例です。各要素の色合いをご確認ください。</p>
+            <div style="margin-top: 1rem;">
+                <span class="sample-tag">感情</span>
+                <span class="sample-tag">場所</span>
+                <span class="sample-tag">シンボル</span>
+            </div>
+        </div>
+
+        <div style="margin-top: 2rem;">
+            <button class="sample-button">夢を記録する</button>
+            <button class="sample-button" style="background: var(--secondary-color);">分析する</button>
+            <button class="sample-button" style="background: var(--success-color);">保存</button>
+        </div>
+    </div>
+
+    <script>
+        function changeTheme(theme) {
+            document.body.className = theme;
+        }
+    </script>
+</body>
+</html>
