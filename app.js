@@ -455,6 +455,11 @@ function generateMockAnalysis(content) {
 function displayAnalysisResult(result) {
     app.currentAnalysis = result;
     
+    // Extract words from symbols if not already present
+    if (!result.extractedWords && result.symbols) {
+        result.extractedWords = extractWordsFromDream(result.dreamText, result);
+    }
+    
     document.getElementById('converted-dream-text').textContent = result.dreamText;
     
     const symbolsContainer = document.getElementById('symbol-meanings');
@@ -1062,11 +1067,18 @@ function addInputFeedback() {
             counter.className = 'character-counter';
             input.parentElement.appendChild(counter);
             
-            input.addEventListener('input', () => {
+            // Function to update character count
+            const updateCharCount = () => {
                 const length = input.value.length;
                 counter.textContent = `${length}文字`;
                 counter.classList.toggle('warning', length > 500);
-            });
+            };
+            
+            // Initial character count display
+            updateCharCount();
+            
+            // Update on input
+            input.addEventListener('input', updateCharCount);
         }
     });
 }
