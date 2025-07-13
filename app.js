@@ -162,7 +162,7 @@ function initializeEventListeners() {
     const backToInputBtn = document.getElementById('back-to-input-btn');
     if (backToInputBtn) backToInputBtn.addEventListener('click', () => {
         updateView('input');
-        resetInput();
+        // Don't reset input to preserve the content
     });
     
     const addSymbolBtn = document.getElementById('add-symbol-btn');
