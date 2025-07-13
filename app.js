@@ -492,10 +492,6 @@ function displayAnalysisResult(result) {
         }
     }
     
-    // 抽出された単語を表示
-    if (result.extractedWords && result.extractedWords.length > 0) {
-        displayExtractedWords(result.extractedWords);
-    }
     
     document.getElementById('analysis-result').classList.remove('hidden');
 }
@@ -784,20 +780,6 @@ function showDreamInModal(dream) {
             </div>
         `).join('');
         
-        // Extracted words - 抽出された単語を表示
-        if (dream.analysis.extractedWords && dream.analysis.extractedWords.length > 0) {
-            const extractedWordsContainer = document.getElementById('modal-extracted-words');
-            if (extractedWordsContainer) {
-                extractedWordsContainer.innerHTML = dream.analysis.extractedWords.map(word => `
-                    <span class="word-tag ${word.category}">${word.word}</span>
-                `).join('');
-                // 親コンテナも表示
-                const parentContainer = extractedWordsContainer.parentElement;
-                if (parentContainer) {
-                    parentContainer.style.display = 'block';
-                }
-            }
-        }
     }
     
     // Show modal
