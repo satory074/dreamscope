@@ -856,9 +856,6 @@ function updateStatistics() {
     
     // Display frequent symbols
     displayFrequentSymbols();
-    
-    // Display personal dictionary
-    displayPersonalDictionary();
 }
 
 // Display frequent symbols
@@ -892,37 +889,6 @@ function displayFrequentSymbols() {
     });
 }
 
-// Display personal dictionary
-function displayPersonalDictionary() {
-    const container = document.getElementById('personal-dictionary');
-    if (!container) return;
-    
-    const personalDict = JSON.parse(localStorage.getItem('dreamscope_personal_symbols') || '{}');
-    
-    container.innerHTML = '';
-    
-    if (Object.keys(personalDict).length === 0) {
-        container.innerHTML = '<p class="help-text">まだ個人用の意味が登録されていません</p>';
-        return;
-    }
-    
-    Object.entries(personalDict).forEach(([symbol, data]) => {
-        const item = document.createElement('div');
-        item.className = 'dictionary-item';
-        item.innerHTML = `
-            <div class="dictionary-symbol">${symbol}</div>
-            <div class="dictionary-meaning">${data.meaning}</div>
-            <button class="dictionary-edit-btn" data-symbol="${symbol}">編集</button>
-        `;
-        
-        // Add event listener to edit button
-        const editBtn = item.querySelector('.dictionary-edit-btn');
-        editBtn.addEventListener('click', () => editPersonalMeaning(symbol));
-        
-        container.appendChild(item);
-    });
-}
-
 // Show symbol detail
 function showSymbolDetail(symbolKey) {
     const symbolStats = JSON.parse(localStorage.getItem('dreamscope_symbol_stats') || '{}');
@@ -930,8 +896,6 @@ function showSymbolDetail(symbolKey) {
     
     if (!symbolData) return;
     
-    const personalDict = JSON.parse(localStorage.getItem('dreamscope_personal_symbols') || '{}');
-    const personalMeaning = personalDict[symbolKey]?.meaning || '';
     
     const meanings = symbolData.meanings.join('\n\n');
     
@@ -943,39 +907,9 @@ function showSymbolDetail(symbolKey) {
 
 AIによる意味:
 ${meanings || 'まだ分析されていません'}
-
-個人用の意味:
-${personalMeaning || 'まだ登録されていません'}
     `;
     
-    if (confirm(message + '\n\n個人用の意味を編集しますか？')) {
-        editPersonalMeaning(symbolKey);
-    }
-}
-
-// Edit personal meaning
-function editPersonalMeaning(symbol) {
-    const personalDict = JSON.parse(localStorage.getItem('dreamscope_personal_symbols') || '{}');
-    const currentMeaning = personalDict[symbol]?.meaning || '';
-    
-    const newMeaning = prompt(`「${symbol}」の個人的な意味を入力してください:`, currentMeaning);
-    
-    if (newMeaning !== null && newMeaning.trim()) {
-        savePersonalSymbolMeaning(symbol, newMeaning.trim());
-        displayPersonalDictionary();
-        showToast('個人用の意味を保存しました', 'success');
-    }
-}
-
-// Save personal symbol meaning
-function savePersonalSymbolMeaning(symbol, meaning) {
-    const personalDict = JSON.parse(localStorage.getItem('dreamscope_personal_symbols') || '{}');
-    personalDict[symbol.toLowerCase()] = {
-        symbol: symbol,
-        meaning: meaning,
-        updatedAt: new Date().toISOString()
-    };
-    localStorage.setItem('dreamscope_personal_symbols', JSON.stringify(personalDict));
+    alert(message);
 }
 
 
