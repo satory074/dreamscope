@@ -384,9 +384,9 @@ async function analyzeWithSymbols(dreamContent, symbols) {
 
 // AI Analysis
 async function analyzeDream(content) {
-    const systemPrompt = 'あなたは夢の解釈の専門家です。ユング心理学と認知心理学の観点から夢を分析します。';
+    const systemPrompt = 'あなたは夢の意味を読み解く専門家です。難しい専門用語は使わず、誰にでもわかるやさしい日本語で説明してください。';
     
-    const prompt = `以下の夢の内容を心理学的に解釈してください。
+    const prompt = `以下の夢の内容をやさしく解釈してください。
         
         夢の内容: ${content}
         
@@ -394,9 +394,9 @@ async function analyzeDream(content) {
         {
             "dreamText": "${content}",
             "symbols": [
-                {"symbol": "シンボル名", "meaning": "意味の説明"}
+                {"symbol": "夢に出てきたもの", "meaning": "それが表す意味をやさしく説明"}
             ],
-            "psychologicalMessage": "深層心理からのメッセージ",
+            "psychologicalMessage": "あなたの心が伝えたいメッセージ",
             "dailyInsight": "今日の気づき（1文）"
         }`;
     
