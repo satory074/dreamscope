@@ -71,10 +71,59 @@
                 </div>
             </section>
 
+            <!-- 象徴編集画面 -->
+            <section id="symbol-edit-view" class="view">
+                <div class="symbol-edit-container">
+                    <h2 class="section-title">夢の象徴を編集</h2>
+                    
+                    <!-- 夢の内容表示 -->
+                    <div class="dream-content-display">
+                        <h4>記録した夢</h4>
+                        <p id="symbol-edit-dream-text"></p>
+                    </div>
+
+                    <!-- 抽出された象徴 -->
+                    <div class="symbols-section">
+                        <h4>AIが抽出した象徴</h4>
+                        <p class="help-text">象徴を追加・編集・削除できます。編集が完了したら「分析する」ボタンを押してください。</p>
+                        
+                        <!-- 象徴タグエリア -->
+                        <div id="symbol-tags-container" class="symbol-tags-container">
+                            <!-- 象徴タグがここに表示される -->
+                        </div>
+                        
+                        <!-- 象徴追加フォーム -->
+                        <div class="symbol-add-form">
+                            <input type="text" 
+                                   id="new-symbol-input" 
+                                   class="symbol-input" 
+                                   placeholder="新しい象徴を入力..."
+                                   maxlength="20">
+                            <button id="add-symbol-btn" class="add-btn">追加</button>
+                        </div>
+                    </div>
+
+                    <!-- エラーメッセージ -->
+                    <div id="symbol-error-message" class="error-message" role="alert" aria-live="polite"></div>
+
+                    <!-- アクションボタン -->
+                    <div class="symbol-actions">
+                        <button id="analyze-symbols-btn" class="action-btn primary">分析する</button>
+                        <button id="back-to-input-btn" class="action-btn tertiary">戻る</button>
+                    </div>
+                </div>
+            </section>
+
             <!-- 履歴画面 -->
             <section id="history-view" class="view">
                 <div class="history-container">
                     <h2 class="section-title">夢の履歴</h2>
+                    
+                    <!-- エクスポートボタン -->
+                    <div class="export-buttons">
+                        <button id="export-csv" class="settings-btn">CSVでエクスポート</button>
+                        <button id="export-json" class="settings-btn">JSONでエクスポート</button>
+                    </div>
                     
                     <!-- カレンダービュー -->
                     <div class="calendar-container">
@@ -103,6 +152,18 @@
                             <span class="stat-number" id="total-dreams">0</span>
                             <span class="stat-label">記録した夢</span>
                         </div>
+                        <div class="stat-card">
+                            <span class="stat-number" id="total-words">0</span>
+                            <span class="stat-label">抽出された単語</span>
+                        </div>
+                        <div class="stat-card">
+                            <span class="stat-number" id="unique-words">0</span>
+                            <span class="stat-label">ユニークな単語</span>
+                        </div>
+                        <div class="stat-card">
+                            <span class="stat-number" id="avg-words-per-dream">0</span>
+                            <span class="stat-label">夢あたりの単語数</span>
+                        </div>
                     </div>
                     
 
@@ -120,10 +181,21 @@
                         <p class="settings-hint">AI機能はサーバー側で処理されます</p>
                     </div>
 
+                    <!-- 通知設定 -->
+                    <div class="settings-group">
+                        <h3>通知設定</h3>
+                        <label class="settings-label">
+                            <input type="checkbox" id="reminder-enabled" class="settings-checkbox">
+                            <span>夢日記のリマインダーを有効にする</span>
+                        </label>
+                    </div>
+
 
                     <!-- データ管理 -->
                     <div class="settings-group">
                         <h3>データ管理</h3>
+                        <button id="backup-data" class="settings-btn">データをバックアップ</button>
+                        <button id="restore-data" class="settings-btn">データを復元</button>
                         <button id="clear-data" class="settings-btn danger">すべてのデータを削除</button>
                     </div>
                 </div>
@@ -172,6 +244,11 @@
             <div class="modal-section">
                 <h4>象徴と心理的意味</h4>
                 <div id="modal-symbols" class="symbol-meanings"></div>
+            </div>
+            
+            <div class="modal-section" style="display: none;">
+                <h4>抽出された単語</h4>
+                <div id="modal-extracted-words" class="word-container"></div>
             </div>
             
         </div>

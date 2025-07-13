@@ -5,6 +5,7 @@ console.log('app.js loaded');
 const app = {
     currentView: 'input',
     dreams: [],
+    words: [],  // 抽出された単語を保存するための配列
     serverEndpoint: '/api/analyze-dream',  // サーバーエンドポイント
     settings: {
         reminderEnabled: false
@@ -126,7 +127,9 @@ function initializeEventListeners() {
     if (saveDreamBtn) saveDreamBtn.addEventListener('click', saveDream);
     
     const shareDreamBtn = document.getElementById('share-dream-btn');
-    if (shareDreamBtn) shareDreamBtn.addEventListener('click', showShareModal);
+    if (shareDreamBtn) shareDreamBtn.addEventListener('click', () => {
+        showToast('共有機能は現在開発中です', 'info');
+    });
     
     const newDreamBtn = document.getElementById('new-dream-btn');
     if (newDreamBtn) newDreamBtn.addEventListener('click', resetInput);
@@ -152,6 +155,37 @@ function initializeEventListeners() {
     document.getElementById('restore-data').addEventListener('click', restoreData);
     document.getElementById('clear-data').addEventListener('click', clearData);
     
+    // Symbol edit view buttons
+    const analyzeSymbolsBtn = document.getElementById('analyze-symbols-btn');
+    if (analyzeSymbolsBtn) analyzeSymbolsBtn.addEventListener('click', analyzeEditedSymbols);
+    
+    const backToInputBtn = document.getElementById('back-to-input-btn');
+    if (backToInputBtn) backToInputBtn.addEventListener('click', () => {
+        updateView('input');
+        resetInput();
+    });
+    
+    const addSymbolBtn = document.getElementById('add-symbol-btn');
+    if (addSymbolBtn) addSymbolBtn.addEventListener('click', () => {
+        const input = document.getElementById('new-symbol-input');
+        const symbol = input.value.trim();
+        if (symbol) {
+            addSymbolTag(symbol);
+            input.value = '';
+        }
+    });
+    
+    const newSymbolInput = document.getElementById('new-symbol-input');
+    if (newSymbolInput) newSymbolInput.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') {
+            const symbol = e.target.value.trim();
+            if (symbol) {
+                addSymbolTag(symbol);
+                e.target.value = '';
+            }
+        }
+    });
+    
 }
 
 // View Management
@@ -160,7 +194,12 @@ function updateView(viewName) {
     document.querySelectorAll('.nav-btn').forEach(btn => {
         btn.classList.remove('active');
     });
-    document.querySelector(`[data-view="${viewName}"]`).classList.add('active');
+    
+    // Only update nav button if it exists (symbol-edit doesn't have a nav button)
+    const navButton = document.querySelector(`[data-view="${viewName}"]`);
+    if (navButton) {
+        navButton.classList.add('active');
+    }
     
     // Update views
     document.querySelectorAll('.view').forEach(view => {
@@ -209,21 +248,24 @@ async function recordDream() {
     showLoading();
     
     try {
-        // Process dream with AI
-        const result = await analyzeDream(dreamContent);
+        // Step 1: Extract symbols only
+        const symbols = await extractSymbols(dreamContent);
         
-        // 元の入力内容を保持
-        result.originalInput = dreamContent;
+        // Store the dream content and symbols temporarily
+        app.tempDreamData = {
+            dreamContent: dreamContent,
+            symbols: symbols
+        };
         
-        // 単語の抽出と分析
-        const extractedWords = await extractWordsFromDream(dreamContent, result);
-        result.extractedWords = extractedWords;
+        // Show symbol edit view
+        updateView('symbol-edit');
+        displaySymbolsForEdit(symbols);
+        document.getElementById('symbol-edit-dream-text').textContent = dreamContent;
         
-        displayAnalysisResult(result);
         hideLoading();
     } catch (error) {
         hideLoading();
-        showError('夢の解析中にエラーが発生しました。もう一度お試しください。');
+        showError('象徴の抽出中にエラーが発生しました。もう一度お試しください。');
     } finally {
         // 解析完了後にフラグをリセット
         isAnalyzing = false;
@@ -256,6 +298,82 @@ function clearError() {
     document.querySelectorAll('.input-error').forEach(element => {
         element.classList.remove('input-error');
     });
+}
+
+// Extract symbols from dream
+async function extractSymbols(dreamContent) {
+    console.log('=== extractSymbols called ===');
+    console.log('Dream content:', dreamContent);
+    console.log('API endpoint:', '/api/extract-symbols');
+    
+    try {
+        const requestBody = {
+            dreamContent: dreamContent
+        };
+        console.log('Request body:', JSON.stringify(requestBody));
+        
+        const apiUrl = window.location.origin + '/api/extract-symbols';
+        console.log('Fetching from:', apiUrl);
+        
+        const response = await fetch(apiUrl, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(requestBody)
+        });
+        
+        console.log('Response status:', response.status);
+        console.log('Response ok:', response.ok);
+        
+        if (!response.ok) {
+            const errorData = await response.text();
+            console.error('Server error response:', errorData);
+            throw new Error(`Failed to extract symbols: ${response.status} ${errorData}`);
+        }
+        
+        const result = await response.json();
+        console.log('API response:', result);
+        console.log('Extracted symbols:', result.symbols);
+        
+        return result.symbols || [];
+    } catch (error) {
+        console.error('Symbol extraction error details:', {
+            message: error.message,
+            stack: error.stack,
+            error: error
+        });
+        throw error;
+    }
+}
+
+// Analyze dream with edited symbols
+async function analyzeWithSymbols(dreamContent, symbols) {
+    try {
+        const apiUrl = window.location.origin + '/api/analyze-symbols';
+        console.log('Analyzing with symbols at:', apiUrl);
+        
+        const response = await fetch(apiUrl, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                dreamContent: dreamContent,
+                symbols: symbols
+            })
+        });
+        
+        if (!response.ok) {
+            throw new Error('Failed to analyze symbols');
+        }
+        
+        const result = await response.json();
+        return result;
+    } catch (error) {
+        console.error('Symbol analysis error:', error);
+        throw error;
+    }
 }
 
 // AI Analysis
@@ -355,6 +473,80 @@ function displayAnalysisResult(result) {
     document.getElementById('analysis-result').classList.remove('hidden');
 }
 
+// Display symbols for editing
+function displaySymbolsForEdit(symbols) {
+    const container = document.getElementById('symbol-tags-container');
+    container.innerHTML = '';
+    
+    symbols.forEach(symbol => {
+        addSymbolTag(symbol);
+    });
+}
+
+// Add a symbol tag to the container
+function addSymbolTag(symbol) {
+    const container = document.getElementById('symbol-tags-container');
+    const tag = document.createElement('div');
+    tag.className = 'symbol-tag';
+    tag.innerHTML = `
+        <span class="symbol-tag-text">${symbol}</span>
+        <span class="symbol-tag-remove" onclick="removeSymbolTag(this)">×</span>
+    `;
+    container.appendChild(tag);
+}
+
+// Remove a symbol tag
+function removeSymbolTag(element) {
+    const tag = element.closest('.symbol-tag');
+    tag.remove();
+}
+
+// Get all symbols from the edit view
+function getEditedSymbols() {
+    const tags = document.querySelectorAll('.symbol-tag-text');
+    return Array.from(tags).map(tag => tag.textContent);
+}
+
+// Handle symbol analysis after editing
+async function analyzeEditedSymbols() {
+    if (isAnalyzing) {
+        showToast('現在解析中です。しばらくお待ちください。', 'warning');
+        return;
+    }
+    
+    const symbols = getEditedSymbols();
+    if (symbols.length === 0) {
+        showSymbolError('少なくとも1つの象徴が必要です');
+        return;
+    }
+    
+    isAnalyzing = true;
+    showLoading();
+    
+    try {
+        const result = await analyzeWithSymbols(app.tempDreamData.dreamContent, symbols);
+        
+        // Display the final analysis result
+        displayAnalysisResult(result);
+        updateView('input');
+        hideLoading();
+    } catch (error) {
+        hideLoading();
+        showSymbolError('分析中にエラーが発生しました。もう一度お試しください。');
+    } finally {
+        isAnalyzing = false;
+    }
+}
+
+// Show error in symbol edit view
+function showSymbolError(message) {
+    const errorElement = document.getElementById('symbol-error-message');
+    errorElement.textContent = message;
+    setTimeout(() => {
+        errorElement.textContent = '';
+    }, 5000);
+}
+
 // Save Dream
 function saveDream() {
     if (!app.currentAnalysis) return;
@@ -393,7 +585,7 @@ function extractTags(analysis) {
 // Reset Input
 function resetInput() {
     document.getElementById('freetext-field').value = '';
-    renderKeywordTags();
+    // renderKeywordTags(); // この関数は削除されたのでコメントアウト
     document.getElementById('analysis-result').classList.add('hidden');
     app.currentAnalysis = null;
 }
@@ -566,6 +758,121 @@ function updateStatistics() {
 // Settings Functions
 
 
+// Export functions
+function exportAsCSV() {
+    if (app.dreams.length === 0) {
+        showToast('エクスポートする夢がありません', 'warning');
+        return;
+    }
+    
+    const headers = ['日付', '夢の内容', '象徴', '心理的メッセージ', '洞察'];
+    const rows = app.dreams.map(dream => {
+        const symbols = dream.aiAnalysis?.symbols?.map(s => `${s.symbol}: ${s.meaning}`).join('; ') || '';
+        const psychMessage = dream.aiAnalysis?.psychologicalMessage || '';
+        const insight = dream.aiAnalysis?.dailyInsight || '';
+        
+        return [
+            new Date(dream.date).toLocaleString('ja-JP'),
+            dream.content.replace(/"/g, '""'), // Escape quotes
+            symbols.replace(/"/g, '""'),
+            psychMessage.replace(/"/g, '""'),
+            insight.replace(/"/g, '""')
+        ].map(cell => `"${cell}"`).join(',');
+    });
+    
+    const csv = [headers.join(','), ...rows].join('\n');
+    const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = `dreamscope_export_${new Date().toISOString().split('T')[0]}.csv`;
+    link.click();
+    
+    showToast('CSVファイルをダウンロードしました');
+}
+
+function exportAsJSON() {
+    if (app.dreams.length === 0) {
+        showToast('エクスポートする夢がありません', 'warning');
+        return;
+    }
+    
+    const data = {
+        exportDate: new Date().toISOString(),
+        version: '1.0',
+        dreams: app.dreams,
+        settings: app.settings
+    };
+    
+    const json = JSON.stringify(data, null, 2);
+    const blob = new Blob([json], { type: 'application/json' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = `dreamscope_export_${new Date().toISOString().split('T')[0]}.json`;
+    link.click();
+    
+    showToast('JSONファイルをダウンロードしました');
+}
+
+function backupData() {
+    const backup = {
+        timestamp: new Date().toISOString(),
+        dreams: app.dreams,
+        settings: app.settings
+    };
+    
+    const json = JSON.stringify(backup);
+    const blob = new Blob([json], { type: 'application/json' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = `dreamscope_backup_${new Date().toISOString().split('T')[0]}.json`;
+    link.click();
+    
+    showToast('バックアップファイルを作成しました');
+}
+
+function restoreData() {
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = '.json';
+    
+    input.onchange = async (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+        
+        try {
+            const text = await file.text();
+            const data = JSON.parse(text);
+            
+            // Validate backup structure
+            if (!data.dreams || !Array.isArray(data.dreams)) {
+                throw new Error('無効なバックアップファイルです');
+            }
+            
+            if (confirm('現在のデータを置き換えますか？この操作は取り消せません。')) {
+                app.dreams = data.dreams;
+                if (data.settings) {
+                    app.settings = data.settings;
+                    if (document.getElementById('reminder-enabled')) {
+                        document.getElementById('reminder-enabled').checked = app.settings.reminderEnabled;
+                    }
+                }
+                
+                saveDataToStorage();
+                updateStatistics();
+                renderCalendar();
+                renderDreamList();
+                
+                showToast('データを復元しました');
+            }
+        } catch (error) {
+            console.error('Restore error:', error);
+            showToast('データの復元に失敗しました', 'error');
+        }
+    };
+    
+    input.click();
+}
+
 function clearData() {
     if (confirm('すべてのデータを削除してもよろしいですか？この操作は取り消せません。')) {
         localStorage.clear();
@@ -625,6 +932,8 @@ function showToast(message, type = 'info') {
 
 // Make functions globally accessible
 window.showDreamDetail = showDreamDetail;
+window.closeDreamModal = closeDreamModal;
+window.removeSymbolTag = removeSymbolTag;
 
 // Enhanced Accessibility
 function enhanceAccessibility() {

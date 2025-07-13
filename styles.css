@@ -320,6 +320,137 @@ body {
     box-shadow: 0 3px 10px var(--shadow);
 }
 
+/* Symbol Edit View Styles */
+.symbol-edit-container {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 2rem;
+}
+
+.dream-content-display {
+    background-color: var(--surface-color);
+    padding: 1.5rem;
+    border-radius: 10px;
+    margin-bottom: 2rem;
+}
+
+.dream-content-display h4 {
+    color: var(--primary-color);
+    margin-bottom: 1rem;
+}
+
+.dream-content-display p {
+    color: var(--gray-300);
+    line-height: 1.6;
+}
+
+.symbols-section {
+    background-color: var(--surface-color);
+    padding: 2rem;
+    border-radius: 15px;
+    margin-bottom: 2rem;
+}
+
+.symbols-section h4 {
+    color: var(--primary-color);
+    margin-bottom: 0.5rem;
+}
+
+.help-text {
+    color: var(--gray-400);
+    font-size: 0.875rem;
+    margin-bottom: 1.5rem;
+}
+
+.symbol-tags-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-bottom: 1.5rem;
+    min-height: 50px;
+    padding: 1rem;
+    background-color: var(--background-color);
+    border-radius: 10px;
+    border: 1px dashed var(--gray-600);
+}
+
+.symbol-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1rem;
+    background-color: var(--primary-color);
+    color: var(--background-color);
+    border-radius: 20px;
+    font-size: 0.875rem;
+    transition: all 0.3s ease;
+}
+
+.symbol-tag:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(132, 204, 255, 0.3);
+}
+
+.symbol-tag-text {
+    cursor: text;
+}
+
+.symbol-tag-remove {
+    cursor: pointer;
+    font-size: 1.2rem;
+    line-height: 1;
+    opacity: 0.7;
+    transition: opacity 0.2s ease;
+}
+
+.symbol-tag-remove:hover {
+    opacity: 1;
+}
+
+.symbol-add-form {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.symbol-input {
+    flex: 1;
+    padding: 0.5rem 1rem;
+    background-color: var(--surface-color);
+    border: 1px solid var(--gray-600);
+    border-radius: 8px;
+    color: var(--gray-100);
+    font-size: 0.875rem;
+}
+
+.symbol-input:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 2px rgba(132, 204, 255, 0.1);
+}
+
+.add-btn {
+    padding: 0.5rem 1.5rem;
+    background-color: var(--primary-color);
+    color: var(--background-color);
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 0.875rem;
+    transition: all 0.3s ease;
+}
+
+.add-btn:hover {
+    background-color: var(--secondary-color);
+    transform: translateY(-2px);
+}
+
+.symbol-actions {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+    margin-top: 2rem;
+}
+
 /* Calendar Styles */
 .calendar-container {
     background-color: var(--surface-color);
@@ -523,6 +654,19 @@ body {
     margin-bottom: 1.5rem;
 }
 
+.settings-label {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    cursor: pointer;
+}
+
+.settings-checkbox {
+    width: 20px;
+    height: 20px;
+    cursor: pointer;
+}
+
 .settings-input {
     width: 100%;
     padding: 0.8rem;
@@ -581,6 +725,12 @@ body {
 
 .switch input:checked + .slider:before {
     transform: translateX(24px);
+}
+
+.export-buttons {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 2rem;
 }
 
 .settings-btn {
