@@ -238,6 +238,275 @@ body {
     color: var(--secondary-color);
 }
 
+/* Hero Insight Card */
+.ai-hero-card {
+    background: linear-gradient(135deg, #2d2d2d 0%, #3a3a4a 100%);
+    border: 1px solid rgba(139, 92, 246, 0.3);
+    border-radius: 20px;
+    padding: 24px;
+    margin-bottom: 24px;
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    position: relative;
+    overflow: hidden;
+}
+
+.ai-hero-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 150px;
+    height: 150px;
+    background: radial-gradient(circle, rgba(139, 92, 246, 0.1) 0%, transparent 70%);
+    border-radius: 50%;
+    transform: translate(50%, -50%);
+}
+
+.hero-icon {
+    font-size: 2.5rem;
+    animation: sparkle 2s ease-in-out infinite;
+}
+
+@keyframes sparkle {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.8; transform: scale(1.1); }
+}
+
+.hero-content {
+    flex: 1;
+    z-index: 1;
+}
+
+.hero-theme {
+    font-size: 1.4rem;
+    margin-bottom: 0.5rem;
+    color: var(--accent-color);
+}
+
+.hero-insight {
+    font-size: 1rem;
+    color: var(--text-secondary);
+    line-height: 1.6;
+}
+
+.confidence-indicator {
+    position: absolute;
+    bottom: 12px;
+    right: 24px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.85rem;
+}
+
+.confidence-label {
+    color: var(--text-secondary);
+    opacity: 0.8;
+}
+
+.confidence-bar {
+    width: 80px;
+    height: 6px;
+    background-color: rgba(255, 255, 255, 0.1);
+    border-radius: 3px;
+    overflow: hidden;
+}
+
+.confidence-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--primary-color), var(--secondary-color));
+    transition: width 0.5s ease;
+}
+
+/* Bento Grid Layout */
+.analysis-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 16px;
+    margin-bottom: 24px;
+}
+
+.analysis-card {
+    background-color: var(--background-color);
+    border-radius: 15px;
+    padding: 20px;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.analysis-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.3);
+}
+
+.card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+}
+
+.card-header h4 {
+    color: var(--accent-color);
+    margin: 0;
+    font-size: 1.1rem;
+}
+
+.card-badge {
+    background-color: rgba(139, 92, 246, 0.2);
+    color: var(--secondary-color);
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 0.85rem;
+}
+
+.expand-btn {
+    background: none;
+    border: none;
+    color: var(--text-secondary);
+    cursor: pointer;
+    padding: 4px;
+    transition: transform 0.3s ease;
+}
+
+.expand-btn:hover {
+    color: var(--accent-color);
+}
+
+.expand-icon {
+    display: inline-block;
+    transition: transform 0.3s ease;
+}
+
+.card-content {
+    overflow: hidden;
+    transition: max-height 0.3s ease;
+}
+
+/* Symbol Analysis Card */
+.symbol-meanings-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.symbol-item {
+    background-color: var(--surface-color);
+    border-radius: 10px;
+    padding: 16px;
+    border-left: 3px solid var(--primary-color);
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
+
+.symbol-item:hover {
+    background-color: rgba(139, 92, 246, 0.1);
+    transform: translateX(4px);
+}
+
+.symbol-item[data-category="emotion"] { border-left-color: #ff6b6b; }
+.symbol-item[data-category="place"] { border-left-color: #4ecdc4; }
+.symbol-item[data-category="person"] { border-left-color: #45b7d1; }
+.symbol-item[data-category="object"] { border-left-color: #96ceb4; }
+.symbol-item[data-category="animal"] { border-left-color: #ffd93d; }
+.symbol-item[data-category="action"] { border-left-color: #a8e6cf; }
+.symbol-item[data-category="color"] { border-left-color: #ff8b94; }
+.symbol-item[data-category="number"] { border-left-color: #b4a7d6; }
+
+.symbol-item strong {
+    color: var(--accent-color);
+    font-size: 1.1rem;
+    display: block;
+    margin-bottom: 8px;
+}
+
+.symbol-comment,
+.symbol-interpretation {
+    margin-top: 8px;
+    padding-left: 20px;
+    color: var(--text-secondary);
+    font-size: 0.95rem;
+    line-height: 1.6;
+}
+
+.symbol-details {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.3s ease;
+}
+
+.symbol-item[data-expanded="true"] .symbol-details {
+    max-height: 500px;
+}
+
+/* Emotion Analysis Card */
+.emotion-indicators {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 12px;
+}
+
+.emotion-tag {
+    background-color: rgba(139, 92, 246, 0.1);
+    color: var(--secondary-color);
+    padding: 6px 16px;
+    border-radius: 20px;
+    font-size: 0.9rem;
+    border: 1px solid rgba(139, 92, 246, 0.3);
+}
+
+/* Overall Analysis Card */
+.overall-comment {
+    line-height: 1.8;
+    color: var(--text-primary);
+}
+
+.insight-actions {
+    margin-top: 16px;
+    display: flex;
+    gap: 12px;
+}
+
+.insight-btn {
+    background-color: rgba(139, 92, 246, 0.1);
+    color: var(--secondary-color);
+    border: 1px solid rgba(139, 92, 246, 0.3);
+    padding: 8px 16px;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.insight-btn:hover {
+    background-color: rgba(139, 92, 246, 0.2);
+    transform: translateY(-2px);
+}
+
+.btn-icon {
+    font-size: 1.1rem;
+}
+
+/* Updated Result Actions */
+.result-actions {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+    margin-top: 2rem;
+}
+
+.action-btn {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 0.8rem 1.5rem;
+}
+
 .converted-text,
 .interpretation {
     margin-bottom: 2rem;
@@ -1195,6 +1464,57 @@ button::before, a::before, .clickable::before {
     
     .action-btn {
         width: 100%;
+    }
+    
+    /* New layout mobile styles */
+    .ai-hero-card {
+        flex-direction: column;
+        text-align: center;
+        padding: 20px;
+    }
+    
+    .hero-icon {
+        font-size: 2rem;
+    }
+    
+    .hero-theme {
+        font-size: 1.2rem;
+    }
+    
+    .confidence-indicator {
+        position: static;
+        margin-top: 16px;
+        justify-content: center;
+    }
+    
+    .analysis-grid {
+        grid-template-columns: 1fr;
+        gap: 12px;
+    }
+    
+    .analysis-card {
+        padding: 16px;
+    }
+    
+    .card-header h4 {
+        font-size: 1rem;
+    }
+    
+    .symbol-item {
+        padding: 12px;
+    }
+    
+    .symbol-item strong {
+        font-size: 1rem;
+    }
+    
+    .insight-actions {
+        flex-direction: column;
+    }
+    
+    .insight-btn {
+        width: 100%;
+        justify-content: center;
     }
 }
 

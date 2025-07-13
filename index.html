@@ -50,28 +50,87 @@
                 <div id="analysis-result" class="analysis-result hidden">
                     <h3 class="result-title">🧠 AIによる夢の解析</h3>
                     
-                    <!-- 夢の内容 -->
-                    <div class="converted-text">
-                        <h4>記録された夢</h4>
-                        <p id="converted-dream-text"></p>
+                    <!-- Hero Insight Card -->
+                    <div class="ai-hero-card">
+                        <div class="hero-icon">✨</div>
+                        <div class="hero-content">
+                            <h4 id="hero-theme" class="hero-theme"></h4>
+                            <p id="hero-insight" class="hero-insight"></p>
+                        </div>
+                        <div class="confidence-indicator">
+                            <span class="confidence-label">分析深度</span>
+                            <div class="confidence-bar">
+                                <div class="confidence-fill" style="width: 85%;"></div>
+                            </div>
+                        </div>
                     </div>
-
-                    <!-- 解釈結果 -->
-                    <div class="interpretation">
-                        <h4>象徴と心理的意味</h4>
-                        <div id="symbol-meanings" class="symbol-meanings"></div>
+                    
+                    <!-- Bento Grid Layout -->
+                    <div class="analysis-grid">
+                        <!-- 夢の内容カード -->
+                        <div class="analysis-card dream-content-card">
+                            <div class="card-header">
+                                <h4>📝 記録された夢</h4>
+                                <button class="expand-btn" onclick="toggleCard(this)">
+                                    <span class="expand-icon">▼</span>
+                                </button>
+                            </div>
+                            <div class="card-content">
+                                <p id="converted-dream-text"></p>
+                            </div>
+                        </div>
                         
-                        <div id="overall-analysis" class="overall-analysis hidden">
-                            <h4>夢の総合分析</h4>
-                            <div id="dream-theme" class="dream-theme"></div>
-                            <div id="overall-comment" class="overall-comment"></div>
+                        <!-- 象徴分析カード -->
+                        <div class="analysis-card symbols-card">
+                            <div class="card-header">
+                                <h4>🔮 象徴の意味</h4>
+                                <span class="card-badge" id="symbols-count">0個</span>
+                            </div>
+                            <div class="card-content">
+                                <div id="symbol-meanings" class="symbol-meanings-grid"></div>
+                            </div>
+                        </div>
+                        
+                        <!-- 感情分析カード -->
+                        <div class="analysis-card emotion-card">
+                            <div class="card-header">
+                                <h4>💭 感情とテーマ</h4>
+                            </div>
+                            <div class="card-content">
+                                <div id="emotion-analysis" class="emotion-analysis">
+                                    <div id="dream-theme" class="dream-theme"></div>
+                                    <div id="emotion-indicators" class="emotion-indicators"></div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- 総合分析カード -->
+                        <div class="analysis-card overall-card">
+                            <div class="card-header">
+                                <h4>🌟 総合的な解釈</h4>
+                            </div>
+                            <div class="card-content">
+                                <div id="overall-comment" class="overall-comment"></div>
+                                <div class="insight-actions">
+                                    <button class="insight-btn" onclick="askFollowUp()">
+                                        <span class="btn-icon">💬</span>
+                                        さらに詳しく
+                                    </button>
+                                </div>
+                            </div>
                         </div>
                     </div>
 
                     <!-- アクションボタン -->
                     <div class="result-actions">
-                        <button id="save-dream-btn" class="action-btn primary">保存する</button>
-                        <button id="new-dream-btn" class="action-btn tertiary">新しい夢を記録</button>
+                        <button id="save-dream-btn" class="action-btn primary">
+                            <span class="btn-icon">💾</span>
+                            保存する
+                        </button>
+                        <button id="new-dream-btn" class="action-btn tertiary">
+                            <span class="btn-icon">✨</span>
+                            新しい夢を記録
+                        </button>
                     </div>
                 </div>
             </section>

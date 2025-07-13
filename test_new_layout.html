@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test New AI Analysis Layout</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <h1>AI分析レイアウトのテスト</h1>
+        
+        <!-- Test Analysis Result -->
+        <div id="analysis-result" class="analysis-result">
+            <h3 class="result-title">🧠 AIによる夢の解析</h3>
+            
+            <!-- Hero Insight Card -->
+            <div class="ai-hero-card">
+                <div class="hero-icon">✨</div>
+                <div class="hero-content">
+                    <h4 id="hero-theme" class="hero-theme">内なる成長と変化への準備</h4>
+                    <p id="hero-insight" class="hero-insight">この夢は、あなたが人生の新しい段階に向けて準備を進めていることを示しています。水の象徴は感情の流れと浄化を表し...</p>
+                </div>
+                <div class="confidence-indicator">
+                    <span class="confidence-label">分析深度</span>
+                    <div class="confidence-bar">
+                        <div class="confidence-fill" style="width: 85%;"></div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Bento Grid Layout -->
+            <div class="analysis-grid">
+                <!-- 夢の内容カード -->
+                <div class="analysis-card dream-content-card">
+                    <div class="card-header">
+                        <h4>📝 記録された夢</h4>
+                        <button class="expand-btn" onclick="toggleCard(this)">
+                            <span class="expand-icon">▼</span>
+                        </button>
+                    </div>
+                    <div class="card-content">
+                        <p id="converted-dream-text">大きな海で泳いでいる夢を見ました。水は澄んでいて、周りには様々な色の魚が泳いでいました。遠くに島が見えて、そこに向かって泳いでいきました。</p>
+                    </div>
+                </div>
+                
+                <!-- 象徴分析カード -->
+                <div class="analysis-card symbols-card">
+                    <div class="card-header">
+                        <h4>🔮 象徴の意味</h4>
+                        <span class="card-badge" id="symbols-count">3個</span>
+                    </div>
+                    <div class="card-content">
+                        <div id="symbol-meanings" class="symbol-meanings-grid">
+                            <div class="symbol-item" data-category="place" data-expanded="false" onclick="toggleSymbol(this)">
+                                <strong>海</strong>
+                                <div class="symbol-summary">無意識の世界、感情の深さ</div>
+                                <div class="symbol-details">
+                                    <div class="symbol-comment">💭 大きな海は、あなたの内面の広大さと未知の可能性を表しています。</div>
+                                    <div class="symbol-interpretation">🔍 澄んだ水は、現在の精神状態が明晰であることを示唆しています。</div>
+                                </div>
+                            </div>
+                            <div class="symbol-item" data-category="animal" data-expanded="false" onclick="toggleSymbol(this)">
+                                <strong>魚</strong>
+                                <div class="symbol-summary">創造性、アイデア、直感</div>
+                                <div class="symbol-details">
+                                    <div class="symbol-comment">💭 様々な色の魚は、多様な可能性やアイデアを象徴しています。</div>
+                                    <div class="symbol-interpretation">🔍 水中の生き物は、意識下にある創造的なエネルギーを表現しています。</div>
+                                </div>
+                            </div>
+                            <div class="symbol-item" data-category="place" data-expanded="false" onclick="toggleSymbol(this)">
+                                <strong>島</strong>
+                                <div class="symbol-summary">目標、安息の地、独立</div>
+                                <div class="symbol-details">
+                                    <div class="symbol-comment">💭 遠くに見える島は、達成したい目標や到達したい状態を表しています。</div>
+                                    <div class="symbol-interpretation">🔍 島に向かって泳ぐ行為は、目標に向かって努力している現在の状況を反映しています。</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 感情分析カード -->
+                <div class="analysis-card emotion-card">
+                    <div class="card-header">
+                        <h4>💭 感情とテーマ</h4>
+                    </div>
+                    <div class="card-content">
+                        <div id="emotion-analysis" class="emotion-analysis">
+                            <div id="dream-theme" class="dream-theme">
+                                <div class="emotion-tag">成長</div>
+                            </div>
+                            <div id="emotion-indicators" class="emotion-indicators">
+                                <div class="emotion-tag">希望</div>
+                                <div class="emotion-tag">平和</div>
+                                <div class="emotion-tag">探求心</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 総合分析カード -->
+                <div class="analysis-card overall-card">
+                    <div class="card-header">
+                        <h4>🌟 総合的な解釈</h4>
+                    </div>
+                    <div class="card-content">
+                        <div id="overall-comment" class="overall-comment">
+                            <p>この夢は、あなたが人生の新しい段階に向けて準備を進めていることを示しています。澄んだ海と色とりどりの魚は、現在のあなたの精神状態が安定しており、創造的なエネルギーに満ちていることを表しています。島への泳ぎは、明確な目標に向かって着実に進んでいることを象徴しており、近い将来、重要な達成や新しい始まりが訪れる可能性を示唆しています。</p>
+                        </div>
+                        <div class="insight-actions">
+                            <button class="insight-btn" onclick="askFollowUp()">
+                                <span class="btn-icon">💬</span>
+                                さらに詳しく
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- アクションボタン -->
+            <div class="result-actions">
+                <button id="save-dream-btn" class="action-btn primary">
+                    <span class="btn-icon">💾</span>
+                    保存する
+                </button>
+                <button id="new-dream-btn" class="action-btn tertiary">
+                    <span class="btn-icon">✨</span>
+                    新しい夢を記録
+                </button>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // Toggle symbol expansion
+        function toggleSymbol(element) {
+            const isExpanded = element.getAttribute('data-expanded') === 'true';
+            element.setAttribute('data-expanded', !isExpanded);
+        }
+
+        // Toggle card expansion
+        function toggleCard(button) {
+            const card = button.closest('.analysis-card');
+            const content = card.querySelector('.card-content');
+            const icon = button.querySelector('.expand-icon');
+            
+            if (content.style.maxHeight) {
+                content.style.maxHeight = null;
+                icon.style.transform = 'rotate(0deg)';
+            } else {
+                content.style.maxHeight = content.scrollHeight + 'px';
+                icon.style.transform = 'rotate(180deg)';
+            }
+        }
+        
+        function askFollowUp() {
+            alert('追加の質問機能は開発中です');
+        }
+    </script>
+</body>
+</html>

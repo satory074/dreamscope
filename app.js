@@ -466,34 +466,115 @@ function displayAnalysisResult(result) {
         result.extractedWords = extractWordsFromDream(result.dreamText, result);
     }
     
+    // Update Hero Card
+    const heroTheme = document.getElementById('hero-theme');
+    const heroInsight = document.getElementById('hero-insight');
+    if (result.dreamTheme) {
+        heroTheme.textContent = result.dreamTheme;
+        heroInsight.textContent = result.overallComment ? 
+            result.overallComment.substring(0, 100) + '...' : 
+            '夢の深層を分析しています...';
+    } else {
+        heroTheme.textContent = '夢の分析完了';
+        heroInsight.textContent = '以下の分析結果をご確認ください。';
+    }
+    
+    // Update dream content
     document.getElementById('converted-dream-text').textContent = result.dreamText;
     
+    // Update symbols with progressive disclosure
     const symbolsContainer = document.getElementById('symbol-meanings');
-    symbolsContainer.innerHTML = result.symbols.map(symbol => `
-        <div class="symbol-item">
-            <strong>${symbol.symbol}</strong>: ${symbol.meaning}
-            ${symbol.comment ? `<div class="symbol-comment">💭 ${symbol.comment}</div>` : ''}
-            ${symbol.interpretation ? `<div class="symbol-interpretation">🔍 ${symbol.interpretation}</div>` : ''}
-        </div>
-    `).join('');
+    const symbolsCount = document.getElementById('symbols-count');
+    symbolsCount.textContent = `${result.symbols.length}個`;
     
-    
-    // Display overall analysis if available
-    if (result.overallComment || result.dreamTheme) {
-        const overallAnalysis = document.getElementById('overall-analysis');
-        overallAnalysis.classList.remove('hidden');
-        
-        if (result.dreamTheme) {
-            document.getElementById('dream-theme').innerHTML = `<strong>テーマ:</strong> ${result.dreamTheme}`;
+    symbolsContainer.innerHTML = result.symbols.map((symbol, index) => {
+        // Determine category based on symbol type (can be enhanced with AI categorization)
+        let category = 'object'; // default
+        if (symbol.category) {
+            category = symbol.category;
         }
         
-        if (result.overallComment) {
-            document.getElementById('overall-comment').innerHTML = `<p>${result.overallComment}</p>`;
+        return `
+        <div class="symbol-item" data-category="${category}" data-expanded="false" onclick="toggleSymbol(this)">
+            <strong>${symbol.symbol}</strong>
+            <div class="symbol-summary">${symbol.meaning}</div>
+            <div class="symbol-details">
+                ${symbol.comment ? `<div class="symbol-comment">💭 ${symbol.comment}</div>` : ''}
+                ${symbol.interpretation ? `<div class="symbol-interpretation">🔍 ${symbol.interpretation}</div>` : ''}
+            </div>
+        </div>
+        `;
+    }).join('');
+    
+    // Update emotion/theme analysis
+    if (result.dreamTheme) {
+        document.getElementById('dream-theme').innerHTML = `
+            <div class="emotion-tag">${result.dreamTheme}</div>
+        `;
+    }
+    
+    // Extract emotions/feelings from the analysis (simple implementation)
+    const emotionIndicators = document.getElementById('emotion-indicators');
+    if (result.emotions || result.overallComment) {
+        const emotions = extractEmotions(result.overallComment || '');
+        emotionIndicators.innerHTML = emotions.map(emotion => 
+            `<div class="emotion-tag">${emotion}</div>`
+        ).join('');
+    }
+    
+    // Update overall analysis
+    if (result.overallComment) {
+        document.getElementById('overall-comment').innerHTML = `<p>${result.overallComment}</p>`;
+    }
+    
+    document.getElementById('analysis-result').classList.remove('hidden');
+}
+
+// Toggle symbol expansion
+function toggleSymbol(element) {
+    const isExpanded = element.getAttribute('data-expanded') === 'true';
+    element.setAttribute('data-expanded', !isExpanded);
+}
+
+// Toggle card expansion
+function toggleCard(button) {
+    const card = button.closest('.analysis-card');
+    const content = card.querySelector('.card-content');
+    const icon = button.querySelector('.expand-icon');
+    
+    if (content.style.maxHeight) {
+        content.style.maxHeight = null;
+        icon.style.transform = 'rotate(0deg)';
+    } else {
+        content.style.maxHeight = content.scrollHeight + 'px';
+        icon.style.transform = 'rotate(180deg)';
+    }
+}
+
+// Extract emotions from text (simple implementation)
+function extractEmotions(text) {
+    const emotionKeywords = {
+        '不安': ['不安', '心配', '恐れ', '怖'],
+        '希望': ['希望', '期待', '楽しみ', '前向き'],
+        '喜び': ['喜び', '嬉しい', '幸せ', '満足'],
+        '悲しみ': ['悲しい', '寂しい', '孤独', '失望'],
+        '怒り': ['怒り', 'イライラ', '不満', '憤り'],
+        '平和': ['平和', '穏やか', '安心', '落ち着']
+    };
+    
+    const detectedEmotions = [];
+    for (const [emotion, keywords] of Object.entries(emotionKeywords)) {
+        if (keywords.some(keyword => text.includes(keyword))) {
+            detectedEmotions.push(emotion);
         }
     }
     
-    
-    document.getElementById('analysis-result').classList.remove('hidden');
+    return detectedEmotions.length > 0 ? detectedEmotions : ['深層心理'];
+}
+
+// Ask follow-up question (placeholder)
+function askFollowUp() {
+    showToast('追加の質問機能は開発中です', 'info');
 }
 
 // Display symbols for editing
