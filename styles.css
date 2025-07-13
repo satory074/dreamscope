@@ -379,16 +379,44 @@ body {
     align-items: center;
     gap: 0.5rem;
     padding: 0.5rem 1rem;
-    background-color: var(--primary-color);
-    color: var(--background-color);
+    background-color: var(--surface-color);
+    border: 1px solid var(--gray-600);
     border-radius: 20px;
     font-size: 0.875rem;
     transition: all 0.3s ease;
+    position: relative;
 }
 
 .symbol-tag:hover {
     transform: translateY(-2px);
     box-shadow: 0 4px 12px rgba(132, 204, 255, 0.3);
+}
+
+/* Category badge styling */
+.symbol-category-badge {
+    display: inline-block;
+    padding: 0.2rem 0.5rem;
+    border-radius: 12px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: white;
+    margin-right: 0.25rem;
+}
+
+/* Importance levels */
+.symbol-tag.importance-high {
+    border-color: #FFB6C1;
+    background-color: rgba(255, 182, 193, 0.1);
+}
+
+.symbol-tag.importance-medium {
+    border-color: var(--primary-color);
+    background-color: rgba(132, 204, 255, 0.1);
+}
+
+.symbol-tag.importance-low {
+    border-color: var(--gray-500);
+    background-color: rgba(161, 163, 166, 0.1);
 }
 
 .symbol-tag-text {
@@ -423,6 +451,23 @@ body {
 }
 
 .symbol-input:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 2px rgba(132, 204, 255, 0.1);
+}
+
+.symbol-select {
+    padding: 0.5rem 1rem;
+    background-color: var(--surface-color);
+    border: 1px solid var(--gray-600);
+    border-radius: 8px;
+    color: var(--gray-100);
+    font-size: 0.875rem;
+    cursor: pointer;
+    min-width: 140px;
+}
+
+.symbol-select:focus {
     outline: none;
     border-color: var(--primary-color);
     box-shadow: 0 0 0 2px rgba(132, 204, 255, 0.1);
@@ -603,6 +648,90 @@ body {
 .stat-label {
     color: var(--text-secondary);
     font-size: 0.9rem;
+}
+
+/* Frequent Symbols Section */
+.frequent-symbols-section, .personal-dictionary-section {
+    background-color: var(--surface-color);
+    padding: 2rem;
+    border-radius: 15px;
+    margin-top: 2rem;
+}
+
+.frequent-symbols-section h3, .personal-dictionary-section h3 {
+    color: var(--accent-color);
+    margin-bottom: 1rem;
+}
+
+.symbol-stats-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+.symbol-stat-item {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1rem;
+    background-color: var(--background-color);
+    border-radius: 20px;
+    font-size: 0.875rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.symbol-stat-item:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(132, 204, 255, 0.3);
+}
+
+.symbol-count-badge {
+    background-color: var(--primary-color);
+    color: white;
+    padding: 0.2rem 0.5rem;
+    border-radius: 12px;
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+
+.dictionary-container {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.dictionary-item {
+    background-color: var(--background-color);
+    padding: 1rem;
+    border-radius: 10px;
+    border-left: 4px solid var(--primary-color);
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.dictionary-item:hover {
+    transform: translateX(5px);
+}
+
+.dictionary-symbol {
+    font-weight: 600;
+    color: var(--accent-color);
+    margin-bottom: 0.5rem;
+}
+
+.dictionary-meaning {
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+}
+
+.dictionary-edit-btn {
+    background: none;
+    border: none;
+    color: var(--primary-color);
+    cursor: pointer;
+    font-size: 0.875rem;
+    margin-top: 0.5rem;
 }
 
 /* Export Section */

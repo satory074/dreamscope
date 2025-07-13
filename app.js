@@ -168,10 +168,13 @@ function initializeEventListeners() {
     const addSymbolBtn = document.getElementById('add-symbol-btn');
     if (addSymbolBtn) addSymbolBtn.addEventListener('click', () => {
         const input = document.getElementById('new-symbol-input');
+        const categorySelect = document.getElementById('new-symbol-category');
         const symbol = input.value.trim();
         if (symbol) {
-            addSymbolTag(symbol);
+            const category = categorySelect.value || '未分類';
+            addSymbolTag({ text: symbol, category: category, importance: 'medium' });
             input.value = '';
+            categorySelect.selectedIndex = 0;
         }
     });
     
@@ -180,8 +183,11 @@ function initializeEventListeners() {
         if (e.key === 'Enter') {
             const symbol = e.target.value.trim();
             if (symbol) {
-                addSymbolTag(symbol);
+                const categorySelect = document.getElementById('new-symbol-category');
+                const category = categorySelect.value || '未分類';
+                addSymbolTag({ text: symbol, category: category, importance: 'medium' });
                 e.target.value = '';
+                categorySelect.selectedIndex = 0;
             }
         }
     });
@@ -360,7 +366,7 @@ async function analyzeWithSymbols(dreamContent, symbols) {
             },
             body: JSON.stringify({
                 dreamContent: dreamContent,
-                symbols: symbols
+                symbols: symbols.map(s => typeof s === 'string' ? s : s.text)
             })
         });
         
@@ -484,17 +490,46 @@ function displaySymbolsForEdit(symbols) {
     container.innerHTML = '';
     
     symbols.forEach(symbol => {
-        addSymbolTag(symbol);
+        // Handle both old format (string) and new format (object)
+        if (typeof symbol === 'string') {
+            addSymbolTag({ text: symbol, category: '未分類', importance: 'medium' });
+        } else {
+            addSymbolTag(symbol);
+        }
     });
 }
 
 // Add a symbol tag to the container
-function addSymbolTag(symbol) {
+function addSymbolTag(symbolData) {
     const container = document.getElementById('symbol-tags-container');
     const tag = document.createElement('div');
-    tag.className = 'symbol-tag';
+    
+    // Handle both string and object formats
+    const text = typeof symbolData === 'string' ? symbolData : symbolData.text;
+    const category = typeof symbolData === 'string' ? '未分類' : symbolData.category;
+    const importance = typeof symbolData === 'string' ? 'medium' : symbolData.importance;
+    
+    tag.className = `symbol-tag importance-${importance}`;
+    tag.dataset.category = category;
+    tag.dataset.importance = importance;
+    
+    const categoryColors = {
+        '人物': '#FF6B6B',
+        '場所': '#4ECDC4', 
+        '物体': '#45B7D1',
+        '動物': '#96CEB4',
+        '行動': '#FECA57',
+        '感情': '#DDA0DD',
+        '色彩': '#FFA07A',
+        '数字': '#B19CD9',
+        '未分類': '#999999'
+    };
+    
+    const categoryColor = categoryColors[category] || categoryColors['未分類'];
+    
     tag.innerHTML = `
-        <span class="symbol-tag-text">${symbol}</span>
+        <span class="symbol-category-badge" style="background-color: ${categoryColor}">${category}</span>
+        <span class="symbol-tag-text">${text}</span>
         <span class="symbol-tag-remove" onclick="removeSymbolTag(this)">×</span>
     `;
     container.appendChild(tag);
@@ -508,8 +543,13 @@ function removeSymbolTag(element) {
 
 // Get all symbols from the edit view
 function getEditedSymbols() {
-    const tags = document.querySelectorAll('.symbol-tag-text');
-    return Array.from(tags).map(tag => tag.textContent);
+    const tags = document.querySelectorAll('.symbol-tag');
+    return Array.from(tags).map(tag => {
+        const text = tag.querySelector('.symbol-tag-text').textContent;
+        const category = tag.dataset.category || '未分類';
+        const importance = tag.dataset.importance || 'medium';
+        return { text, category, importance };
+    });
 }
 
 // Handle symbol analysis after editing
@@ -573,6 +613,11 @@ function saveDream() {
         // 夢保存後のAPI呼び出しを削除（登録時のみ呼ぶため）
     }
     
+    // 象徴の頻度を追跡
+    if (app.currentAnalysis.symbols) {
+        trackSymbolFrequency(dream.id, app.currentAnalysis.symbols);
+    }
+    
     saveDataToStorage();
     
     showToast('夢が保存されました！', 'success');
@@ -585,6 +630,48 @@ function extractTags(analysis) {
         tags.push(symbol.symbol);
     });
     return tags;
+}
+
+// Track symbol frequency
+function trackSymbolFrequency(dreamId, symbols) {
+    const symbolStats = JSON.parse(localStorage.getItem('dreamscope_symbol_stats') || '{}');
+    
+    symbols.forEach(symbolData => {
+        const symbol = symbolData.symbol.toLowerCase();
+        
+        if (!symbolStats[symbol]) {
+            symbolStats[symbol] = {
+                text: symbolData.symbol,
+                count: 0,
+                firstSeen: new Date().toISOString(),
+                lastSeen: null,
+                dreams: [],
+                meanings: []
+            };
+        }
+        
+        symbolStats[symbol].count++;
+        symbolStats[symbol].lastSeen = new Date().toISOString();
+        
+        // Add dream ID to the list (keep only last 20)
+        if (!symbolStats[symbol].dreams.includes(dreamId)) {
+            symbolStats[symbol].dreams.push(dreamId);
+            if (symbolStats[symbol].dreams.length > 20) {
+                symbolStats[symbol].dreams.shift();
+            }
+        }
+        
+        // Store the meaning if it's new
+        if (symbolData.meaning && !symbolStats[symbol].meanings.includes(symbolData.meaning)) {
+            symbolStats[symbol].meanings.push(symbolData.meaning);
+            if (symbolStats[symbol].meanings.length > 5) {
+                symbolStats[symbol].meanings.shift();
+            }
+        }
+    });
+    
+    localStorage.setItem('dreamscope_symbol_stats', JSON.stringify(symbolStats));
+    return symbolStats;
 }
 
 // Reset Input
@@ -750,6 +837,129 @@ function showDreamDetail(dreamId) {
 // Statistics
 function updateStatistics() {
     document.getElementById('total-dreams').textContent = app.dreams.length;
+    
+    // Display frequent symbols
+    displayFrequentSymbols();
+    
+    // Display personal dictionary
+    displayPersonalDictionary();
+}
+
+// Display frequent symbols
+function displayFrequentSymbols() {
+    const container = document.getElementById('frequent-symbols');
+    if (!container) return;
+    
+    const symbolStats = JSON.parse(localStorage.getItem('dreamscope_symbol_stats') || '{}');
+    
+    // Sort symbols by count
+    const sortedSymbols = Object.entries(symbolStats)
+        .sort((a, b) => b[1].count - a[1].count)
+        .slice(0, 10);
+    
+    container.innerHTML = '';
+    
+    if (sortedSymbols.length === 0) {
+        container.innerHTML = '<p class="help-text">まだ象徴が記録されていません</p>';
+        return;
+    }
+    
+    sortedSymbols.forEach(([key, data]) => {
+        const item = document.createElement('div');
+        item.className = 'symbol-stat-item';
+        item.innerHTML = `
+            <span class="symbol-text">${data.text}</span>
+            <span class="symbol-count-badge">${data.count}回</span>
+        `;
+        item.onclick = () => showSymbolDetail(key);
+        container.appendChild(item);
+    });
+}
+
+// Display personal dictionary
+function displayPersonalDictionary() {
+    const container = document.getElementById('personal-dictionary');
+    if (!container) return;
+    
+    const personalDict = JSON.parse(localStorage.getItem('dreamscope_personal_symbols') || '{}');
+    
+    container.innerHTML = '';
+    
+    if (Object.keys(personalDict).length === 0) {
+        container.innerHTML = '<p class="help-text">まだ個人用の意味が登録されていません</p>';
+        return;
+    }
+    
+    Object.entries(personalDict).forEach(([symbol, data]) => {
+        const item = document.createElement('div');
+        item.className = 'dictionary-item';
+        item.innerHTML = `
+            <div class="dictionary-symbol">${symbol}</div>
+            <div class="dictionary-meaning">${data.meaning}</div>
+            <button class="dictionary-edit-btn" data-symbol="${symbol}">編集</button>
+        `;
+        
+        // Add event listener to edit button
+        const editBtn = item.querySelector('.dictionary-edit-btn');
+        editBtn.addEventListener('click', () => editPersonalMeaning(symbol));
+        
+        container.appendChild(item);
+    });
+}
+
+// Show symbol detail
+function showSymbolDetail(symbolKey) {
+    const symbolStats = JSON.parse(localStorage.getItem('dreamscope_symbol_stats') || '{}');
+    const symbolData = symbolStats[symbolKey];
+    
+    if (!symbolData) return;
+    
+    const personalDict = JSON.parse(localStorage.getItem('dreamscope_personal_symbols') || '{}');
+    const personalMeaning = personalDict[symbolKey]?.meaning || '';
+    
+    const meanings = symbolData.meanings.join('\n\n');
+    
+    const message = `
+象徴: ${symbolData.text}
+出現回数: ${symbolData.count}回
+初回出現: ${new Date(symbolData.firstSeen).toLocaleDateString('ja-JP')}
+最終出現: ${new Date(symbolData.lastSeen).toLocaleDateString('ja-JP')}
+
+AIによる意味:
+${meanings || 'まだ分析されていません'}
+
+個人用の意味:
+${personalMeaning || 'まだ登録されていません'}
+    `;
+    
+    if (confirm(message + '\n\n個人用の意味を編集しますか？')) {
+        editPersonalMeaning(symbolKey);
+    }
+}
+
+// Edit personal meaning
+function editPersonalMeaning(symbol) {
+    const personalDict = JSON.parse(localStorage.getItem('dreamscope_personal_symbols') || '{}');
+    const currentMeaning = personalDict[symbol]?.meaning || '';
+    
+    const newMeaning = prompt(`「${symbol}」の個人的な意味を入力してください:`, currentMeaning);
+    
+    if (newMeaning !== null && newMeaning.trim()) {
+        savePersonalSymbolMeaning(symbol, newMeaning.trim());
+        displayPersonalDictionary();
+        showToast('個人用の意味を保存しました', 'success');
+    }
+}
+
+// Save personal symbol meaning
+function savePersonalSymbolMeaning(symbol, meaning) {
+    const personalDict = JSON.parse(localStorage.getItem('dreamscope_personal_symbols') || '{}');
+    personalDict[symbol.toLowerCase()] = {
+        symbol: symbol,
+        meaning: meaning,
+        updatedAt: new Date().toISOString()
+    };
+    localStorage.setItem('dreamscope_personal_symbols', JSON.stringify(personalDict));
 }
 
 

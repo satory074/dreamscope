@@ -99,6 +99,17 @@
                                    class="symbol-input" 
                                    placeholder="新しい象徴を入力..."
                                    maxlength="20">
+                            <select id="new-symbol-category" class="symbol-select">
+                                <option value="未分類">カテゴリー選択</option>
+                                <option value="人物">人物</option>
+                                <option value="場所">場所</option>
+                                <option value="物体">物体</option>
+                                <option value="動物">動物</option>
+                                <option value="行動">行動</option>
+                                <option value="感情">感情</option>
+                                <option value="色彩">色彩</option>
+                                <option value="数字">数字</option>
+                            </select>
                             <button id="add-symbol-btn" class="add-btn">追加</button>
                         </div>
                     </div>
@@ -166,6 +177,22 @@
                         </div>
                     </div>
                     
+                    <!-- 頻出象徴 -->
+                    <div class="frequent-symbols-section">
+                        <h3>頻出象徴トップ10</h3>
+                        <div id="frequent-symbols" class="symbol-stats-container">
+                            <!-- 頻出象徴がここに表示される -->
+                        </div>
+                    </div>
+                    
+                    <!-- 個人用象徴辞書 -->
+                    <div class="personal-dictionary-section">
+                        <h3>個人用象徴辞書</h3>
+                        <p class="help-text">象徴に独自の意味を追加できます</p>
+                        <div id="personal-dictionary" class="dictionary-container">
+                            <!-- 個人用辞書がここに表示される -->
+                        </div>
+                    </div>
 
                 </div>
             </section>
