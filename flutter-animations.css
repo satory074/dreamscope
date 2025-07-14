@@ -1,0 +1,399 @@
+/**
+ * Flutter Animations CSS
+ * 
+ * FlutterのHero, AnimatedContainer, その他のアニメーションを
+ * CSSで再現するためのスタイルシート
+ */
+
+/* Flutter AnimatedContainer */
+.flutter-animated-container {
+    transition-property: all;
+    transition-duration: 300ms;
+    transition-timing-function: cubic-bezier(0.4, 0.0, 0.2, 1);
+    /* Flutter: AnimatedContainer(
+         duration: Duration(milliseconds: 300),
+         curve: Curves.easeInOut,
+       )
+    */
+}
+
+.flutter-animated-container.slow {
+    transition-duration: 600ms;
+}
+
+.flutter-animated-container.fast {
+    transition-duration: 150ms;
+}
+
+/* Flutter Hero Animation */
+.flutter-hero {
+    transition: all 300ms cubic-bezier(0.4, 0.0, 0.2, 1);
+    /* Flutter: Hero(
+         tag: "hero-tag",
+         child: Widget(),
+       )
+    */
+}
+
+.flutter-hero-animating {
+    position: fixed !important;
+    z-index: 9999;
+}
+
+/* Flutter FadeTransition */
+.flutter-fade-in {
+    animation: flutterFadeIn 300ms ease-in-out;
+}
+
+.flutter-fade-out {
+    animation: flutterFadeOut 300ms ease-in-out;
+}
+
+@keyframes flutterFadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes flutterFadeOut {
+    from {
+        opacity: 1;
+    }
+    to {
+        opacity: 0;
+    }
+}
+
+/* Flutter SlideTransition */
+.flutter-slide-in-left {
+    animation: flutterSlideInLeft 300ms cubic-bezier(0.4, 0.0, 0.2, 1);
+}
+
+.flutter-slide-in-right {
+    animation: flutterSlideInRight 300ms cubic-bezier(0.4, 0.0, 0.2, 1);
+}
+
+.flutter-slide-in-top {
+    animation: flutterSlideInTop 300ms cubic-bezier(0.4, 0.0, 0.2, 1);
+}
+
+.flutter-slide-in-bottom {
+    animation: flutterSlideInBottom 300ms cubic-bezier(0.4, 0.0, 0.2, 1);
+}
+
+@keyframes flutterSlideInLeft {
+    from {
+        transform: translateX(-100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+@keyframes flutterSlideInRight {
+    from {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+@keyframes flutterSlideInTop {
+    from {
+        transform: translateY(-100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+@keyframes flutterSlideInBottom {
+    from {
+        transform: translateY(100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+/* Flutter ScaleTransition */
+.flutter-scale-in {
+    animation: flutterScaleIn 300ms cubic-bezier(0.4, 0.0, 0.2, 1);
+}
+
+.flutter-scale-out {
+    animation: flutterScaleOut 300ms cubic-bezier(0.4, 0.0, 0.2, 1);
+}
+
+@keyframes flutterScaleIn {
+    from {
+        transform: scale(0);
+        opacity: 0;
+    }
+    to {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+
+@keyframes flutterScaleOut {
+    from {
+        transform: scale(1);
+        opacity: 1;
+    }
+    to {
+        transform: scale(0);
+        opacity: 0;
+    }
+}
+
+/* Flutter RotationTransition */
+.flutter-rotate {
+    animation: flutterRotate 1s linear infinite;
+}
+
+.flutter-rotate-once {
+    animation: flutterRotateOnce 300ms ease-in-out;
+}
+
+@keyframes flutterRotate {
+    from {
+        transform: rotate(0deg);
+    }
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+@keyframes flutterRotateOnce {
+    from {
+        transform: rotate(0deg);
+    }
+    to {
+        transform: rotate(90deg);
+    }
+}
+
+/* Flutter AnimatedOpacity */
+.flutter-animated-opacity {
+    transition: opacity 300ms ease-in-out;
+}
+
+.flutter-opacity-0 { opacity: 0; }
+.flutter-opacity-25 { opacity: 0.25; }
+.flutter-opacity-50 { opacity: 0.5; }
+.flutter-opacity-75 { opacity: 0.75; }
+.flutter-opacity-100 { opacity: 1; }
+
+/* Flutter AnimatedPadding */
+.flutter-animated-padding {
+    transition: padding 300ms ease-in-out;
+}
+
+/* Flutter AnimatedPositioned */
+.flutter-animated-positioned {
+    position: absolute;
+    transition: all 300ms cubic-bezier(0.4, 0.0, 0.2, 1);
+}
+
+/* Flutter AnimatedSize */
+.flutter-animated-size {
+    transition: width 300ms ease-in-out, height 300ms ease-in-out;
+    overflow: hidden;
+}
+
+/* Flutter AnimatedSwitcher */
+.flutter-animated-switcher {
+    position: relative;
+}
+
+.flutter-animated-switcher > * {
+    transition: opacity 300ms ease-in-out;
+}
+
+.flutter-animated-switcher > .entering {
+    opacity: 0;
+    animation: flutterFadeIn 300ms ease-in-out forwards;
+}
+
+.flutter-animated-switcher > .exiting {
+    opacity: 1;
+    animation: flutterFadeOut 300ms ease-in-out forwards;
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+}
+
+/* Flutter Curves */
+.flutter-curve-ease-in {
+    transition-timing-function: cubic-bezier(0.4, 0.0, 1, 1);
+}
+
+.flutter-curve-ease-out {
+    transition-timing-function: cubic-bezier(0.0, 0.0, 0.2, 1);
+}
+
+.flutter-curve-ease-in-out {
+    transition-timing-function: cubic-bezier(0.4, 0.0, 0.2, 1);
+}
+
+.flutter-curve-fast-out-slow-in {
+    transition-timing-function: cubic-bezier(0.4, 0.0, 0.2, 1);
+}
+
+.flutter-curve-bounce-in {
+    animation-timing-function: cubic-bezier(0.17, 0.89, 0.32, 1.28);
+}
+
+/* Flutter Staggered Animations */
+.flutter-staggered-animation > * {
+    opacity: 0;
+    transform: translateY(20px);
+    animation: flutterStaggeredItem 300ms ease-out forwards;
+}
+
+.flutter-staggered-animation > *:nth-child(1) { animation-delay: 0ms; }
+.flutter-staggered-animation > *:nth-child(2) { animation-delay: 50ms; }
+.flutter-staggered-animation > *:nth-child(3) { animation-delay: 100ms; }
+.flutter-staggered-animation > *:nth-child(4) { animation-delay: 150ms; }
+.flutter-staggered-animation > *:nth-child(5) { animation-delay: 200ms; }
+.flutter-staggered-animation > *:nth-child(6) { animation-delay: 250ms; }
+.flutter-staggered-animation > *:nth-child(7) { animation-delay: 300ms; }
+.flutter-staggered-animation > *:nth-child(8) { animation-delay: 350ms; }
+.flutter-staggered-animation > *:nth-child(9) { animation-delay: 400ms; }
+.flutter-staggered-animation > *:nth-child(10) { animation-delay: 450ms; }
+
+@keyframes flutterStaggeredItem {
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Flutter PageTransition */
+.flutter-page-transition-fade {
+    animation: flutterFadeIn 300ms ease-in-out;
+}
+
+.flutter-page-transition-slide {
+    animation: flutterSlideInRight 300ms cubic-bezier(0.4, 0.0, 0.2, 1);
+}
+
+.flutter-page-transition-scale {
+    animation: flutterScaleIn 300ms cubic-bezier(0.4, 0.0, 0.2, 1);
+    transform-origin: center;
+}
+
+/* Flutter AnimatedList */
+.flutter-animated-list-item-enter {
+    animation: flutterListItemEnter 300ms ease-out;
+}
+
+.flutter-animated-list-item-exit {
+    animation: flutterListItemExit 300ms ease-in;
+}
+
+@keyframes flutterListItemEnter {
+    from {
+        opacity: 0;
+        transform: translateX(-100%);
+        max-height: 0;
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+        max-height: 200px;
+    }
+}
+
+@keyframes flutterListItemExit {
+    from {
+        opacity: 1;
+        transform: translateX(0);
+        max-height: 200px;
+    }
+    to {
+        opacity: 0;
+        transform: translateX(-100%);
+        max-height: 0;
+    }
+}
+
+/* Flutter AnimatedIcon */
+.flutter-animated-icon {
+    transition: transform 300ms ease-in-out;
+}
+
+.flutter-animated-icon.menu-to-close {
+    transform: rotate(0deg);
+}
+
+.flutter-animated-icon.menu-to-close.active {
+    transform: rotate(90deg);
+}
+
+/* Flutter Shimmer Effect */
+.flutter-shimmer {
+    background: linear-gradient(
+        -45deg,
+        #eee 40%,
+        #fafafa 50%,
+        #eee 60%
+    );
+    background-size: 300% 300%;
+    animation: flutterShimmer 1.5s ease-in-out infinite;
+}
+
+@keyframes flutterShimmer {
+    0% {
+        background-position: 100% 0;
+    }
+    100% {
+        background-position: -100% 0;
+    }
+}
+
+/* Flutter Pulse Animation */
+.flutter-pulse {
+    animation: flutterPulse 2s ease-in-out infinite;
+}
+
+@keyframes flutterPulse {
+    0% {
+        transform: scale(1);
+        opacity: 1;
+    }
+    50% {
+        transform: scale(1.05);
+        opacity: 0.8;
+    }
+    100% {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+
+/* Flutter AnimatedPhysicalModel */
+.flutter-animated-physical-model {
+    transition: box-shadow 300ms ease-in-out, 
+                border-radius 300ms ease-in-out,
+                background-color 300ms ease-in-out;
+}
+
+/* Flutter Custom Paint Animation のプレースホルダー */
+.flutter-custom-paint {
+    /* カスタムペイントアニメーションはJavaScriptで実装 */
+}

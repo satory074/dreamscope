@@ -1,9 +1,6 @@
 # DreamScope - 夢を記録して、AIが深層心理を解析する夢日記アプリ
 
-## 🌙 Demo
-[**Live Demo**](https://satory074.github.io/dreamscope/) - すぐに体験できます！
-
-## コアコンセプト
+## 🌙 概要
 
 DreamScopeは、あなたの夢を記録し、AIが深層心理を分析する夢日記ウェブアプリケーションです。プライバシーファーストの設計で、すべてのデータはブラウザのLocalStorageに保存されます。
 
@@ -14,6 +11,7 @@ DreamScopeは、あなたの夢を記録し、AIが深層心理を分析する�
 3. **📝 シンプルな夢の記録** - フリーテキスト形式で簡単に記録
 4. **🔒 完全プライバシー保護** - データは100%ローカル保存（AI解析時のみAPI通信）
 5. **📊 ストレージ容量監視** - LocalStorageの使用状況を可視化
+6. **📱 Flutter対応準備** - モバイルアプリへの変換が可能な設計
 
 ## 技術スタック
 
@@ -22,6 +20,7 @@ DreamScopeは、あなたの夢を記録し、AIが深層心理を分析する�
 - **AI統合**: Google Gemini API（サーバーサイド実装）
 - **データストレージ**: ブラウザのLocalStorage（5-10MB制限）
 - **開発ツール**: nodemon（開発時の自動リロード）
+- **Flutter準備**: Widget構造、Material Design 3、アニメーションのモック実装
 
 ## セットアップ
 
@@ -111,8 +110,9 @@ dreamscope/
 ├── color-palettes.css # カラーテーマ定義
 ├── js/
 │   └── utils.js       # ユーティリティ関数
-├── archive/           # アーカイブされたファイル
-└── ドキュメント/       # 企画書、機能一覧など
+├── flutter-*.css/js   # Flutter変換用ファイル
+├── *.md               # ドキュメント
+└── docs/              # 企画・設計ドキュメント
 ```
 
 ## 開発のヒント
@@ -120,6 +120,8 @@ dreamscope/
 - ビルドプロセスなし - ファイルを直接編集
 - ブラウザの開発者ツールでLocalStorageを確認: `JSON.parse(localStorage.getItem('dreamscope_dreams'))`
 - テストフレームワークは未実装 - ブラウザで手動テスト
+- Flutter変換ガイド: `FLUTTER_CONVERSION_GUIDE.md`を参照
+- プロジェクトステータス: `PROJECT_STATUS.md`で実装状況を確認
 
 ## プライバシー
 

@@ -5,17 +5,27 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>DreamScope - 夢を記録し、意味づけ、人生のヒントにする</title>
     
+    <!-- Flutter Widget Mapping:
+         html → MaterialApp
+         body → Scaffold
+         このHTML構造はFlutterのWidget階層に直接マッピング可能
+    -->
     
     <link rel="stylesheet" href="styles.css">
     <link rel="stylesheet" href="color-palettes.css">
+    <link rel="stylesheet" href="flutter-layout.css">
+    <link rel="stylesheet" href="flutter-components.css">
+    <link rel="stylesheet" href="flutter-animations.css">
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;700&display=swap" rel="stylesheet">
 </head>
 <body>
-    <div id="app">
-        <!-- ヘッダー -->
-        <header class="header">
+    <!-- Flutter: MaterialApp + Theme.of(context) -->
+    <div id="app" data-flutter-widget="MaterialApp">
+        <!-- Flutter: AppBar Widget -->
+        <header class="header" data-flutter-widget="AppBar">
             <h1 class="logo">🌙 DreamScope</h1>
-            <nav class="nav">
+            <!-- Flutter: actions property of AppBar -->
+            <nav class="nav" data-flutter-widget="Row">
                 <button class="nav-btn active" data-view="input" data-icon="✏️">記録</button>
                 <button class="nav-btn" data-view="history" data-icon="📅">履歴</button>
                 <button class="nav-btn" data-view="analysis" data-icon="📊">分析</button>
@@ -23,22 +33,24 @@
             </nav>
         </header>
 
-        <!-- メインコンテンツ -->
-        <main class="main-content">
-            <!-- 夢の入力画面 -->
-            <section id="input-view" class="view active">
-                <div class="input-container">
+        <!-- Flutter: Scaffold body with IndexedStack for navigation -->
+        <main class="main-content" data-flutter-widget="IndexedStack">
+            <!-- Flutter: StatefulWidget for InputView -->
+            <section id="input-view" class="view active" data-flutter-widget="InputView extends StatefulWidget">
+                <!-- Flutter: Container with padding -->
+                <div class="input-container flutter-container flutter-padding-all-16" data-flutter-widget="Container" data-flutter-padding="EdgeInsets.all(16)">
                     <h2 class="section-title">今日の夢を記録</h2>
                     
 
                     <!-- 自由記述入力フォーム -->
                     <div id="freetext-input" class="input-form">
                         <p class="input-hint">夢の内容を自由に記述してください</p>
-                        <textarea id="freetext-field" class="freetext-input-field" rows="6" placeholder="夢の内容を詳しく書いてください..." aria-required="true" aria-label="夢の内容"></textarea>
+                        <!-- Flutter: TextFormField with InputDecoration -->
+                        <textarea id="freetext-field" class="freetext-input-field" rows="6" placeholder="夢の内容を詳しく書いてください..." aria-required="true" aria-label="夢の内容" data-flutter-widget="TextFormField" data-flutter-maxlines="6"></textarea>
                     </div>
 
-                    <!-- 記録ボタン -->
-                    <button id="record-btn" class="record-btn">
+                    <!-- Flutter: ElevatedButton.icon -->
+                    <button id="record-btn" class="record-btn" data-flutter-widget="ElevatedButton.icon">
                         <span class="btn-icon">✨</span>
                         <span class="btn-text">夢を記録して解析</span>
                     </button>
@@ -61,10 +73,10 @@
                         <!-- 分析深度表示を削除 -->
                     </div>
                     
-                    <!-- Bento Grid Layout -->
-                    <div class="analysis-grid">
-                        <!-- 夢の内容カード -->
-                        <div class="analysis-card dream-content-card">
+                    <!-- Flutter: GridView or Wrap widget -->
+                    <div class="analysis-grid flutter-grid flutter-grid-2" data-flutter-widget="GridView.count" data-flutter-crossAxisCount="2">
+                        <!-- Flutter: Card widget with InkWell -->
+                        <div class="analysis-card dream-content-card" data-flutter-widget="Card">
                             <div class="card-header">
                                 <h4>📝 記録された夢</h4>
                                 <button class="expand-btn" onclick="toggleCard(this)">
@@ -95,8 +107,8 @@
                         <!-- 総合分析カードを削除（上部に統合済み） -->
                     </div>
 
-                    <!-- アクションボタン -->
-                    <div class="result-actions">
+                    <!-- Flutter: Row with MainAxisAlignment.spaceEvenly -->
+                    <div class="result-actions flutter-row main-axis-space-evenly">
                         <button id="save-dream-btn" class="action-btn primary">
                             <span class="btn-icon">💾</span>
                             保存する
@@ -163,13 +175,13 @@
                 </div>
             </section>
 
-            <!-- 履歴画面 -->
-            <section id="history-view" class="view">
-                <div class="history-container">
+            <!-- Flutter: HistoryView StatefulWidget -->
+            <section id="history-view" class="view" data-flutter-widget="HistoryView extends StatefulWidget">
+                <div class="history-container flutter-column">
                     <h2 class="section-title">夢の履歴</h2>
                     
-                    <!-- エクスポートボタン -->
-                    <div class="export-buttons">
+                    <!-- Flutter: Row widget for export buttons -->
+                    <div class="export-buttons flutter-row main-axis-end">
                         <button id="export-csv" class="settings-btn">CSVでエクスポート</button>
                         <button id="export-json" class="settings-btn">JSONでエクスポート</button>
                     </div>
@@ -184,19 +196,19 @@
                         <div id="calendar" class="calendar-grid"></div>
                     </div>
 
-                    <!-- 夢のリスト -->
-                    <div id="dream-list" class="dream-list"></div>
+                    <!-- Flutter: ListView.builder for performance -->
+                    <div id="dream-list" class="dream-list" data-flutter-widget="ListView.builder"></div>
                 </div>
             </section>
 
             <!-- 分析画面 -->
             <section id="analysis-view" class="view">
-                <div class="analysis-container">
+                <div class="analysis-container flutter-column flutter-padding-all-16">
                     <h2 class="section-title">夢の傾向分析</h2>
                     
 
-                    <!-- 統計情報 -->
-                    <div class="statistics">
+                    <!-- Flutter: Wrap widget for responsive layout -->
+                    <div class="statistics flutter-wrap">
                         <div class="stat-card">
                             <span class="stat-number" id="total-dreams">0</span>
                             <span class="stat-label">記録した夢</span>
@@ -336,7 +348,13 @@
     <div id="toast-container" class="toast-container"></div>
     
     
-    <!-- Scripts with async loading -->
+    <!-- Flutter: 
+         状態管理はRiverpod/Providerで実装
+         LocalStorageはshared_preferencesパッケージで置き換え
+         API通信はhttpまたはdioパッケージを使用
+    -->
     <script src="app.js" defer></script>
+    <script src="flutter-mock.js" defer></script>
+    <script src="flutter-animations.js" defer></script>
 </body>
 </html>

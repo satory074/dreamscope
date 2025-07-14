@@ -16,13 +16,20 @@ DreamScope is a dream journaling web application that records dreams and analyze
 - **Package Manager**: npm (no uv/yarn)
 
 ### Key Files
-- `index.html` - Single-page application with all views
+- `index.html` - Single-page application with all views (Flutter-ready structure)
 - `app.js` - Main application logic, state management, event handling
 - `styles.css` - Dark mode design with CSS variables
 - `color-palettes.css` - 8 color theme definitions
 - `server.js` - Express server with Gemini API integration
 - `/js/utils.js` - Utility functions
-- `theme-preview.html` - Color theme preview page
+
+### Flutter Conversion Files
+- `flutter-mock.js` - Flutter Widget hierarchy and state management patterns
+- `flutter-layout.css` - Flutter layout system (Row, Column, Stack) in CSS
+- `flutter-components.css` - Material Design 3 components
+- `flutter-animations.css` - Flutter animations in CSS
+- `flutter-animations.js` - Complex animations (Hero, AnimatedContainer)
+- `FLUTTER_CONVERSION_GUIDE.md` - Complete guide for converting to Flutter
 
 ## Development Commands
 
@@ -139,8 +146,26 @@ The app includes visual storage quota monitoring:
 
 ## Recent Updates
 
+- **Flutter Conversion Support**: Added comprehensive Flutter conversion infrastructure
+  - Widget mapping with `data-flutter-widget` attributes
+  - Material Design 3 components faithfully recreated
+  - State management patterns (Provider/Riverpod) simulated
+  - Complete conversion guide with code examples
 - **Color Themes**: Added 8 color themes (Default, Midnight, Ocean, Forest, Sunset, Lavender, Rose, Monochrome)
 - **AI Analysis Improvements**: Enhanced Japanese output with easier-to-understand explanations
 - **Symbol Analysis**: Advanced dream symbol extraction and interpretation
 - **UI Enhancements**: Bento grid layout for AI analysis results
 - **Storage Monitoring**: Visual indicators for LocalStorage usage
+
+## Flutter Conversion
+
+The project is prepared for Flutter conversion with:
+- HTML structure that maps directly to Flutter Widget tree
+- CSS classes that correspond to Flutter layout widgets
+- JavaScript patterns that mirror Flutter state management
+- Comprehensive documentation in `FLUTTER_CONVERSION_GUIDE.md`
+
+To start Flutter conversion:
+1. Run `flutter create dreamscope_app`
+2. Follow the guide in `FLUTTER_CONVERSION_GUIDE.md`
+3. Use the widget mapping comments in `index.html`

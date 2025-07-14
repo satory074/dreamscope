@@ -1,0 +1,353 @@
+/**
+ * Flutter Layout System CSS
+ * 
+ * FlutterのRow, Column, Stack, Flex などのレイアウトシステムを
+ * CSSで再現するためのスタイルシート
+ */
+
+/* Flutter Container Widget */
+.flutter-container {
+    /* Flutter: Container(
+         padding: EdgeInsets.all(16),
+         margin: EdgeInsets.symmetric(horizontal: 8),
+         decoration: BoxDecoration(...)
+       )
+    */
+    box-sizing: border-box;
+}
+
+/* Flutter Column Widget */
+.flutter-column {
+    display: flex;
+    flex-direction: column;
+    /* Flutter: Column(
+         mainAxisAlignment: MainAxisAlignment.start,
+         crossAxisAlignment: CrossAxisAlignment.center,
+       )
+    */
+}
+
+.flutter-column.main-axis-start { justify-content: flex-start; }
+.flutter-column.main-axis-end { justify-content: flex-end; }
+.flutter-column.main-axis-center { justify-content: center; }
+.flutter-column.main-axis-space-between { justify-content: space-between; }
+.flutter-column.main-axis-space-around { justify-content: space-around; }
+.flutter-column.main-axis-space-evenly { justify-content: space-evenly; }
+
+.flutter-column.cross-axis-start { align-items: flex-start; }
+.flutter-column.cross-axis-end { align-items: flex-end; }
+.flutter-column.cross-axis-center { align-items: center; }
+.flutter-column.cross-axis-stretch { align-items: stretch; }
+
+/* Flutter Row Widget */
+.flutter-row {
+    display: flex;
+    flex-direction: row;
+    /* Flutter: Row(
+         mainAxisAlignment: MainAxisAlignment.start,
+         crossAxisAlignment: CrossAxisAlignment.center,
+       )
+    */
+}
+
+.flutter-row.main-axis-start { justify-content: flex-start; }
+.flutter-row.main-axis-end { justify-content: flex-end; }
+.flutter-row.main-axis-center { justify-content: center; }
+.flutter-row.main-axis-space-between { justify-content: space-between; }
+.flutter-row.main-axis-space-around { justify-content: space-around; }
+.flutter-row.main-axis-space-evenly { justify-content: space-evenly; }
+
+.flutter-row.cross-axis-start { align-items: flex-start; }
+.flutter-row.cross-axis-end { align-items: flex-end; }
+.flutter-row.cross-axis-center { align-items: center; }
+.flutter-row.cross-axis-stretch { align-items: stretch; }
+
+/* Flutter Stack Widget */
+.flutter-stack {
+    position: relative;
+    /* Flutter: Stack(
+         alignment: Alignment.center,
+         fit: StackFit.loose,
+       )
+    */
+}
+
+.flutter-stack > * {
+    position: absolute;
+}
+
+.flutter-stack.alignment-top-left > * { top: 0; left: 0; }
+.flutter-stack.alignment-top-center > * { top: 0; left: 50%; transform: translateX(-50%); }
+.flutter-stack.alignment-top-right > * { top: 0; right: 0; }
+.flutter-stack.alignment-center-left > * { top: 50%; left: 0; transform: translateY(-50%); }
+.flutter-stack.alignment-center > * { top: 50%; left: 50%; transform: translate(-50%, -50%); }
+.flutter-stack.alignment-center-right > * { top: 50%; right: 0; transform: translateY(-50%); }
+.flutter-stack.alignment-bottom-left > * { bottom: 0; left: 0; }
+.flutter-stack.alignment-bottom-center > * { bottom: 0; left: 50%; transform: translateX(-50%); }
+.flutter-stack.alignment-bottom-right > * { bottom: 0; right: 0; }
+
+/* Flutter Positioned Widget */
+.flutter-positioned {
+    position: absolute !important;
+    /* Flutter: Positioned(
+         top: 10,
+         left: 20,
+         right: 30,
+         bottom: 40,
+       )
+    */
+}
+
+/* Flutter Expanded Widget */
+.flutter-expanded {
+    flex: 1;
+    /* Flutter: Expanded(
+         flex: 1,
+         child: Container(),
+       )
+    */
+}
+
+.flutter-expanded-2 { flex: 2; }
+.flutter-expanded-3 { flex: 3; }
+.flutter-expanded-4 { flex: 4; }
+.flutter-expanded-5 { flex: 5; }
+
+/* Flutter Flexible Widget */
+.flutter-flexible {
+    flex: 1 1 auto;
+    /* Flutter: Flexible(
+         flex: 1,
+         fit: FlexFit.loose,
+       )
+    */
+}
+
+.flutter-flexible.tight {
+    flex: 1 0 auto;
+    /* Flutter: Flexible(fit: FlexFit.tight) */
+}
+
+/* Flutter SizedBox Widget */
+.flutter-sized-box {
+    /* Flutter: SizedBox(
+         width: 100,
+         height: 50,
+       )
+    */
+    flex-shrink: 0;
+}
+
+/* Flutter Padding Widget */
+.flutter-padding-all-8 { padding: 8px; }
+.flutter-padding-all-16 { padding: 16px; }
+.flutter-padding-all-24 { padding: 24px; }
+.flutter-padding-all-32 { padding: 32px; }
+
+.flutter-padding-horizontal-8 { padding-left: 8px; padding-right: 8px; }
+.flutter-padding-horizontal-16 { padding-left: 16px; padding-right: 16px; }
+.flutter-padding-horizontal-24 { padding-left: 24px; padding-right: 24px; }
+
+.flutter-padding-vertical-8 { padding-top: 8px; padding-bottom: 8px; }
+.flutter-padding-vertical-16 { padding-top: 16px; padding-bottom: 16px; }
+.flutter-padding-vertical-24 { padding-top: 24px; padding-bottom: 24px; }
+
+/* Flutter Center Widget */
+.flutter-center {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    /* Flutter: Center(child: Widget()) */
+}
+
+/* Flutter Wrap Widget */
+.flutter-wrap {
+    display: flex;
+    flex-wrap: wrap;
+    /* Flutter: Wrap(
+         spacing: 8.0,
+         runSpacing: 4.0,
+         alignment: WrapAlignment.start,
+       )
+    */
+}
+
+.flutter-wrap > * {
+    margin: 4px;
+}
+
+/* Flutter Align Widget */
+.flutter-align {
+    display: flex;
+    /* Flutter: Align(
+         alignment: Alignment.topRight,
+         child: Widget(),
+       )
+    */
+}
+
+.flutter-align.top-left { justify-content: flex-start; align-items: flex-start; }
+.flutter-align.top-center { justify-content: center; align-items: flex-start; }
+.flutter-align.top-right { justify-content: flex-end; align-items: flex-start; }
+.flutter-align.center-left { justify-content: flex-start; align-items: center; }
+.flutter-align.center { justify-content: center; align-items: center; }
+.flutter-align.center-right { justify-content: flex-end; align-items: center; }
+.flutter-align.bottom-left { justify-content: flex-start; align-items: flex-end; }
+.flutter-align.bottom-center { justify-content: center; align-items: flex-end; }
+.flutter-align.bottom-right { justify-content: flex-end; align-items: flex-end; }
+
+/* Flutter ConstrainedBox Widget */
+.flutter-constrained-box {
+    /* Flutter: ConstrainedBox(
+         constraints: BoxConstraints(
+           minWidth: 100,
+           maxWidth: 300,
+           minHeight: 50,
+           maxHeight: 150,
+         ),
+       )
+    */
+}
+
+/* Flutter AspectRatio Widget */
+.flutter-aspect-ratio-1-1 { aspect-ratio: 1 / 1; }
+.flutter-aspect-ratio-16-9 { aspect-ratio: 16 / 9; }
+.flutter-aspect-ratio-4-3 { aspect-ratio: 4 / 3; }
+.flutter-aspect-ratio-3-2 { aspect-ratio: 3 / 2; }
+
+/* Flutter GridView */
+.flutter-grid {
+    display: grid;
+    gap: 16px;
+    /* Flutter: GridView.count(
+         crossAxisCount: 2,
+         mainAxisSpacing: 16,
+         crossAxisSpacing: 16,
+       )
+    */
+}
+
+.flutter-grid-2 { grid-template-columns: repeat(2, 1fr); }
+.flutter-grid-3 { grid-template-columns: repeat(3, 1fr); }
+.flutter-grid-4 { grid-template-columns: repeat(4, 1fr); }
+
+/* Flutter ListView */
+.flutter-list-view {
+    display: flex;
+    flex-direction: column;
+    overflow-y: auto;
+    /* Flutter: ListView(
+         scrollDirection: Axis.vertical,
+         shrinkWrap: false,
+       )
+    */
+}
+
+.flutter-list-view.horizontal {
+    flex-direction: row;
+    overflow-x: auto;
+    overflow-y: hidden;
+    /* Flutter: ListView(scrollDirection: Axis.horizontal) */
+}
+
+/* Flutter ListTile */
+.flutter-list-tile {
+    display: flex;
+    align-items: center;
+    padding: 16px;
+    min-height: 56px;
+    /* Flutter: ListTile(
+         leading: Icon(),
+         title: Text(),
+         subtitle: Text(),
+         trailing: Icon(),
+       )
+    */
+}
+
+.flutter-list-tile-leading {
+    margin-right: 16px;
+    flex-shrink: 0;
+}
+
+.flutter-list-tile-content {
+    flex: 1;
+}
+
+.flutter-list-tile-trailing {
+    margin-left: 16px;
+    flex-shrink: 0;
+}
+
+/* Flutter SafeArea を模倣 */
+.flutter-safe-area {
+    padding-top: env(safe-area-inset-top);
+    padding-right: env(safe-area-inset-right);
+    padding-bottom: env(safe-area-inset-bottom);
+    padding-left: env(safe-area-inset-left);
+}
+
+/* Flutter MediaQuery ブレークポイント */
+@media (max-width: 599px) {
+    /* Mobile */
+    .flutter-responsive-hide-mobile { display: none !important; }
+}
+
+@media (min-width: 600px) and (max-width: 959px) {
+    /* Tablet */
+    .flutter-responsive-hide-tablet { display: none !important; }
+}
+
+@media (min-width: 960px) {
+    /* Desktop */
+    .flutter-responsive-hide-desktop { display: none !important; }
+}
+
+/* Flutter Layout Builder を模倣 */
+.flutter-layout-builder {
+    container-type: inline-size;
+}
+
+@container (max-width: 599px) {
+    .flutter-layout-mobile { display: block; }
+    .flutter-layout-tablet { display: none; }
+    .flutter-layout-desktop { display: none; }
+}
+
+@container (min-width: 600px) and (max-width: 959px) {
+    .flutter-layout-mobile { display: none; }
+    .flutter-layout-tablet { display: block; }
+    .flutter-layout-desktop { display: none; }
+}
+
+@container (min-width: 960px) {
+    .flutter-layout-mobile { display: none; }
+    .flutter-layout-tablet { display: none; }
+    .flutter-layout-desktop { display: block; }
+}
+
+/* Flutter の Spacer Widget */
+.flutter-spacer {
+    flex: 1;
+    /* Flutter: Spacer(flex: 1) */
+}
+
+/* Flutter の Divider Widget */
+.flutter-divider {
+    height: 1px;
+    background-color: rgba(0, 0, 0, 0.12);
+    margin: 8px 0;
+    /* Flutter: Divider(
+         height: 1,
+         thickness: 1,
+         color: Colors.grey,
+       )
+    */
+}
+
+.flutter-divider.vertical {
+    width: 1px;
+    height: auto;
+    margin: 0 8px;
+    /* Flutter: VerticalDivider() */
+}

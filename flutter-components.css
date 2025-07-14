@@ -1,0 +1,487 @@
+/**
+ * Flutter Material Components CSS
+ * 
+ * Flutter Material Design 3 コンポーネントを
+ * 忠実に再現するためのスタイルシート
+ */
+
+/* Flutter ThemeData カラー変数 */
+:root {
+    /* Material Design 3 カラースキーム */
+    --flutter-primary: #6750a4;
+    --flutter-on-primary: #ffffff;
+    --flutter-primary-container: #eaddff;
+    --flutter-on-primary-container: #21005d;
+    
+    --flutter-secondary: #625b71;
+    --flutter-on-secondary: #ffffff;
+    --flutter-secondary-container: #e8def8;
+    --flutter-on-secondary-container: #1d192b;
+    
+    --flutter-surface: #fffbfe;
+    --flutter-on-surface: #1c1b1f;
+    --flutter-surface-variant: #e7e0ec;
+    --flutter-on-surface-variant: #49454f;
+    
+    --flutter-outline: #79747e;
+    --flutter-outline-variant: #cac4d0;
+    
+    /* エレベーション */
+    --flutter-elevation-1: 0 1px 2px rgba(0, 0, 0, 0.15);
+    --flutter-elevation-2: 0 2px 4px rgba(0, 0, 0, 0.15);
+    --flutter-elevation-3: 0 4px 8px rgba(0, 0, 0, 0.15);
+    --flutter-elevation-4: 0 8px 16px rgba(0, 0, 0, 0.15);
+}
+
+/* Flutter Scaffold */
+.flutter-scaffold {
+    background-color: var(--flutter-surface);
+    color: var(--flutter-on-surface);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+/* Flutter AppBar */
+.flutter-app-bar {
+    background-color: var(--flutter-surface);
+    color: var(--flutter-on-surface);
+    height: 64px;
+    padding: 0 16px;
+    display: flex;
+    align-items: center;
+    box-shadow: var(--flutter-elevation-2);
+    /* Flutter: AppBar(
+         elevation: 2,
+         backgroundColor: Theme.of(context).colorScheme.surface,
+       )
+    */
+}
+
+.flutter-app-bar-title {
+    font-size: 20px;
+    font-weight: 500;
+    flex: 1;
+}
+
+.flutter-app-bar-actions {
+    display: flex;
+    gap: 8px;
+}
+
+/* Flutter ElevatedButton */
+.flutter-elevated-button {
+    background-color: var(--flutter-primary);
+    color: var(--flutter-on-primary);
+    border: none;
+    border-radius: 20px;
+    padding: 10px 24px;
+    min-height: 40px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    box-shadow: var(--flutter-elevation-1);
+    transition: all 0.2s ease;
+    /* Flutter: ElevatedButton(
+         style: ElevatedButton.styleFrom(
+           shape: RoundedRectangleBorder(
+             borderRadius: BorderRadius.circular(20),
+           ),
+         ),
+       )
+    */
+}
+
+.flutter-elevated-button:hover {
+    box-shadow: var(--flutter-elevation-3);
+    background-color: color-mix(in srgb, var(--flutter-primary) 90%, black);
+}
+
+.flutter-elevated-button:active {
+    box-shadow: var(--flutter-elevation-1);
+    transform: scale(0.98);
+}
+
+.flutter-elevated-button.icon {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+/* Flutter TextButton */
+.flutter-text-button {
+    background-color: transparent;
+    color: var(--flutter-primary);
+    border: none;
+    border-radius: 20px;
+    padding: 10px 24px;
+    min-height: 40px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.flutter-text-button:hover {
+    background-color: color-mix(in srgb, var(--flutter-primary) 10%, transparent);
+}
+
+/* Flutter OutlinedButton */
+.flutter-outlined-button {
+    background-color: transparent;
+    color: var(--flutter-primary);
+    border: 1px solid var(--flutter-outline);
+    border-radius: 20px;
+    padding: 10px 24px;
+    min-height: 40px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.flutter-outlined-button:hover {
+    background-color: color-mix(in srgb, var(--flutter-primary) 10%, transparent);
+    border-color: var(--flutter-primary);
+}
+
+/* Flutter Card */
+.flutter-card {
+    background-color: var(--flutter-surface);
+    border-radius: 12px;
+    padding: 16px;
+    box-shadow: var(--flutter-elevation-1);
+    transition: box-shadow 0.2s ease;
+    /* Flutter: Card(
+         elevation: 1,
+         shape: RoundedRectangleBorder(
+           borderRadius: BorderRadius.circular(12),
+         ),
+       )
+    */
+}
+
+.flutter-card:hover {
+    box-shadow: var(--flutter-elevation-2);
+}
+
+/* Flutter TextField */
+.flutter-text-field {
+    position: relative;
+    margin: 16px 0;
+}
+
+.flutter-text-field-input {
+    width: 100%;
+    padding: 16px 12px 8px 12px;
+    border: 1px solid var(--flutter-outline);
+    border-radius: 4px;
+    background-color: var(--flutter-surface);
+    color: var(--flutter-on-surface);
+    font-size: 16px;
+    transition: all 0.2s ease;
+    /* Flutter: TextField(
+         decoration: InputDecoration(
+           border: OutlineInputBorder(),
+           labelText: 'Label',
+         ),
+       )
+    */
+}
+
+.flutter-text-field-input:focus {
+    outline: none;
+    border-color: var(--flutter-primary);
+    border-width: 2px;
+}
+
+.flutter-text-field-label {
+    position: absolute;
+    left: 12px;
+    top: 16px;
+    background-color: var(--flutter-surface);
+    padding: 0 4px;
+    color: var(--flutter-on-surface-variant);
+    font-size: 16px;
+    transition: all 0.2s ease;
+    pointer-events: none;
+}
+
+.flutter-text-field-input:focus + .flutter-text-field-label,
+.flutter-text-field-input:not(:placeholder-shown) + .flutter-text-field-label {
+    top: -8px;
+    font-size: 12px;
+    color: var(--flutter-primary);
+}
+
+/* Flutter Switch */
+.flutter-switch {
+    position: relative;
+    display: inline-block;
+    width: 52px;
+    height: 32px;
+}
+
+.flutter-switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.flutter-switch-slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: var(--flutter-surface-variant);
+    border-radius: 16px;
+    transition: 0.2s;
+}
+
+.flutter-switch-slider:before {
+    position: absolute;
+    content: "";
+    height: 20px;
+    width: 20px;
+    left: 6px;
+    bottom: 6px;
+    background-color: var(--flutter-on-surface-variant);
+    border-radius: 50%;
+    transition: 0.2s;
+}
+
+.flutter-switch input:checked + .flutter-switch-slider {
+    background-color: var(--flutter-primary);
+}
+
+.flutter-switch input:checked + .flutter-switch-slider:before {
+    transform: translateX(20px);
+    background-color: var(--flutter-on-primary);
+}
+
+/* Flutter Checkbox */
+.flutter-checkbox {
+    width: 18px;
+    height: 18px;
+    accent-color: var(--flutter-primary);
+    cursor: pointer;
+}
+
+/* Flutter Radio */
+.flutter-radio {
+    width: 20px;
+    height: 20px;
+    accent-color: var(--flutter-primary);
+    cursor: pointer;
+}
+
+/* Flutter Slider */
+.flutter-slider {
+    width: 100%;
+    height: 4px;
+    border-radius: 2px;
+    background: var(--flutter-primary-container);
+    outline: none;
+    -webkit-appearance: none;
+}
+
+.flutter-slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: var(--flutter-primary);
+    cursor: pointer;
+}
+
+/* Flutter BottomNavigationBar */
+.flutter-bottom-navigation {
+    background-color: var(--flutter-surface);
+    border-top: 1px solid var(--flutter-outline-variant);
+    display: flex;
+    height: 80px;
+    padding: 8px 0;
+}
+
+.flutter-bottom-nav-item {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    color: var(--flutter-on-surface-variant);
+}
+
+.flutter-bottom-nav-item.active {
+    color: var(--flutter-primary);
+}
+
+.flutter-bottom-nav-icon {
+    font-size: 24px;
+}
+
+.flutter-bottom-nav-label {
+    font-size: 12px;
+}
+
+/* Flutter FloatingActionButton */
+.flutter-fab {
+    position: fixed;
+    bottom: 16px;
+    right: 16px;
+    width: 56px;
+    height: 56px;
+    border-radius: 16px;
+    background-color: var(--flutter-primary-container);
+    color: var(--flutter-on-primary-container);
+    border: none;
+    box-shadow: var(--flutter-elevation-3);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+    transition: all 0.2s ease;
+    /* Flutter: FloatingActionButton(
+         backgroundColor: Theme.of(context).colorScheme.primaryContainer,
+         shape: RoundedRectangleBorder(
+           borderRadius: BorderRadius.circular(16),
+         ),
+       )
+    */
+}
+
+.flutter-fab:hover {
+    box-shadow: var(--flutter-elevation-4);
+    transform: scale(1.05);
+}
+
+.flutter-fab:active {
+    transform: scale(0.95);
+}
+
+.flutter-fab.extended {
+    width: auto;
+    padding: 0 20px;
+    gap: 8px;
+}
+
+/* Flutter SnackBar */
+.flutter-snackbar {
+    position: fixed;
+    bottom: -60px;
+    left: 16px;
+    right: 16px;
+    background-color: var(--flutter-on-surface);
+    color: var(--flutter-surface);
+    padding: 16px;
+    border-radius: 4px;
+    box-shadow: var(--flutter-elevation-3);
+    transition: bottom 0.3s ease;
+    z-index: 1000;
+}
+
+.flutter-snackbar.show {
+    bottom: 16px;
+}
+
+/* Flutter Dialog */
+.flutter-dialog-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 999;
+}
+
+.flutter-dialog {
+    background-color: var(--flutter-surface);
+    border-radius: 28px;
+    padding: 24px;
+    max-width: 400px;
+    width: 90%;
+    box-shadow: var(--flutter-elevation-4);
+}
+
+.flutter-dialog-title {
+    font-size: 24px;
+    font-weight: 400;
+    margin-bottom: 16px;
+    color: var(--flutter-on-surface);
+}
+
+.flutter-dialog-content {
+    font-size: 14px;
+    color: var(--flutter-on-surface-variant);
+    margin-bottom: 24px;
+}
+
+.flutter-dialog-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+}
+
+/* Flutter Chip */
+.flutter-chip {
+    display: inline-flex;
+    align-items: center;
+    background-color: var(--flutter-surface-variant);
+    color: var(--flutter-on-surface-variant);
+    padding: 6px 12px;
+    border-radius: 8px;
+    font-size: 14px;
+    transition: all 0.2s ease;
+}
+
+.flutter-chip.selected {
+    background-color: var(--flutter-secondary-container);
+    color: var(--flutter-on-secondary-container);
+}
+
+/* Flutter CircularProgressIndicator */
+.flutter-circular-progress {
+    width: 40px;
+    height: 40px;
+    border: 4px solid var(--flutter-primary-container);
+    border-top: 4px solid var(--flutter-primary);
+    border-radius: 50%;
+    animation: flutter-spin 1s linear infinite;
+}
+
+@keyframes flutter-spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Flutter LinearProgressIndicator */
+.flutter-linear-progress {
+    width: 100%;
+    height: 4px;
+    background-color: var(--flutter-primary-container);
+    border-radius: 2px;
+    overflow: hidden;
+}
+
+.flutter-linear-progress-bar {
+    height: 100%;
+    background-color: var(--flutter-primary);
+    animation: flutter-progress 2s ease-in-out infinite;
+}
+
+@keyframes flutter-progress {
+    0% { width: 0%; }
+    50% { width: 100%; }
+    100% { width: 0%; }
+}
